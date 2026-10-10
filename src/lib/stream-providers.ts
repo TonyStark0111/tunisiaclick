@@ -46,6 +46,10 @@ const BUILT_IN: ProviderTemplate[] = [
   { name: '2Embed', movie: 'https://www.2embed.skin/embed/{id}', tv: 'https://www.2embed.skin/embedtv/{id}&s={season}&e={episode}' },
   { name: 'AutoEmbed', movie: 'https://autoembed.co/movie/tmdb/{id}', tv: 'https://autoembed.co/tv/tmdb/{id}-{season}-{episode}' },
   { name: 'Vidrock', movie: 'https://vidrock.net/embed/movie/{id}', tv: 'https://vidrock.net/embed/tv/{id}/{season}/{episode}' },
+  { name: 'VidLink', movie: 'https://vidlink.pro/movie/{id}', tv: 'https://vidlink.pro/tv/{id}/{season}/{episode}' },
+  { name: 'ModiPlay (Beta)', movie: 'https://rozgarlelo.modiplay.xyz/embed/tmdb/movie?id={id}', tv: 'https://rozgarlelo.modiplay.xyz/embed/tmdb/tv?id={id}&season={season}&episode={episode}' },
+  { name: 'Bingr (Beta)', movie: 'https://bingr.one/watch/movie/{id}', tv: 'https://bingr.one/watch/tv/{id}/{season}/{episode}' },
+  { name: 'Vidbolt (Beta)', movie: 'https://vidbolt.xyz/movie/{id}', tv: 'https://vidbolt.xyz/tv/{id}/{season}/{episode}' },
 ]
 
 type Template = { name?: unknown, movie?: unknown, tv?: unknown }
