@@ -174,3 +174,77 @@ GitHub release by itself (`src/lib/app-releases.ts`); a tag builds and signs bot
 - `npm run i18n:keys` – works out which strings each page sends to the browser (after using a key in a
   client component)
 - `npm run test:unit` – unit tests (Node 22)
+
+
+## Project Structure
+
+```text
+tunisiaflicks-main/
+├── .github/
+│   └── workflows/
+│       ├── android-apps.yml
+│       ├── ci.yml
+│       ├── cron.yml
+│       └── desktop-app.yml
+├── android/
+│   ├── phone/
+│   └── tv/
+├── desktop/
+│   └── app/
+├── docs/
+│   ├── features-plan/
+│   ├── DESIGN.md
+│   ├── SCHEDULER.md
+│   └── apps.md
+├── player-service/
+│   ├── public/
+│   ├── views/
+│   └── server.js
+├── public/
+│   ├── email/
+│   ├── icons/
+│   ├── TunisiaFlicks.png
+│   └── sw.js
+├── scripts/
+├── src/
+│   ├── app/                    # Pages & API routes
+│   │   ├── api/
+│   │   │   ├── account/
+│   │   │   ├── ai/
+│   │   │   ├── auth/
+│   │   │   ├── cron/
+│   │   │   ├── social/
+│   │   │   └── profiles/
+│   │   ├── movie/
+│   │   ├── tv/
+│   │   ├── dramas/
+│   │   ├── search/
+│   │   ├── favorites/
+│   │   ├── history/
+│   │   ├── friends/
+│   │   ├── lists/
+│   │   ├── login/
+│   │   ├── signup/
+│   │   ├── profiles/
+│   │   ├── dashboard/
+│   │   ├── tunisian/
+│   │   ├── arab-cinema/
+│   │   ├── movie-night/
+│   │   ├── badges/
+│   │   ├── wrapped/
+│   │   ├── page.tsx            # Home
+│   │   └── layout.tsx
+│   ├── components/             # UI components
+│   ├── lib/                    # Logic (mongodb, tmdb, auth...)
+│   ├── store/
+│   ├── hooks/
+│   ├── middleware.ts
+│   └── instrumentation.ts
+├── tests/
+├── package.json
+├── next.config.js
+├── tsconfig.json
+├── tailwind.config.ts
+├── vercel.json
+└── netlify.toml
+```
