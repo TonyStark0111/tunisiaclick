@@ -1,7 +1,7 @@
 "use client"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import MediaHero from '@/src/components/detail/MediaHero'
-import StreamSection from '@/src/components/detail/StreamSection'
 import SectionNav from '@/src/components/detail/SectionNav'
 import EpisodeBrowser, { type Episode, type Season } from '@/src/components/detail/EpisodeBrowser'
 import { CastRow, DetailsGrid } from '@/src/components/detail/DetailSections'
@@ -9,28 +9,15 @@ import MoreLikeThis from '@/src/components/detail/MoreLikeThis'
 import ExtrasSection from '@/src/components/detail/ExtrasSection'
 import { detailSections, type DetailServerProps } from '@/src/components/detail/MovieDetail'
 import RatingsBand from '@/src/components/social/RatingsBand'
-import DownloadDialog from '@/src/components/detail/DownloadDialog'
 import { useRoomLight } from '@/src/components/shell/RoomLight'
 import { useMarkWatched } from '@/src/hooks/use-media-lists'
 import { ambientStyle, useAmbientColor } from '@/src/hooks/use-ambient-color'
 import { toast } from '@/src/hooks/use-toast'
 import { getSeasonDetails } from '@/src/app/tv/[id]/actions'
 import { useSoundtrack } from '@/src/hooks/use-soundtrack'
-import { fillProviders } from '@/src/lib/media-assets'
 import { useT } from '@/src/components/I18nProvider'
 
 type Pick = { season: number, episode: number }
-
-const scrollToPlayer = () => {
-  // Let the enabled player render first. setTimeout (not requestAnimationFrame, which stalls in
-  // background tabs); jump instantly when hidden, since a smooth scroll can't animate there.
-  setTimeout(() => {
-    document.getElementById('streamSection')?.scrollIntoView({
-      behavior: document.visibilityState === 'visible' ? 'smooth' : 'instant',
-      block: 'start',
-    })
-  }, 120)
-}
 
 /** A show page: the hero, the player, the episodes, ratings, similar shows, extras, the cast and the facts. */
 export default function TvDetail({ id, data, similar, resume, providers, kids, signedIn, ratings, tabs, trailers, extras, soundtrack: initialSoundtrack, englishName }: DetailServerProps & {
@@ -40,6 +27,7 @@ export default function TvDetail({ id, data, similar, resume, providers, kids, s
   englishName?: string
 }) {
   const t = useT()
+  const router = useRouter()
   const soundtrack = useSoundtrack({ type: 'tv', id, kids, initial: initialSoundtrack })
   const ambient = useAmbientColor(data.poster_path)
   useRoomLight(ambient)
@@ -89,20 +77,24 @@ export default function TvDetail({ id, data, similar, resume, providers, kids, s
         description: t('tv.resuming', { episode: t('common.seasonEpisode', { season: resume.season, episode: resume.episode }) }),
         duration: 3000,
       })
-      scrollToPlayer()
+      router.replace(`/watch/tv/${id}?s=${resume.season}&e=${resume.episode}`)
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
+  const goWatch = useCallback((item: Pick) => {
+    markWatched(item)
+    router.push(`/watch/tv/${id}?s=${item.season}&e=${item.episode}`)
+  }, [markWatched, router, id])
+
   const pickEpisode = useCallback((item: Pick) => {
     setEpisode(item)
-    markWatched(item)
-    scrollToPlayer()
-  }, [markWatched])
+    goWatch(item)
+  }, [goWatch])
 
   /** Hero "Play": the episode in progress, or the very first one. */
   const playFromStart = async () => {
-    if (episode) return scrollToPlayer()
+    if (episode) return goWatch(episode)
     if (firstSeason === undefined) return
     const list = selectedSeason === firstSeason && episodes.length ? episodes : await loadSeason(firstSeason)
     const first = list?.[0]
@@ -129,10 +121,6 @@ export default function TvDetail({ id, data, similar, resume, providers, kids, s
     ? t('detail.playEpisode', { episode: code(episode) })
     : firstSeason !== undefined ? t('detail.playEpisode', { episode: code({ season: firstSeason, episode: 1 }) }) : t('billboard.play')
 
-  const streamServices = useMemo(() => fillProviders(providers, 'tv', id, episode?.season, episode?.episode), [providers, id, episode?.season, episode?.episode])
-  const imdbId: string | undefined = data.external_ids?.imdb_id || undefined
-  // The names a release can be filed under, to keep other shows' releases out of the downloads.
-  const releaseNames = useMemo(() => Array.from(new Set([englishName, data.name, data.original_name].filter((name): name is string => !!name))), [englishName, data.name, data.original_name])
   const cast: any[] = data.credits?.cast ?? []
   const media = useMemo(() => ({ media_type: 'tv' as const, id, title: data.name ?? '', poster_path: data.poster_path ?? null }), [id, data.name, data.poster_path])
 
@@ -149,32 +137,6 @@ export default function TvDetail({ id, data, similar, resume, providers, kids, s
       <MediaHero kind="tv" data={data} playLabel={playLabel} onPlay={playFromStart} trailers={trailers} kids={kids} />
       <SectionNav sections={sections} />
       <div className="space-y-16 pt-10">
-        <StreamSection
-          services={streamServices}
-          media={episode ? { type: 'tv', id, season: episode.season, episode: episode.episode } : undefined}
-          enabled={episode !== null}
-          backdrop={data.backdrop_path}
-          placeholder={{
-            title: t('detail.pickEpisode'),
-            description: t('detail.pickEpisodeText'),
-            action: firstSeason !== undefined ? { label: playLabel, onClick: playFromStart } : undefined,
-          }}
-          onNext={episode && next ? playNext : undefined}
-          nextLabel={next ? `${t('detail.nextEpisode')} ${code(next)}` : undefined}
-          downloadSlot={imdbId ? (
-            <DownloadDialog
-              type="tv"
-              imdbId={imdbId}
-              title={episode ? t('tv.downloadTitle', { name: data.name, season: episode.season, episode: episode.episode }) : data.name}
-              season={episode?.season ?? 1}
-              episode={episode?.episode ?? 1}
-              names={releaseNames}
-              disabled={!episode}
-              disabledHint={t('tv.pickFirst')}
-            />
-          ) : undefined}
-        />
-
         {seasons.length > 0 && (
           <EpisodeBrowser
             id="episodes"
