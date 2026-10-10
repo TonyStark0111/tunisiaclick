@@ -33,6 +33,10 @@ export type ProviderTemplate = { name: string; movie: string; tv: string }
 // The set was probed for reachability + a real player payload (2026). These are client-rendered,
 // region-gated players, so availability varies by the viewer's network — hence several sources to
 // switch between. If one stops working, drop it here; the UI updates everywhere.
+//
+// NOTE: the last 6 entries were ported from a richer provider definition that supported per-audio
+// language switching. The template system here only fills in {id}/{season}/{episode}, so those
+// providers are locked to their Hindi default (lang=hi / dubLang=hi / server=hindi / sub).
 const BUILT_IN: ProviderTemplate[] = [
   { name: 'Vidy', movie: 'https://www.vidy.st/movie/{id}?color=DC2626', tv: 'https://www.vidy.st/tv/{id}/{season}/{episode}?color=DC2626&nextEpisode=true&episodeSelector=true' },
   { name: 'Filmu', movie: 'https://embed.filmu.in/movie/{id}', tv: 'https://embed.filmu.in/tv/{id}/{season}/{episode}' },
@@ -47,9 +51,17 @@ const BUILT_IN: ProviderTemplate[] = [
   { name: 'AutoEmbed', movie: 'https://autoembed.co/movie/tmdb/{id}', tv: 'https://autoembed.co/tv/tmdb/{id}-{season}-{episode}' },
   { name: 'Vidrock', movie: 'https://vidrock.net/embed/movie/{id}', tv: 'https://vidrock.net/embed/tv/{id}/{season}/{episode}' },
   { name: 'VidLink', movie: 'https://vidlink.pro/movie/{id}', tv: 'https://vidlink.pro/tv/{id}/{season}/{episode}' },
-  { name: 'ModiPlay (Beta)', movie: 'https://rozgarlelo.modiplay.xyz/embed/tmdb/movie?id={id}', tv: 'https://rozgarlelo.modiplay.xyz/embed/tmdb/tv?id={id}&season={season}&episode={episode}' },
-  { name: 'Bingr (Beta)', movie: 'https://bingr.one/watch/movie/{id}', tv: 'https://bingr.one/watch/tv/{id}/{season}/{episode}' },
-  { name: 'Vidbolt (Beta)', movie: 'https://vidbolt.xyz/movie/{id}', tv: 'https://vidbolt.xyz/tv/{id}/{season}/{episode}' },
+  { name: 'ModiPlay', movie: 'https://rozgarlelo.modiplay.xyz/embed/tmdb/movie?id={id}', tv: 'https://rozgarlelo.modiplay.xyz/embed/tmdb/tv?id={id}&season={season}&episode={episode}' },
+  { name: 'Bingr', movie: 'https://bingr.one/watch/movie/{id}', tv: 'https://bingr.one/watch/tv/{id}/{season}/{episode}' },
+  { name: 'Vidbolt', movie: 'https://vidbolt.xyz/movie/{id}', tv: 'https://vidbolt.xyz/tv/{id}/{season}/{episode}' },
+
+  // --- Ported from friend's streaming.js (Hindi default) ---
+  { name: 'NxSha Prime', movie: 'https://nxsha.space/embed/movie/{id}?lang=hi&disable_app_ad=true', tv: 'https://nxsha.space/embed/tv/{id}/{season}/{episode}?lang=hi&disable_app_ad=true' },
+  { name: 'TgVid Prime', movie: 'https://tgvid.lovable.app/embed/movie/{id}?color=38bdf8&back=true&server=hindi&lang=hi', tv: 'https://tgvid.lovable.app/embed/tv/{id}/{season}/{episode}?color=38bdf8&back=true&server=hindi&lang=hi&episodeSelector=false&autoplayNextEp=false' },
+  { name: 'ZXC Roxy', movie: 'https://player.zxcprime.xyz/player/movie/{id}?dubLang=hi&server=0', tv: 'https://player.zxcprime.xyz/player/tv/{id}/{season}/{episode}?dubLang=hi&server=0' },
+  { name: 'MegaPlay Direct', movie: 'https://megaplay.buzz/stream/ani/{id}/1/sub?autoplay=true', tv: 'https://megaplay.buzz/stream/ani/{id}/{episode}/sub?autoplay=true' },
+  { name: 'ZokoAnime Direct', movie: 'https://zokoanime.video/stream/ani/{id}/1/sub', tv: 'https://zokoanime.video/stream/ani/{id}/{episode}/sub' },
+  { name: '4Animo Multi-Dub CDN', movie: 'https://cdn.4animo.xyz/embed/hd-3/ani/{id}/1/sub?k=1&autoplay=1', tv: 'https://cdn.4animo.xyz/embed/hd-3/ani/{id}/{episode}/sub?k=1&autoplay=1' },
 ]
 
 type Template = { name?: unknown, movie?: unknown, tv?: unknown }
