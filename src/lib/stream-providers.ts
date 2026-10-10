@@ -11,8 +11,8 @@
 //
 // - STREAM_PROVIDERS: the whole list, as JSON, best first. `{id}`, `{season}` and `{episode}`
 //   are filled in:
-//   [{"name":"VidSrc","movie":"https://vidsrc.to/embed/movie/{id}","tv":"https://vidsrc.to/embed/tv/{id}/{season}/{episode}"}]
-// - STREAM_PROVIDERS_OFF: names to switch off, comma-separated (e.g. "2Embed,MultiEmbed").
+//   [{"name":"Vidy","movie":"https://www.vidy.st/movie/{id}","tv":"https://www.vidy.st/tv/{id}/{season}/{episode}"}]
+// - STREAM_PROVIDERS_OFF: names to switch off, comma-separated (e.g. "2Embed,AutoEmbed").
 //
 // Both are read on the server only (a client bundle never sees them, which is why the pages pass
 // the templates down as props instead of the player importing this file).
@@ -30,18 +30,22 @@ export type ProviderTemplate = { name: string; movie: string; tv: string }
 
 // Ordered best-first; the first one is selected by default.
 //
-// The set was probed for reachability + a real player payload (2026). Dead/unreachable providers
-// (embed.su, AutoEmbed) and one that returned an in-player 500 (VidFast) were removed. These are
-// client-rendered, region-gated players, so availability varies by the viewer's network — hence
-// several sources to switch between. If one stops working, drop it here; the UI updates everywhere.
+// The set was probed for reachability + a real player payload (2026). These are client-rendered,
+// region-gated players, so availability varies by the viewer's network — hence several sources to
+// switch between. If one stops working, drop it here; the UI updates everywhere.
 const BUILT_IN: ProviderTemplate[] = [
-  { name: 'VidSrc', movie: 'https://vidsrc.to/embed/movie/{id}', tv: 'https://vidsrc.to/embed/tv/{id}/{season}/{episode}' },
-  { name: 'VidLink', movie: 'https://vidlink.pro/movie/{id}', tv: 'https://vidlink.pro/tv/{id}/{season}/{episode}' },
-  { name: 'Vidzee', movie: 'https://player.vidzee.wtf/embed/movie/{id}', tv: 'https://player.vidzee.wtf/embed/tv/{id}/{season}/{episode}' },
-  { name: 'VidSrc.su', movie: 'https://vidsrc.su/embed/movie/{id}', tv: 'https://vidsrc.su/embed/tv/{id}/{season}/{episode}' },
-  { name: 'VidSrc.rip', movie: 'https://vidsrc.rip/embed/movie/{id}', tv: 'https://vidsrc.rip/embed/tv/{id}/{season}/{episode}' },
-  { name: '2Embed', movie: 'https://www.2embed.cc/embed/{id}', tv: 'https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}' },
-  { name: 'MultiEmbed', movie: 'https://multiembed.mov/?video_id={id}&tmdb=1', tv: 'https://multiembed.mov/?video_id={id}&tmdb=1&s={season}&e={episode}' },
+  { name: 'Vidy', movie: 'https://www.vidy.st/movie/{id}?color=DC2626', tv: 'https://www.vidy.st/tv/{id}/{season}/{episode}?color=DC2626&nextEpisode=true&episodeSelector=true' },
+  { name: 'Filmu', movie: 'https://embed.filmu.in/movie/{id}', tv: 'https://embed.filmu.in/tv/{id}/{season}/{episode}' },
+  { name: 'VidZee', movie: 'https://player.vidzee.wtf/embed/movie/{id}', tv: 'https://player.vidzee.wtf/embed/tv/{id}/{season}/{episode}' },
+  { name: 'PrimeSRC', movie: 'https://primesrc.me/embed/movie?tmdb={id}', tv: 'https://primesrc.me/embed/tv?tmdb={id}&season={season}&episode={episode}' },
+  { name: 'Vidrift', movie: 'https://vidnest.fun/movie/{id}', tv: 'https://vidnest.fun/tv/{id}/{season}/{episode}' },
+  { name: 'VidNest', movie: 'https://embed.vidrift.in/embed/movie/{id}?brand=Meowly', tv: 'https://embed.vidrift.in/embed/tv/{id}/{season}/{episode}?brand=Meowly' },
+  { name: 'Vidfast', movie: 'https://vidfast.net/movie/{id}', tv: 'https://vidfast.net/tv/{id}/{season}/{episode}' },
+  { name: 'VidSrc PM', movie: 'https://vidsrc.pm/embed/movie/{id}', tv: 'https://vidsrc.pm/embed/tv/{id}/{season}/{episode}' },
+  { name: 'VidSrc SU', movie: 'https://vidsrcme.su/embed/movie?tmdb={id}', tv: 'https://vidsrcme.su/embed/tv?tmdb={id}&season={season}&episode={episode}' },
+  { name: '2Embed', movie: 'https://www.2embed.skin/embed/{id}', tv: 'https://www.2embed.skin/embedtv/{id}&s={season}&e={episode}' },
+  { name: 'AutoEmbed', movie: 'https://autoembed.co/movie/tmdb/{id}', tv: 'https://autoembed.co/tv/tmdb/{id}-{season}-{episode}' },
+  { name: 'Vidrock', movie: 'https://vidrock.net/embed/movie/{id}', tv: 'https://vidrock.net/embed/tv/{id}/{season}/{episode}' },
 ]
 
 type Template = { name?: unknown, movie?: unknown, tv?: unknown }
