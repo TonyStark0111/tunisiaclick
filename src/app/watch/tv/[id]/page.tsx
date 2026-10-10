@@ -99,6 +99,13 @@ export default async function WatchTvPage({ params, searchParams }: Props) {
       year={year}
       season={season}
       episode={episode}
+      seasons={(show.seasons ?? []).map((s: any) => ({
+        id: s.id,
+        season_number: s.season_number,
+        name: s.name,
+        poster_path: s.poster_path ?? null,
+        episode_count: s.episode_count ?? 0,
+      }))}
       kids={kids}
       signedIn={signedIn}
       ratings={signedIn || (summary?.average !== null && summary?.average !== undefined)}
