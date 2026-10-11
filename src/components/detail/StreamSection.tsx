@@ -19,20 +19,6 @@ import { BrandLoader } from '@/src/components/brand/BrandMark'
 /** TV mode: after this many briefings on a device, the briefing shrinks to a short hint. */
 const FULL_BRIEFINGS = 3
 const VISITS_KEY = 'tf-tv-player-visits'
-
-/**
- * Iframe sandbox: scripts, same-origin and forms so players run, presentation for full screen.
- * No allow-popups / allow-top-navigation, so embeds can't open ad tabs or redirect the page.
- */
-const PLAYER_SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-presentation'
-/** Sources that always play without the sandbox (the local player, plus any known to refuse it). */
-const NO_SANDBOX = new Set<string>([LOCAL_PLAYER_SOURCE, 'VidLink'])
-/**
- * Every other provider starts sandboxed (no popups). If one shows a blank player, the viewer taps
- * "Not working" once: that source switches to compatibility mode (no sandbox), is remembered on this
- * device, and the iframe reloads. A second tap reports it as broken, as before.
- */
-const COMPAT_KEY = 'tf-compat-sources'
 /** TV mode: a source that hasn't loaded after this long is called slow. */
 const SLOW_MS = 12_000
 
@@ -72,7 +58,6 @@ export default function StreamSection({ services: providerServices, media, downl
     const tv = useTvMode()
     const pillId = useId()
     const [isLoading, setIsLoading] = useState(true)
-    const [compat, setCompat] = useState<string[]>([])
     const [lightsOff, setLightsOff] = useState(false)
     const sectionRef = useRef<HTMLElement>(null)
     const services = useWithLocalPlayer(providerServices, media)
@@ -244,24 +229,7 @@ export default function StreamSection({ services: providerServices, media, downl
         toast({ title: t('stream.changed'), description: t('stream.nowUsing', { name }), duration: 2500 })
     }
 
-    useEffect(() => {
-        try {
-            const saved = JSON.parse(localStorage.getItem(COMPAT_KEY) ?? '[]')
-            if (Array.isArray(saved)) setCompat(saved.filter((name): name is string => typeof name === 'string'))
-        } catch { /* storage unavailable: start sandboxed */ }
-    }, [])
-
     const notWorking = () => {
-        const name = source.current?.name
-        // First tap on a sandboxed source: retry it without the sandbox before calling it broken.
-        if (name && !NO_SANDBOX.has(name) && !compat.includes(name)) {
-            const next = [...compat, name]
-            setCompat(next)
-            try { localStorage.setItem(COMPAT_KEY, JSON.stringify(next)) } catch { /* ignore */ }
-            setIsLoading(true)
-            toast({ title: 'Compatibility mode', description: `Reloading ${name} without popup protection.`, duration: 4000 })
-            return
-        }
         const next = source.reportBroken()
         if (next) toast({ title: t('stream.reported'), description: t('stream.nowUsing', { name: next }), duration: 4000 })
     }
@@ -273,7 +241,6 @@ export default function StreamSection({ services: providerServices, media, downl
     }
 
     const sourceName = source.current?.name ?? ''
-    const sandboxed = !NO_SANDBOX.has(sourceName) && !compat.includes(sourceName)
     const briefing = tv && enabled && !started
 
     return (
@@ -363,13 +330,12 @@ export default function StreamSection({ services: providerServices, media, downl
                             {url && (
                                 <iframe
                                     ref={iframeRef}
-                                    key={`${url}|${sandboxed ? 's' : 'c'}`}
+                                    key={url}
                                     src={url}
                                     title={t('stream.player')}
                                     className="absolute inset-0 h-full w-full"
                                     referrerPolicy="origin"
                                     allowFullScreen
-                                    sandbox={sandboxed ? PLAYER_SANDBOX : undefined}
                                     // The desktop app's own player too: its full screen, picture in picture and autoplay.
                                     allow={tv || sourceName === LOCAL_PLAYER_SOURCE ? 'autoplay; fullscreen; encrypted-media; picture-in-picture' : undefined}
                                     onLoad={() => setIsLoading(false)}
