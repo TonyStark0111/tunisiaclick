@@ -26,7 +26,6 @@ export type FeatureKey =
   | keyof typeof badges.en
   | keyof typeof dramaHubs.en
   | keyof typeof arabMap.en
-  | keyof typeof.en
   | keyof typeof seasons.en
   | keyof typeof tvMode.en
   | keyof typeof detailExtras.en
