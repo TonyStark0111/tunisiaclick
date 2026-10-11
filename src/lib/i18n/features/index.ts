@@ -7,7 +7,6 @@ import { sharedLists } from './shared-lists'
 import { badges } from './badges'
 import { dramaHubs } from './drama-hubs'
 import { arabMap } from './arab-map'
-import { tunisianTv } from './tunisian-tv'
 import { seasons } from './seasons'
 import { tvMode } from './tv-mode'
 import { detailExtras } from './detail-extras'
@@ -17,7 +16,7 @@ import { accountSecurity } from './account-security'
 import { apps } from './apps'
 import { desktop } from './desktop'
 
-const FEATURES = [aiSearch, social, movieNight, sharedLists, badges, dramaHubs, arabMap, tunisianTv, seasons, tvMode, detailExtras, digest, languages, accountSecurity, apps, desktop]
+const FEATURES = [aiSearch, social, movieNight, sharedLists, badges, dramaHubs, arabMap seasons, tvMode, detailExtras, digest, languages, accountSecurity, apps, desktop]
 
 export type FeatureKey =
   | keyof typeof aiSearch.en
@@ -27,7 +26,7 @@ export type FeatureKey =
   | keyof typeof badges.en
   | keyof typeof dramaHubs.en
   | keyof typeof arabMap.en
-  | keyof typeof tunisianTv.en
+  | keyof typeof.en
   | keyof typeof seasons.en
   | keyof typeof tvMode.en
   | keyof typeof detailExtras.en
