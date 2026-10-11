@@ -38,7 +38,7 @@ export const ar: Record<CoreKey, string> = {
 
   // Navbar / sidebar
   'nav.home': 'الرئيسية',
-  'nav.homeAria': 'الصفحة الرئيسية لـ TunisiaFlicks',
+  'nav.homeAria': 'الصفحة الرئيسية لـ XeonFlix',
   'nav.movies': 'أفلام',
   'nav.tvShows': 'مسلسلات',
   'nav.discover': 'اكتشف',
