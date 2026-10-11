@@ -51,9 +51,9 @@ const display = Bricolage_Grotesque({ subsets: ['latin'], axes: ['opsz', 'wdth']
 const displayArabic = Alexandria({ subsets: ['arabic'], variable: '--font-display-ar', display: 'swap', preload: false });
 
 const baseMetadata: Metadata = {
-  title: 'TunisiaFlicks: movies, TV shows and Tunisian series',
+  title: 'TunisiaFlicks: movies and TV shows',
   description: SITE_DESCRIPTION,
-  keywords: ['Movies', 'TV shows', 'Tunisian series', 'Ramadan series', 'Trailers', 'Top 10', 'مسلسلات تونسية', 'مسلسلات رمضان', 'TunisiaFlicks'],
+  keywords: ['Movies', 'TV shows', 'Trailers', 'Top 10', 'TunisiaFlicks'],
   authors: [{ name: 'TunisiaFlicks Team' }],
   creator: 'TunisiaFlicks Team',
   publisher: 'TunisiaFlicks',
@@ -68,7 +68,7 @@ const baseMetadata: Metadata = {
   // The defaults below are for pages that set nothing; no twitter title or description, or X
   // would show the site's on every page that only sets Open Graph ones.
   openGraph: {
-    title: 'TunisiaFlicks: movies, TV shows and Tunisian series',
+    title: 'TunisiaFlicks: movies and TV shows',
     description: SITE_DESCRIPTION,
     siteName: 'TunisiaFlicks',
     images: [{ url: '/og/home', width: 1200, height: 630, alt: 'TunisiaFlicks' }],
