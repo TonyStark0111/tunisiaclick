@@ -10,7 +10,6 @@ import clientPromise from '@/src/lib/mongodb'
 import { tmdbFetchSafe, tmdbLanguage } from '@/src/lib/tmdb'
 import { activeMoments, momentItems, sequelRow } from '@/src/lib/moments'
 import { getPickOfTheDay } from '@/src/lib/pick-of-the-day'
-import { getTunisianTitles } from '@/src/lib/tunisian'
 import { addDays, tunisDate } from '@/src/lib/hijri'
 import { shuffled } from '@/src/lib/seed'
 import { withTimeout } from '@/src/lib/with-timeout'
@@ -79,7 +78,7 @@ async function newThisWeek(locale: Locale, t: Translate, since: string, until: s
 }
 
 async function newTunisian(t: Translate, until: Date): Promise<DigestTile[]> {
-  const titles = await getTunisianTitles()
+  const titles: any[] = []
   if (!titles) return []
   const from = until.getTime() - 14 * DAY
   return titles
@@ -90,7 +89,7 @@ async function newTunisian(t: Translate, until: Date): Promise<DigestTile[]> {
     .slice(0, KEEP)
     .map((title) => ({
       title: title.title,
-      href: `/tunisian/${title.slug}`,
+      href: `/`,
       poster: title.poster && /^https:\/\//i.test(title.poster) ? title.poster : null,
       line: t(title.kind === 'series' ? 'digest.line.series' : 'digest.line.film'),
     }))

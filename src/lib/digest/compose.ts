@@ -84,7 +84,6 @@ export function composeDigest({ t, name, shared, personal, extra = [] }: {
     { type: 'rows', id: 'continue', title: t('digest.section.continue'), rows: personal.continueWatching, href: '/history' },
     { type: 'posters', id: 'picks', title: t('digest.section.picksFor', { name: isolate(name) }), tiles: personal.picks },
     { type: 'posters', id: 'new', title: t('digest.section.new'), tiles: shared.newThisWeek },
-    { type: 'posters', id: 'tunisian', title: t('digest.section.tunisian'), tiles: shared.tunisian, href: '/tunisian' },
     ...(shared.moment ? [{ type: 'posters' as const, id: 'moment', title: shared.moment.title, tiles: shared.moment.tiles, href: shared.moment.href, accent: shared.moment.accent }] : []),
     ...(shared.sequels ? [{ type: 'posters' as const, id: 'sequels', title: t('digest.section.sequels', { title: isolate(shared.sequels.title) }), tiles: shared.sequels.tiles }] : []),
     ...extra,
