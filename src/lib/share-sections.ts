@@ -3,8 +3,6 @@
 // the preview changes with the trends and the seasons on its own.
 import { renderSectionCard, type SectionCard } from '@/src/lib/og'
 import { tmdbFetchSafe } from '@/src/lib/tmdb'
-import { getTunisianTitles } from '@/src/lib/tunisian'
-import { arabRamadanSeries, ramadanSeasons, tunisianRamadanSeries } from '@/src/lib/ramadan'
 import { dramaShareSection } from '@/src/lib/dramas'
 import { arabCinemaShareSection } from '@/src/lib/arab-cinema'
 
@@ -64,14 +62,14 @@ export const SHARE_SECTIONS = {
     subtitle: 'Series and films made in Tunisia, from Ramadan favourites to the latest releases.',
     cta: 'Watch now',
     emblem: 'tunisia',
-    posters: async () => ((await getTunisianTitles()) ?? []).flatMap((title) => (title.poster?.startsWith('http') ? [title.poster] : [])).slice(0, 12),
+    posters: async () => [],
   },
   'tunisian-tv': {
     title: 'Tunisian TV',
     subtitle: "The official channels' series, shows and live streams, in one place. Free, straight from YouTube.",
     cta: 'Watch now',
     emblem: 'tunisia',
-    posters: async () => ((await getTunisianTitles()) ?? []).flatMap((title) => (title.poster?.startsWith('http') ? [title.poster] : [])).slice(12, 24),
+    posters: async () => [],
   },
   cinema: {
     title: 'Tunisian cinema',
@@ -80,19 +78,7 @@ export const SHARE_SECTIONS = {
     emblem: 'tunisia',
     posters: () => list('discover/movie', { with_origin_country: 'TN', sort_by: 'popularity.desc' }),
   },
-  ramadan: {
-    title: 'Ramadan series',
-    subtitle: "The biggest TV season of the year: this Ramadan's series, and the Tunisian and Arab hits of past Ramadans.",
-    cta: 'Watch now',
-    emblem: 'ramadan',
-    posters: async () => {
-      // This Ramadan's series once it has started, otherwise the last one's.
-      const latest = ramadanSeasons(new Date(), 1)[0]
-      if (!latest) return []
-      const [tunisian, arab] = await Promise.all([tunisianRamadanSeries(latest, 'en', false), arabRamadanSeries(latest, 'en', false)])
-      return posters([...tunisian, ...arab])
-    },
-  },
+  // ramadan section removed
   wrapped: {
     title: 'Your year in film',
     subtitle: 'Your titles, hours, top genres and watching personality, as a story to share.',

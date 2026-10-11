@@ -69,7 +69,6 @@ const RAMADAN_LEAD_DAYS = 45
 
 /** The ids of moments.ts this file knows about, with the parts of their rules it relies on. */
 export const SEASON_MOMENTS = {
-  'ramadan': { weight: 100, kids: true, accent: LANTERN, href: '/ramadan' },
   'eid-al-fitr': { weight: 95, kids: true, accent: LANTERN, href: '/moments/eid-al-fitr' },
   'eid-al-adha': { weight: 95, kids: true, accent: LANTERN, href: '/moments/eid-al-adha' },
   'independence-day': { weight: 80, kids: false, accent: FLAG, href: '/moments/independence-day' },
