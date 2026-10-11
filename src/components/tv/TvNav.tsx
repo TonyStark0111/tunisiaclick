@@ -8,14 +8,12 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Clapperboard, Drama, House, Library, LogIn, RadioTower, Search, Settings, Tv } from 'lucide-react'
-import TunisiaMark from '@/src/components/tunisian/TunisiaMark'
 import ProfileAvatar from '@/src/components/profiles/ProfileAvatar'
 import { useT } from '@/src/components/I18nProvider'
 import { useProfiles } from '@/src/hooks/use-profiles'
 import { activeHref, visibleItems, type NavItem } from '@/src/components/shell/nav'
 import { cn } from '@/src/lib/utils'
 
-const TunisiaIcon = ({ className }: { className?: string }) => <TunisiaMark className={className} />
 
 /** TV mode's places (the NavItem shape of src/components/shell/nav.tsx, Kids rules included). */
 export const TV_NAV: NavItem[] = [
@@ -23,8 +21,6 @@ export const TV_NAV: NavItem[] = [
   { href: '/search', label: 'nav.search', icon: Search },
   { href: '/discover', label: 'tvMode.nav.movies', icon: Clapperboard },
   { href: '/tv', label: 'nav.tvShows', icon: Tv },
-  { href: '/tunisian', label: 'nav.tunisian', icon: TunisiaIcon, kidsHref: '/tunisian/cinema' },
-  { href: '/tunisian/tv', label: 'tvMode.nav.tunisianTv', icon: RadioTower, grownUp: true },
   { href: '/dramas', label: 'tvMode.nav.dramas', icon: Drama, grownUp: true },
   { href: '/saved', label: 'tvMode.nav.library', icon: Library, match: ['/favorites', '/history', '/lists'] },
   { href: '/profile', label: 'nav.settings', icon: Settings },
