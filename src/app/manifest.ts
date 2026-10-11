@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: '/',
     name: 'TunisiaFlicks',
     short_name: 'TunisiaFlicks',
-    description: 'Movies, TV shows and Tunisian series in one place.',
+    description: 'Movies and TV shows in one place.',
     start_url: '/',
     scope: '/',
     display: 'standalone',
