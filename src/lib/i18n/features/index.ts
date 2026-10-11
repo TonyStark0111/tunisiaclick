@@ -16,7 +16,7 @@ import { accountSecurity } from './account-security'
 import { apps } from './apps'
 import { desktop } from './desktop'
 
-const FEATURES = [aiSearch, social, movieNight, sharedLists, badges, dramaHubs, arabMap seasons, tvMode, detailExtras, digest, languages, accountSecurity, apps, desktop]
+const FEATURES = [aiSearch, social, movieNight, sharedLists, badges, dramaHubs, arabMap, seasons, tvMode, detailExtras, digest, languages, accountSecurity, apps, desktop]
 
 export type FeatureKey =
   | keyof typeof aiSearch.en
