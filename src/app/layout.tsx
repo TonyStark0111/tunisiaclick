@@ -51,12 +51,12 @@ const display = Bricolage_Grotesque({ subsets: ['latin'], axes: ['opsz', 'wdth']
 const displayArabic = Alexandria({ subsets: ['arabic'], variable: '--font-display-ar', display: 'swap', preload: false });
 
 const baseMetadata: Metadata = {
-  title: 'TunisiaFlicks: movies and TV shows',
+  title: 'XeonFlix: movies and TV shows',
   description: SITE_DESCRIPTION,
   keywords: ['Movies', 'TV shows', 'Trailers', 'Top 10', 'TunisiaFlicks'],
   authors: [{ name: 'TunisiaFlicks Team' }],
   creator: 'TunisiaFlicks Team',
-  publisher: 'TunisiaFlicks',
+  publisher: 'XeonFlix',
   formatDetection: {
     email: false,
     address: false,
@@ -70,7 +70,7 @@ const baseMetadata: Metadata = {
   openGraph: {
     title: 'TunisiaFlicks: movies and TV shows',
     description: SITE_DESCRIPTION,
-    siteName: 'TunisiaFlicks',
+    siteName: 'XeonFlix',
     images: [{ url: '/og/home', width: 1200, height: 630, alt: 'TunisiaFlicks' }],
     locale: 'en_US',
     alternateLocale: ['ar_TN'],
