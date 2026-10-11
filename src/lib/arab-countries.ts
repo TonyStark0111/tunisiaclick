@@ -30,7 +30,7 @@ export function arabCountryOf(o?: readonly string[] | null): ArabCountryCode | n
 
 /** A country's page. Tunisia has its own cinema page. */
 export function arabCountryHref(c: ArabCountryCode): string {
-  return c === 'tn' ? '/tunisian/cinema' : `/arab-cinema/${c}`
+  return `/arab-cinema/${c}`
 }
 
 /** Arabic script UI languages ('ar', 'ar-TN', and the site's Derja 'tn'): Intl knows them as Arabic. */
