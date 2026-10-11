@@ -6,14 +6,10 @@ import {
   Bookmark, CalendarClock, CalendarHeart, Clapperboard, Compass, Dices, Flag, Heart, HeartHandshake, History, House,
   Library, ListVideo, Map as MapIcon, MoonStar, Popcorn, Search, Trophy, Tv, UsersRound, type LucideIcon,
 } from 'lucide-react'
-import TunisiaMark from '@/src/components/tunisian/TunisiaMark'
 import type { TKey } from '@/src/lib/i18n'
 import type { SeasonalIconKey, SeasonalNav } from '@/src/lib/seasons'
 
 type Icon = LucideIcon | ((props: { className?: string, strokeWidth?: number }) => JSX.Element)
-
-// The crescent and star stands for "Tunisian" (an inline SVG: no icon pack to load).
-const TunisiaIcon = ({ className }: { className?: string }) => <TunisiaMark className={className} />
 
 export type NavItem = {
   href: string
@@ -41,9 +37,8 @@ export const BROWSE: NavItem[] = [
   { href: '/surprise', label: 'nav.surprise', icon: Dices, plain: true },
 ]
 
-/** The world's cinema and TV: Tunisian, then each hub, then the seasonal slot (see Rail). */
+/** The world's cinema and TV: hubs, then the seasonal slot (see Rail). */
 export const WORLD: NavItem[] = [
-  { href: '/tunisian', label: 'nav.tunisian', icon: TunisiaIcon, kidsHref: '/tunisian/cinema' },
   { href: '/dramas', label: 'dramas.nav', icon: Drama, grownUp: true },
   // Kids get a dimmed, filtered map (no grownUp).
   { href: '/arab-cinema', label: 'arabMap.nav', icon: MapIcon },
