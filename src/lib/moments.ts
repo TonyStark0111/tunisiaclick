@@ -12,8 +12,7 @@
 import { unstable_cache } from 'next/cache'
 import { tmdbFetchSafe, tmdbLanguage } from '@/src/lib/tmdb'
 import { filterKidSafe, kidsDiscoverParams } from '@/src/lib/kids'
-import { addDays, daysBetween, DHU_AL_HIJJAH, hijriPeriod, nextHijriPeriod, ramadanOf, SHAWWAL, tunisDate } from '@/src/lib/hijri'
-import { arabRamadanSeries, ramadanSeasons, tunisianRamadanSeries } from '@/src/lib/ramadan'
+import { addDays, daysBetween, DHU_AL_HIJJAH, hijriPeriod, nextHijriPeriod, SHAWWAL, tunisDate } from '@/src/lib/hijri'
 import { hash, shuffled } from '@/src/lib/seed'
 import type { Locale } from '@/src/lib/i18n'
 
@@ -22,7 +21,7 @@ type Params = Record<string, string | number | boolean | undefined>
 type Window = { start: string, end: string }
 
 export type MomentId =
-  | 'ramadan' | 'eid-al-fitr' | 'eid-al-adha'
+  | 'eid-al-fitr' | 'eid-al-adha'
   | 'independence-day' | 'republic-day' | 'womens-day'
   | 'new-year' | 'valentines' | 'awards' | 'winter' | 'summer' | 'back-to-school' | 'halloween' | 'christmas'
 
@@ -91,24 +90,6 @@ const eidMovies: Fill = {
 }
 
 const RULES: Rule[] = [
-  {
-    id: 'ramadan', weight: 100, kids: true, accent: '245 190 80', href: '/ramadan',
-    // The hub's banner shows from 45 days before (see RamadanBanner).
-    window: (today) => {
-      const period = nextHijriPeriod(today, ramadanOf)
-      const start = addDays(period.start, -45)
-      return today >= start ? { start, end: period.end } : null
-    },
-    fill: {
-      type: 'custom',
-      load: async ({ locale, kids }) => {
-        const latest = ramadanSeasons(new Date(), 1)[0]
-        if (!latest) return []
-        const [tunisian, arab] = await Promise.all([tunisianRamadanSeries(latest, locale, kids), arabRamadanSeries(latest, locale, kids)])
-        return [...tunisian, ...arab]
-      },
-    },
-  },
   { id: 'eid-al-fitr', weight: 95, kids: true, accent: '245 190 80', window: hijriYearly(SHAWWAL, 1, 3, 2), fill: eidMovies },
   { id: 'eid-al-adha', weight: 95, kids: true, accent: '245 190 80', window: hijriYearly(DHU_AL_HIJJAH, 10, 4, 2), fill: eidMovies },
   // Tunisia's national days (the dates are fixed by law).
