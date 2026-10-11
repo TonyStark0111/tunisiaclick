@@ -49,7 +49,7 @@ export const fr: Record<CoreKey, string> = {
 
   // Navbar / sidebar
   'nav.home': 'Accueil',
-  'nav.homeAria': 'Accueil de TunisiaFlicks',
+  'nav.homeAria': 'Accueil de XeonFlix',
   'nav.movies': 'Films',
   'nav.tvShows': 'Séries',
   'nav.discover': 'Découvrir',
