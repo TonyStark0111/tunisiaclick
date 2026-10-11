@@ -6,7 +6,6 @@ import { isSmartTvBrowser } from '@/src/lib/device-platform';
 import { profilePageGate } from '@/src/app/u/_lib/middleware-gate';
 import { isArabCountry } from '@/src/lib/arab-countries';
 import { isHubId } from '@/src/lib/dramas-config';
-import { channelBySlug } from '@/src/lib/tunisian-tv/channels';
 
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
@@ -69,16 +68,14 @@ const notFoundPage = (req: NextRequest) => NextResponse.rewrite(new URL('/404', 
  * Deeper paths (share cards, a channel's avatar) are left to their own routes.
  */
 function closedSetStatus(req: NextRequest): NextResponse | null {
-  const match = /^\/(arab-cinema|dramas|tunisian\/tv)\/([^/]+)\/?$/.exec(req.nextUrl.pathname);
+  const match = /^\/(arab-cinema|dramas)\/([^/]+)\/?$/.exec(req.nextUrl.pathname);
   if (!match) return null;
   const [, section, segment] = match;
   // Next's own files next to the pages (share cards).
   if (/^(opengraph|twitter)-image/.test(segment)) return null;
   if (section === 'dramas') return isHubId(segment) ? null : notFoundPage(req);
-  if (section === 'tunisian/tv') return channelBySlug(segment) ? null : notFoundPage(req);
-
   const code = segment.toLowerCase();
-  if (code === 'tn') return NextResponse.redirect(new URL('/tunisian/cinema', req.url), 308);
+  if (code === 'tn') return null;
   if (!isArabCountry(code)) return notFoundPage(req);
   if (code === segment) return null;
   const url = req.nextUrl.clone();
@@ -92,7 +89,7 @@ export async function middleware(req: NextRequest) {
   if (pathname === '/') return switchTvMode(req) ?? NextResponse.next();
   // The real 404, 308 and 302 of people's pages (see src/app/u/_lib/gate.ts).
   if (pathname === '/me' || pathname.startsWith('/u/')) return (await profilePageGate(req)) ?? NextResponse.next();
-  if (/^\/(arab-cinema|dramas|tunisian\/tv)\//.test(pathname)) return closedSetStatus(req) ?? NextResponse.next();
+  if (/^\/(arab-cinema|dramas)\//.test(pathname)) return closedSetStatus(req) ?? NextResponse.next();
   if (!AUTH_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))) return NextResponse.next();
 
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -117,5 +114,5 @@ export async function middleware(req: NextRequest) {
 export const config = {
   // '/' only for the ?tv= switch (no session lookup there). `:path*`, not a lone `:param` at the end:
   // Next 14.2 compiles '/u/:handle' to a pattern that only matches '/u'.
-  matcher: ['/', '/dashboard', '/login', '/signup', '/profiles', '/me', '/u/:path*', '/arab-cinema/:path*', '/dramas/:path*', '/tunisian/tv/:path*'],
+  matcher: ['/', '/dashboard', '/login', '/signup', '/profiles', '/me', '/u/:path*', '/arab-cinema/:path*', '/dramas/:path*'],
 };
