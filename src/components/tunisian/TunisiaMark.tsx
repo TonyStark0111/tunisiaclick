@@ -1,18 +1,9 @@
-import { useId } from 'react'
-
-/** The crescent and star of the Tunisian flag, in the current colour (decoration). */
+/** Simple crescent-and-star mark for Tunisia (inline SVG). */
 export default function TunisiaMark({ className }: { className?: string }) {
-  const id = useId()
   return (
-    <svg viewBox="0 0 100 100" aria-hidden className={className}>
-      <defs>
-        <mask id={`crescent-${id}`}>
-          <rect width="100" height="100" fill="white" />
-          <circle cx="57" cy="50" r="20" fill="black" />
-        </mask>
-      </defs>
-      <circle cx="50" cy="50" r="25" fill="currentColor" mask={`url(#crescent-${id})`} />
-      <polygon fill="currentColor" points="49.00,50.00 57.28,47.30 57.29,38.59 62.42,45.63 70.71,42.95 65.60,50.00 70.71,57.05 62.42,54.37 57.29,61.41 57.28,52.70" />
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm0 2a6 6 0 0 1 0 12 5 5 0 0 0 0-12z" />
+      <path d="M14.5 9.5l.8 1.6 1.8.3-1.3 1.3.3 1.8-1.6-.8-1.6.8.3-1.8-1.3-1.3 1.8-.3.8-1.6z" />
     </svg>
   )
 }
