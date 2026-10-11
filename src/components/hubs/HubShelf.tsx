@@ -13,7 +13,6 @@ import { withTimeout } from '@/src/lib/with-timeout'
 import { ARAB_TMDB_COUNTRIES } from '@/src/lib/arab-countries'
 import { hubPicture } from '@/src/lib/dramas'
 import { HUBS, hubPath } from '@/src/lib/dramas-config'
-import { getTunisianTvShelfTile } from '@/src/lib/tunisian-tv/read'
 import type { Locale } from '@/src/lib/i18n'
 
 const DAY = 86400
@@ -61,16 +60,11 @@ export default async function HubShelf({ kids }: { kids: boolean }): Promise<JSX
   if (kids) return null
   const t = getT()
   const locale = getLocale()
-  const [pictures, tv] = await Promise.all([
-    withTimeout(Promise.all([tunisianPicture(locale), hubPicture('turkish'), hubPicture('korean'), arabPick(locale)]), 4000, null),
-    withTimeout(getTunisianTvShelfTile(), 4000, { live: false, picture: null }),
-  ])
-  const [tunisian, turkish, korean, arab] = pictures ?? [null, null, null, null]
+  const pictures = await withTimeout(Promise.all([hubPicture('turkish'), hubPicture('korean'), arabPick(locale)]), 4000, null)
+  const [turkish, korean, arab] = pictures ?? [null, null, null]
   const backdrop = (path: string | null) => (path ? { kind: 'tmdb-backdrop' as const, src: path } : null)
 
   const doors = [
-    { key: 'tunisian', href: '/tunisian', title: t('dramas.shelf.tunisian'), line: t('dramas.shelf.tunisianLine'), picture: backdrop(tunisian), accent: TUNISIAN_RED },
-    { key: 'tunisian-tv', href: '/tunisian/tv', title: t('dramas.shelf.tunisianTv'), line: t('dramas.shelf.tunisianTvLine'), picture: { kind: 'url' as const, src: tv.picture ?? TUNISIAN_TV_PICTURE }, accent: TUNISIAN_RED, badge: tv.live ? <LiveDot label={t('ttv.door.liveLabel')} /> : undefined },
     { key: 'turkish', href: hubPath('turkish'), title: t('dramas.turkish.title'), line: t('dramas.turkish.line'), picture: backdrop(turkish), accent: HUBS.turkish.accent },
     { key: 'korean', href: hubPath('korean'), title: t('dramas.korean.title'), line: t('dramas.korean.line'), picture: backdrop(korean), accent: HUBS.korean.accent },
     { key: 'arab', href: '/arab-cinema', title: t('dramas.shelf.arab'), line: arab ? t('dramas.shelf.arabLine', { title: arab.title }) : undefined, picture: backdrop(arab?.backdrop ?? null), accent: ARAB_SAND },
