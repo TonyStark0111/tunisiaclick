@@ -60,7 +60,7 @@ export default function Footer({ kids = false }: { kids?: boolean }) {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" aria-label={t('nav.homeAria')} className="inline-flex items-center gap-3">
               <Image src="/A.svg" alt="" width={36} height={31} className="h-8 w-auto drop-shadow-[0_0_18px_rgb(255_16_0/0.4)]" />
-              <Image src="/XeonFlix.svg" alt="XeonFlix" width={150} height={20} className="h-[18px] w-auto" />
+              <Image src="/TunisiaFlicks.svg" alt="TunisiaFlicks" width={150} height={20} className="h-[18px] w-auto" />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed">{t('footer.tagline')}</p>
           </div>
