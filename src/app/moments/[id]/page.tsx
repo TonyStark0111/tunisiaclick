@@ -37,7 +37,6 @@ export function generateMetadata({ params }: Props) {
 export default async function MomentPage({ params }: Props) {
   if (!isMomentId(params.id)) notFound()
   // Ramadan has its own hub.
-  if (params.id === 'ramadan') redirect('/ramadan')
   const kids = await getKidsMode()
   if (kids && !momentForKids(params.id)) return <KidsBlocked />
 
