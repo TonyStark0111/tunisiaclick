@@ -38,7 +38,6 @@ type Props = { params: { country: string } }
  */
 function countryFrom(param: string): ArabCountryCode {
   const lower = param.toLowerCase()
-  if (lower === 'tn') permanentRedirect('/tunisian/cinema')
   if (!isArabCountry(lower)) notFound()
   if (lower !== param) permanentRedirect(`/arab-cinema/${lower}`)
   return lower
