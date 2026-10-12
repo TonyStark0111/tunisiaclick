@@ -170,36 +170,12 @@ async function shelfPool(hub: HubId, shelf: Exclude<DataShelf, 'new-episodes' | 
       const ids = await resolveKeywords(config.keywords.historical)
       return ids.length ? discover('tv', { ...series, ...rated, with_keywords: ids.join('|') }, pages) : []
     }
-    case 'fantasy': {
-      const ids = await resolveKeywords(config.keywords.fantasy)
-      // TV Sci-Fi & Fantasy genre as fallback
-      if (ids.length) return discover('tv', { ...series, ...rated, with_keywords: ids.join('|') }, pages)
-      return discover('tv', { ...series, ...rated, with_genres: '10765' }, pages)
-    }
-    case 'romcom': {
-      const ids = await resolveKeywords(config.keywords.romcom)
-      return ids.length ? discover('tv', { ...series, ...rated, with_keywords: ids.join('|') }, pages) : []
-    }
-    case 'crime-mystery': {
-      const ids = await resolveKeywords(config.keywords['crime-mystery'])
-      if (ids.length) return discover('tv', { ...series, ...rated, with_keywords: ids.join('|') }, pages)
+    case 'thrillers':
       return discover('tv', { ...series, ...rated, with_genres: '80|9648' }, pages)
-    }
-    case 'action-adventure': {
-      const ids = await resolveKeywords(config.keywords['action-adventure'])
-      if (ids.length) return discover('tv', { ...series, ...rated, with_keywords: ids.join('|') }, pages)
-      return discover('tv', { ...series, ...rated, with_genres: '10759' }, pages)
-    }
-    case 'horror-comedy': {
-      const ids = await resolveKeywords(config.keywords['horror-comedy'])
-      return ids.length ? discover('tv', { ...series, ...rated, with_keywords: ids.join('|') }, pages) : []
-    }
     case 'short':
       return shortSeries(hub, language, pages)
     case 'films':
       return discover('movie', { ...movieBaseParams(hub, language), sort_by: 'popularity.desc', 'vote_count.gte': config.votes.movie }, pages)
-    case 'series':
-      return discover('tv', { ...series, ...rated, sort_by: 'popularity.desc' }, pages)
   }
 }
 
