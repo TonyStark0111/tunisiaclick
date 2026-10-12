@@ -17,7 +17,20 @@ export const generateMetadata = () => {
   return pageMetadata({ title: t('discover.title'), description: t('discover.subtitle'), path: '/discover', card: 'discover' })
 }
 
-type SearchParams = { page?: string, type?: string, genre?: string, year?: string, rating?: string, sort?: string, runtime?: string, family?: string }
+type SearchParams = {
+  page?: string
+  type?: string
+  genre?: string
+  year?: string
+  rating?: string
+  sort?: string
+  runtime?: string
+  family?: string
+  language?: string
+}
+
+/** Allowed ISO 639-1 codes for the original-language filter. */
+const LANG_CODES = new Set(['en', 'fr', 'ar', 'ja', 'ko', 'es', 'de', 'it', 'hi', 'tr', 'zh', 'pt'])
 
 /** Runtime filter (episode length for TV): under 90 min, under 2 h, or a 2.5 h+ epic. */
 function runtimeParams(kind: 'movie' | 'tv', runtime?: string): Record<string, number> {
@@ -40,12 +53,15 @@ function parseFilters(searchParams: SearchParams) {
     sort: ['top', 'newest'].includes(searchParams.sort ?? '') ? searchParams.sort! : 'popular',
     runtime: ['90', '120', 'epic'].includes(searchParams.runtime ?? '') ? searchParams.runtime : undefined,
     family: searchParams.family === '1' ? '1' : undefined,
+    language: LANG_CODES.has(searchParams.language ?? '') ? searchParams.language : undefined,
   }
 }
 
 export default async function DiscoverPage({ searchParams }: { searchParams: SearchParams }) {
   const page = parsePage(searchParams.page)
-  const kind = searchParams.type === 'tv' ? 'tv' : 'movie'
+  // Anime is a special TV-based catalogue (Japanese Animation). Media kind stays 'tv' for cards/links.
+  const isAnime = searchParams.type === 'anime'
+  const kind: 'movie' | 'tv' = searchParams.type === 'tv' || isAnime ? 'tv' : 'movie'
   const filters = parseFilters(searchParams)
   const locale = getLocale()
   const t = createTranslator(locale)
@@ -60,10 +76,16 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Sea
         ? { sort_by: `${dateField}.desc`, [`${dateField}.lte`]: today, 'vote_count.gte': 20 }
         : { sort_by: 'popularity.desc', 'vote_count.gte': 100 }
 
+  // Anime: always Japanese + Animation (genre 16). Extra user genre is AND-ed when present.
+  // Language filter is used for Movies/TV; Anime tab keeps Japanese.
+  const animeGenre = filters.genre && filters.genre !== '16' ? `16,${filters.genre}` : '16'
+  const originalLanguage = isAnime ? 'ja' : filters.language
+
   const params = {
     ...sortParams,
     include_adult: false,
-    with_genres: filters.genre,
+    with_genres: isAnime ? animeGenre : filters.genre,
+    ...(originalLanguage ? { with_original_language: originalLanguage } : {}),
     ...(filters.year ? { [kind === 'movie' ? 'primary_release_year' : 'first_air_date_year']: filters.year } : {}),
     'vote_average.gte': filters.rating,
     // "I have 90 minutes": TMDB lists unknown runtimes as 0, so short filters also need a floor.
@@ -86,8 +108,9 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Sea
         <SegmentedLinks
           label={t('browse.typeSwitch')}
           items={[
-            { href: '/discover', label: t('common.movies'), active: kind === 'movie' },
-            { href: '/discover?type=tv', label: t('common.tvShows'), active: kind === 'tv' },
+            { href: '/discover', label: t('common.movies'), active: !isAnime && kind === 'movie' },
+            { href: '/discover?type=tv', label: t('common.tvShows'), active: !isAnime && kind === 'tv' },
+            { href: '/discover?type=anime', label: t('common.anime'), active: isAnime },
           ]}
         />
       </PageHeader>
