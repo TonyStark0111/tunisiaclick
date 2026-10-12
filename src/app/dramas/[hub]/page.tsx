@@ -200,7 +200,7 @@ export default async function DramaHubPage({ params, searchParams }: Props) {
         <Suspense fallback={<RowSkeleton />}>
           <ShelfRow hub={hub} shelf="favourites" title={rowTitle(t, hub, 'favourites')} />
         </Suspense>
-        {(['romance', 'historical', 'fantasy', 'romcom', 'crime-mystery', 'action-adventure', 'horror-comedy', 'short', 'films', 'series'] as const).map((id) => (
+        {(['romance', 'historical', 'thrillers', 'short', 'films'] as const).map((id) => (
           <Suspense key={id} fallback={<RowSkeleton />}>
             <ShelfRow hub={hub} shelf={id} title={rowTitle(t, hub, id)} seeAll={id} />
           </Suspense>
