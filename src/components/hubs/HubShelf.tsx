@@ -1,6 +1,6 @@
-// Home slot 12, "Beyond Hollywood": one landscape picture door per hub (Tunisian, Tunisian TV,
-// Turkish and Korean dramas, Arab cinema). Null for Kids. Mounted in src/app/page.tsx inside
-// Suspense; its data is bounded (4s), and each picture is one cached request.
+// Home slot 12, "Beyond Hollywood": one landscape picture door per hub (Turkish, Korean, Chinese
+// and Thai dramas, Arab cinema). Null for Kids. Mounted in src/app/page.tsx inside Suspense; its
+// data is bounded (4s), and each picture is one cached request.
 import HubTile from '@/src/components/hubs/HubTile'
 import LiveDot from '@/src/components/ui/live-dot'
 import { Row, SectionHeader } from '@/src/components/rows/Row'
@@ -16,7 +16,6 @@ import { HUBS, hubPath } from '@/src/lib/dramas-config'
 import type { Locale } from '@/src/lib/i18n'
 
 const DAY = 86400
-const TUNISIAN_RED = '231 0 19'
 const ARAB_SAND = '200 162 122'
 
 /**
@@ -60,14 +59,19 @@ export default async function HubShelf({ kids }: { kids: boolean }): Promise<JSX
   if (kids) return null
   const t = getT()
   const locale = getLocale()
-  const pictures = await withTimeout(Promise.all([hubPicture('turkish'), hubPicture('korean'), hubPicture('chinese'), arabPick(locale)]), 4000, null)
-  const [turkish, korean, chinese, arab] = pictures ?? [null, null, null, null]
+  const pictures = await withTimeout(
+    Promise.all([hubPicture('turkish'), hubPicture('korean'), hubPicture('chinese'), hubPicture('thai'), arabPick(locale)]),
+    4000,
+    null,
+  )
+  const [turkish, korean, chinese, thai, arab] = pictures ?? [null, null, null, null, null]
   const backdrop = (path: string | null) => (path ? { kind: 'tmdb-backdrop' as const, src: path } : null)
 
   const doors = [
     { key: 'turkish', href: hubPath('turkish'), title: t('dramas.turkish.title'), line: t('dramas.turkish.line'), picture: backdrop(turkish), accent: HUBS.turkish.accent },
     { key: 'korean', href: hubPath('korean'), title: t('dramas.korean.title'), line: t('dramas.korean.line'), picture: backdrop(korean), accent: HUBS.korean.accent },
     { key: 'chinese', href: hubPath('chinese'), title: t('dramas.chinese.title'), line: t('dramas.chinese.line'), picture: backdrop(chinese), accent: HUBS.chinese.accent },
+    { key: 'thai', href: hubPath('thai'), title: t('dramas.thai.title'), line: t('dramas.thai.line'), picture: backdrop(thai), accent: HUBS.thai.accent },
     { key: 'arab', href: '/arab-cinema', title: t('dramas.shelf.arab'), line: arab ? t('dramas.shelf.arabLine', { title: arab.title }) : undefined, picture: backdrop(arab?.backdrop ?? null), accent: ARAB_SAND },
   ]
   const title = t('dramas.shelf.title')
