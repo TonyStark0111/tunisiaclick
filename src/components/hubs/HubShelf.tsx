@@ -60,16 +60,16 @@ export default async function HubShelf({ kids }: { kids: boolean }): Promise<JSX
   if (kids) return null
   const t = getT()
   const locale = getLocale()
-  const pictures = await withTimeout(Promise.all([hubPicture('turkish'), hubPicture('korean'), arabPick(locale)]), 4000, null)
-  const [turkish, korean, arab] = pictures ?? [null, null, null]
+  const pictures = await withTimeout(Promise.all([hubPicture('turkish'), hubPicture('korean'), hubPicture('chinese'), arabPick(locale)]), 4000, null)
+  const [turkish, korean, chinese, arab] = pictures ?? [null, null, null, null]
   const backdrop = (path: string | null) => (path ? { kind: 'tmdb-backdrop' as const, src: path } : null)
 
   const doors = [
     { key: 'turkish', href: hubPath('turkish'), title: t('dramas.turkish.title'), line: t('dramas.turkish.line'), picture: backdrop(turkish), accent: HUBS.turkish.accent },
     { key: 'korean', href: hubPath('korean'), title: t('dramas.korean.title'), line: t('dramas.korean.line'), picture: backdrop(korean), accent: HUBS.korean.accent },
+    { key: 'chinese', href: hubPath('chinese'), title: t('dramas.chinese.title'), line: t('dramas.chinese.line'), picture: backdrop(chinese), accent: HUBS.chinese.accent },
     { key: 'arab', href: '/arab-cinema', title: t('dramas.shelf.arab'), line: arab ? t('dramas.shelf.arabLine', { title: arab.title }) : undefined, picture: backdrop(arab?.backdrop ?? null), accent: ARAB_SAND },
   ]
-
   const title = t('dramas.shelf.title')
   return (
     <section aria-label={title} className="w-full">
