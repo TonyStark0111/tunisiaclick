@@ -21,25 +21,33 @@ export type DiscoverFilterValues = {
 const ANY = 'any'
 
 const SORTS: { value: string, label: TKey }[] = [
+  { value: 'default', label: 'filters.default' },
   { value: 'popular', label: 'filters.popular' },
-  { value: 'top', label: 'filters.top' },
   { value: 'newest', label: 'filters.newest' },
+  { value: 'top', label: 'filters.top' },
 ]
 
-/** Original-language filter (TMDB `with_original_language`). */
+/** Original-language filter (TMDB `with_original_language`). Order is intentional. */
 const LANGUAGES: { value: string, label: TKey }[] = [
   { value: 'en', label: 'filters.lang.en' },
-  { value: 'fr', label: 'filters.lang.fr' },
-  { value: 'ar', label: 'filters.lang.ar' },
-  { value: 'ja', label: 'filters.lang.ja' },
   { value: 'ko', label: 'filters.lang.ko' },
+  { value: 'ja', label: 'filters.lang.ja' },
+  { value: 'id', label: 'filters.lang.id' },
+  { value: 'th', label: 'filters.lang.th' },
+  { value: 'hi', label: 'filters.lang.hi' },
+  { value: 'ta', label: 'filters.lang.ta' },
+  { value: 'te', label: 'filters.lang.te' },
+  { value: 'ml', label: 'filters.lang.ml' },
+  { value: 'kn', label: 'filters.lang.kn' },
+  { value: 'zh', label: 'filters.lang.zh' },
   { value: 'es', label: 'filters.lang.es' },
+  { value: 'ru', label: 'filters.lang.ru' },
+  { value: 'fr', label: 'filters.lang.fr' },
   { value: 'de', label: 'filters.lang.de' },
   { value: 'it', label: 'filters.lang.it' },
-  { value: 'hi', label: 'filters.lang.hi' },
-  { value: 'tr', label: 'filters.lang.tr' },
-  { value: 'zh', label: 'filters.lang.zh' },
   { value: 'pt', label: 'filters.lang.pt' },
+  { value: 'bn', label: 'filters.lang.bn' },
+  { value: 'tr', label: 'filters.lang.tr' },
 ]
 
 const RATINGS = ['6', '7', '8']
@@ -107,16 +115,16 @@ export default function DiscoverFilters({ genres, values }: { genres: { id: numb
     values.runtime,
     values.family,
     values.language,
-  ].filter(Boolean).length + (values.sort !== 'popular' ? 1 : 0)
+  ].filter(Boolean).length + (values.sort !== 'default' ? 1 : 0)
 
   return (
     <div className="page-x" aria-busy={pending}>
       <div role="group" aria-label={t('filters.aria')} className="no-scrollbar -mx-[var(--gutter)] flex items-center gap-2 overflow-x-auto overflow-y-hidden px-[var(--gutter)] pb-1">
-        {/* 1. Sort: Most popular / Top rated / Newest */}
+        {/* 1. Sort: Default / Most popular / Newest / Top rated */}
         <FilterSelect
           label={t('filters.sortBy')}
           value={values.sort}
-          onChange={(value) => update('sort', value === 'popular' ? '' : value)}
+          onChange={(value) => update('sort', value === 'default' ? '' : value)}
           options={SORTS.map((option) => ({ value: option.value, label: t(option.label) }))}
         />
         <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-white/15" />
