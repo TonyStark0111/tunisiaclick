@@ -30,7 +30,10 @@ type SearchParams = {
 }
 
 /** Allowed ISO 639-1 codes for the original-language filter. */
-const LANG_CODES = new Set(['en', 'fr', 'ar', 'ja', 'ko', 'es', 'de', 'it', 'hi', 'tr', 'zh', 'pt'])
+const LANG_CODES = new Set([
+  'en', 'ko', 'ja', 'id', 'th', 'hi', 'ta', 'te', 'ml', 'kn',
+  'zh', 'es', 'ru', 'fr', 'de', 'it', 'pt', 'bn', 'tr',
+])
 
 /** Runtime filter (episode length for TV): under 90 min, under 2 h, or a 2.5 h+ epic. */
 function runtimeParams(kind: 'movie' | 'tv', runtime?: string): Record<string, number> {
@@ -46,11 +49,13 @@ function parseFilters(searchParams: SearchParams) {
   const currentYear = new Date().getFullYear()
   const year = /^\d{4}$/.test(searchParams.year ?? '') && Number(searchParams.year) >= 1900 && Number(searchParams.year) <= currentYear + 1
     ? searchParams.year : undefined
+  const sortRaw = searchParams.sort ?? ''
+  const sort = ['popular', 'newest', 'top'].includes(sortRaw) ? sortRaw : 'default'
   return {
     genre: /^\d+$/.test(searchParams.genre ?? '') ? searchParams.genre : undefined,
     year,
     rating: ['6', '7', '8'].includes(searchParams.rating ?? '') ? searchParams.rating : undefined,
-    sort: ['top', 'newest'].includes(searchParams.sort ?? '') ? searchParams.sort! : 'popular',
+    sort,
     runtime: ['90', '120', 'epic'].includes(searchParams.runtime ?? '') ? searchParams.runtime : undefined,
     family: searchParams.family === '1' ? '1' : undefined,
     language: LANG_CODES.has(searchParams.language ?? '') ? searchParams.language : undefined,
@@ -68,13 +73,17 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Sea
 
   const dateField = kind === 'movie' ? 'primary_release_date' : 'first_air_date'
   const today = new Date().toISOString().slice(0, 10)
+  // Default = original catalogue order (popularity, no ranking gate).
+  // Most popular = popularity with a vote-count floor. Newest / Top rated as before.
   const sortParams: Record<string, string | number> =
     filters.sort === 'top'
       ? { sort_by: 'vote_average.desc', 'vote_count.gte': 300 }
       : filters.sort === 'newest'
         // Newest *released*: TMDB otherwise lists far-future placeholders first.
         ? { sort_by: `${dateField}.desc`, [`${dateField}.lte`]: today, 'vote_count.gte': 20 }
-        : { sort_by: 'popularity.desc', 'vote_count.gte': 100 }
+        : filters.sort === 'popular'
+          ? { sort_by: 'popularity.desc', 'vote_count.gte': 100 }
+          : { sort_by: 'popularity.desc' }
 
   // Anime: always Japanese + Animation (genre 16). Extra user genre is AND-ed when present.
   // Language filter is used for Movies/TV; Anime tab keeps Japanese.
