@@ -1,4 +1,5 @@
-// Home slot 12, "Beyond Hollywood": one landscape picture door per hub (Turkish, Korean, Chinese, Thai and Indonesian dramas, Arab cinema). Null for Kids. Mounted in src/app/page.tsx inside Suspense; its
+// Home slot 12, "Beyond Hollywood": one landscape picture door per hub (Turkish, Korean, Chinese
+// and Thai dramas, Arab cinema). Null for Kids. Mounted in src/app/page.tsx inside Suspense; its
 // data is bounded (4s), and each picture is one cached request.
 import HubTile from '@/src/components/hubs/HubTile'
 import LiveDot from '@/src/components/ui/live-dot'
@@ -59,11 +60,11 @@ export default async function HubShelf({ kids }: { kids: boolean }): Promise<JSX
   const t = getT()
   const locale = getLocale()
   const pictures = await withTimeout(
-    Promise.all([hubPicture('turkish'), hubPicture('korean'), hubPicture('chinese'), hubPicture('thai'), hubPicture('indonesian'), arabPick(locale)]),
+    Promise.all([hubPicture('turkish'), hubPicture('korean'), hubPicture('chinese'), hubPicture('thai'), arabPick(locale)]),
     4000,
     null,
   )
-  const [turkish, korean, chinese, thai, indonesian, arab] = pictures ?? [null, null, null, null, null, null]
+  const [turkish, korean, chinese, thai, arab] = pictures ?? [null, null, null, null, null]
   const backdrop = (path: string | null) => (path ? { kind: 'tmdb-backdrop' as const, src: path } : null)
 
   const doors = [
@@ -71,7 +72,6 @@ export default async function HubShelf({ kids }: { kids: boolean }): Promise<JSX
     { key: 'korean', href: hubPath('korean'), title: t('dramas.korean.title'), line: t('dramas.korean.line'), picture: backdrop(korean), accent: HUBS.korean.accent },
     { key: 'chinese', href: hubPath('chinese'), title: t('dramas.chinese.title'), line: t('dramas.chinese.line'), picture: backdrop(chinese), accent: HUBS.chinese.accent },
     { key: 'thai', href: hubPath('thai'), title: t('dramas.thai.title'), line: t('dramas.thai.line'), picture: backdrop(thai), accent: HUBS.thai.accent },
-    { key: 'indonesian', href: hubPath('indonesian'), title: t('dramas.indonesian.title'), line: t('dramas.indonesian.line'), picture: backdrop(indonesian), accent: HUBS.indonesian.accent },
     { key: 'arab', href: '/arab-cinema', title: t('dramas.shelf.arab'), line: arab ? t('dramas.shelf.arabLine', { title: arab.title }) : undefined, picture: backdrop(arab?.backdrop ?? null), accent: ARAB_SAND },
   ]
   const title = t('dramas.shelf.title')
