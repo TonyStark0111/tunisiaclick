@@ -8,7 +8,15 @@ import { useT } from '@/src/components/I18nProvider'
 import { cn } from '@/src/lib/utils'
 import type { TKey } from '@/src/lib/i18n'
 
-export type DiscoverFilterValues = { genre?: string, year?: string, rating?: string, sort: string, runtime?: string, family?: string }
+export type DiscoverFilterValues = {
+  genre?: string
+  year?: string
+  rating?: string
+  sort: string
+  runtime?: string
+  family?: string
+  language?: string
+}
 
 const ANY = 'any'
 
@@ -16,6 +24,22 @@ const SORTS: { value: string, label: TKey }[] = [
   { value: 'popular', label: 'filters.popular' },
   { value: 'top', label: 'filters.top' },
   { value: 'newest', label: 'filters.newest' },
+]
+
+/** Original-language filter (TMDB `with_original_language`). */
+const LANGUAGES: { value: string, label: TKey }[] = [
+  { value: 'en', label: 'filters.lang.en' },
+  { value: 'fr', label: 'filters.lang.fr' },
+  { value: 'ar', label: 'filters.lang.ar' },
+  { value: 'ja', label: 'filters.lang.ja' },
+  { value: 'ko', label: 'filters.lang.ko' },
+  { value: 'es', label: 'filters.lang.es' },
+  { value: 'de', label: 'filters.lang.de' },
+  { value: 'it', label: 'filters.lang.it' },
+  { value: 'hi', label: 'filters.lang.hi' },
+  { value: 'tr', label: 'filters.lang.tr' },
+  { value: 'zh', label: 'filters.lang.zh' },
+  { value: 'pt', label: 'filters.lang.pt' },
 ]
 
 const RATINGS = ['6', '7', '8']
@@ -76,11 +100,19 @@ export default function DiscoverFilters({ genres, values }: { genres: { id: numb
     navigate(params)
   }
 
-  const active = [values.genre, values.year, values.rating, values.runtime, values.family].filter(Boolean).length + (values.sort !== 'popular' ? 1 : 0)
+  const active = [
+    values.genre,
+    values.year,
+    values.rating,
+    values.runtime,
+    values.family,
+    values.language,
+  ].filter(Boolean).length + (values.sort !== 'popular' ? 1 : 0)
 
   return (
     <div className="page-x" aria-busy={pending}>
       <div role="group" aria-label={t('filters.aria')} className="no-scrollbar -mx-[var(--gutter)] flex items-center gap-2 overflow-x-auto overflow-y-hidden px-[var(--gutter)] pb-1">
+        {/* 1. Sort: Most popular / Top rated / Newest */}
         <FilterSelect
           label={t('filters.sortBy')}
           value={values.sort}
@@ -88,6 +120,15 @@ export default function DiscoverFilters({ genres, values }: { genres: { id: numb
           options={SORTS.map((option) => ({ value: option.value, label: t(option.label) }))}
         />
         <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-white/15" />
+        {/* 2. Language */}
+        <FilterSelect
+          label={t('filters.language')}
+          anyLabel={t('filters.anyLanguage')}
+          value={values.language}
+          onChange={(value) => update('language', value)}
+          options={LANGUAGES.map((option) => ({ value: option.value, label: t(option.label) }))}
+        />
+        {/* 3. Genre */}
         <FilterSelect
           label={t('filters.genre')}
           anyLabel={t('filters.allGenres')}
