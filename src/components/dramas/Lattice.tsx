@@ -65,8 +65,40 @@ export function LatticeMark({ className }: { className?: string }) {
   )
 }
 
-export function HubWatermark({ kind, className }: { kind: 'kafes' | 'changsal' | 'lattice', className?: string }) {
+/**
+ * A Thai temple window: the pointed-arch niche of a wat, filled with a diamond lattice, crowned by
+ * a chofa — the horn-like finial on a Thai temple roof. Thailand's silhouette, not China's.
+ */
+export function ThaiMark({ className }: { className?: string }) {
+  const id = useId()
+  const arch = 'M16 98 V48 C16 26 30 12 50 6 C70 12 84 26 84 48 V98 Z'
+  const diamonds: string[] = []
+  for (let y = 12; y <= 94; y += 8) {
+    for (let x = 12; x <= 88; x += 8) {
+      diamonds.push(`M${x} ${y} l3.5 3.5 l-3.5 3.5 l-3.5 -3.5 Z`)
+    }
+  }
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden className={className} fill="none" stroke="currentColor">
+      <defs>
+        <clipPath id={`thai-${id}`}>
+          <path d={arch} />
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#thai-${id})`} strokeWidth={1}>
+        <path d={diamonds.join(' ')} />
+      </g>
+      <path d={arch} strokeWidth={3} strokeLinejoin="round" />
+      <path d="M22 98 V50 C22 32 34 20 50 13 C66 20 78 32 78 50 V98" strokeWidth={1.2} />
+      {/* The chofa, the bird-like finial on a Thai temple roof. */}
+      <path d="M50 6 V0 M46 2 L50 0 L54 2" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function HubWatermark({ kind, className }: { kind: 'kafes' | 'changsal' | 'lattice' | 'thai', className?: string }) {
   if (kind === 'kafes') return <KafesMark className={className} />
   if (kind === 'changsal') return <ChangsalMark className={className} />
+  if (kind === 'thai') return <ThaiMark className={className} />
   return <LatticeMark className={className} />
 }
