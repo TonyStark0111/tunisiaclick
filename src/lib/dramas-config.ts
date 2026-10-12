@@ -1,22 +1,22 @@
-// The Turkish, Korean, Chinese, Thai and Indonesian drama hubs: what each hub is (language,
-// country, accent, thresholds), its shelves, and the pure rules the data layer (lib/dramas.ts) and
-// the pages share: queries, daily rotation, air-date badges, the featured series' reasons, logos
-// and trailers, plural keys. No I/O here, so unit tests can import it as is.
+// The Turkish, Korean, Chinese and Thai drama hubs: what each hub is (language, country, accent,
+// thresholds), its shelves, and the pure rules the data layer (lib/dramas.ts) and the pages share:
+// queries, daily rotation, air-date badges, the featured series' reasons, logos and trailers,
+// plural keys. No I/O here, so unit tests can import it as is.
 import type { Locale } from '@/src/lib/i18n/locales'
 import { htmlLang } from '@/src/lib/i18n/locales'
 import { addDays } from '@/src/lib/hijri'
 import { hash, shuffled } from '@/src/lib/seed'
 
-export type HubId = 'turkish' | 'korean' | 'chinese' | 'thai' | 'indonesian'
-export const HUB_IDS: readonly HubId[] = ['turkish', 'korean', 'chinese', 'thai', 'indonesian']
+export type HubId = 'turkish' | 'korean' | 'chinese' | 'thai'
+export const HUB_IDS: readonly HubId[] = ['turkish', 'korean', 'chinese', 'thai']
 export const isHubId = (v: unknown): v is HubId =>
-  v === 'turkish' || v === 'korean' || v === 'chinese' || v === 'thai' || v === 'indonesian'
+  v === 'turkish' || v === 'korean' || v === 'chinese' || v === 'thai'
 
 export type HubConfig = {
   id: HubId
   /** TMDB original language and origin country. */
-  language: 'tr' | 'ko' | 'zh' | 'th' | 'id'
-  country: 'TR' | 'KR' | 'CN' | 'TH' | 'ID'
+  language: 'tr' | 'ko' | 'zh' | 'th'
+  country: 'TR' | 'KR' | 'CN' | 'TH'
   /** "r g b": the room light, the watermark and glows. Never a button. */
   accent: string
   /** The lattice drawn behind the hub's title: Ottoman kafes, Korean changsal, Chinese lattice, Thai temple window. */
@@ -27,23 +27,10 @@ export type HubConfig = {
   votes: { tv: number, favourites: number, movie: number }
   favouritesMinRating: number
   /** TMDB keyword names, resolved to ids through search/keyword (cached a month). */
-  keywords: {
-    romance: readonly string[]
-    historical: readonly string[]
-    fantasy: readonly string[]
-    romcom: readonly string[]
-    'crime-mystery': readonly string[]
-    'action-adventure': readonly string[]
-    'horror-comedy': readonly string[]
-  }
+  keywords: { romance: readonly string[], historical: readonly string[] }
 }
 
 const ROMANCE = ['romance', 'love', 'romantic comedy', 'love triangle', 'forbidden love', 'first love', 'contract marriage']
-const FANTASY = ['fantasy', 'supernatural', 'time travel', 'reincarnation', 'isekai', 'magic']
-const ROMCOM = ['romantic comedy', 'rom-com', 'comedy romance']
-const CRIME = ['crime', 'mystery', 'thriller', 'detective', 'investigation', 'revenge']
-const ACTION = ['action', 'adventure', 'martial arts']
-const HORROR_COMEDY = ['horror', 'comedy horror', 'ghost comedy', 'ghost']
 
 export const HUBS: Record<HubId, HubConfig> = {
   turkish: {
@@ -55,15 +42,7 @@ export const HUBS: Record<HubId, HubConfig> = {
     shortMaxEpisodes: 13,
     votes: { tv: 10, favourites: 40, movie: 30 },
     favouritesMinRating: 7.5,
-    keywords: {
-      romance: ROMANCE,
-      historical: ['ottoman empire', 'sultan', 'historical drama', 'period drama', 'seljuk empire'],
-      fantasy: FANTASY,
-      romcom: ROMCOM,
-      'crime-mystery': CRIME,
-      'action-adventure': ACTION,
-      'horror-comedy': HORROR_COMEDY,
-    },
+    keywords: { romance: ROMANCE, historical: ['ottoman empire', 'sultan', 'historical drama', 'period drama', 'seljuk empire'] },
   },
   korean: {
     id: 'korean',
@@ -74,15 +53,7 @@ export const HUBS: Record<HubId, HubConfig> = {
     shortMaxEpisodes: 12,
     votes: { tv: 30, favourites: 200, movie: 150 },
     favouritesMinRating: 7.8,
-    keywords: {
-      romance: ROMANCE,
-      historical: ['joseon dynasty', 'goryeo dynasty', 'historical drama', 'period drama', 'sageuk'],
-      fantasy: [...FANTASY, 'sageuk fantasy'],
-      romcom: ROMCOM,
-      'crime-mystery': CRIME,
-      'action-adventure': [...ACTION, 'action comedy'],
-      'horror-comedy': HORROR_COMEDY,
-    },
+    keywords: { romance: ROMANCE, historical: ['joseon dynasty', 'goryeo dynasty', 'historical drama', 'period drama', 'sageuk'] },
   },
   chinese: {
     id: 'chinese',
@@ -105,11 +76,6 @@ export const HUBS: Record<HubId, HubConfig> = {
         'xianxia',
         'palace intrigue',
       ],
-      fantasy: [...FANTASY, 'xianxia', 'wuxia', 'immortal', 'cultivation'],
-      romcom: ROMCOM,
-      'crime-mystery': CRIME,
-      'action-adventure': [...ACTION, 'wuxia'],
-      'horror-comedy': HORROR_COMEDY,
     },
   },
   thai: {
@@ -133,37 +99,6 @@ export const HUBS: Record<HubId, HubConfig> = {
         'period drama',
         'thai monarchy',
       ],
-      fantasy: [...FANTASY, 'ghost'],
-      romcom: ROMCOM,
-      'crime-mystery': CRIME,
-      'action-adventure': ACTION,
-      'horror-comedy': HORROR_COMEDY,
-    },
-  },
-  indonesian: {
-    id: 'indonesian',
-    language: 'id',
-    country: 'ID',
-    accent: '0 150 136',
-    watermark: 'lattice',
-    shortMaxEpisodes: 13,
-    votes: { tv: 8, favourites: 25, movie: 15 },
-    favouritesMinRating: 7.2,
-    keywords: {
-      romance: ROMANCE,
-      historical: [
-        'historical drama',
-        'period drama',
-        'dutch east indies',
-        'majapahit',
-        'sriwijaya',
-        'indonesian history',
-      ],
-      fantasy: [...FANTASY, 'legend'],
-      romcom: ROMCOM,
-      'crime-mystery': CRIME,
-      'action-adventure': ACTION,
-      'horror-comedy': HORROR_COMEDY,
     },
   },
 }
@@ -174,38 +109,12 @@ export const HISTORICAL_FALLBACK_GENRE = 10768
 export const EXCLUDED_TV_GENRES = [16, 99, 10762, 10763, 10764, 10767]
 export const EXCLUDED_MOVIE_GENRES = [16, 99]
 
-export const SHELF_IDS = [
-  'new-episodes',
-  'trending',
-  'for-you',
-  'favourites',
-  'romance',
-  'historical',
-  'fantasy',
-  'romcom',
-  'crime-mystery',
-  'action-adventure',
-  'horror-comedy',
-  'short',
-  'films',
-  'series',
-] as const
+export const SHELF_IDS = ['new-episodes', 'trending', 'for-you', 'favourites', 'romance', 'historical', 'thrillers', 'short', 'films'] as const
 export type ShelfId = typeof SHELF_IDS[number]
 export type DataShelf = Exclude<ShelfId, 'for-you'>
 
 /** The shelves the filter chips open as a full grid (`?shelf=`), in chip order. */
-export const FILTER_SHELVES = [
-  'romance',
-  'historical',
-  'fantasy',
-  'romcom',
-  'crime-mystery',
-  'action-adventure',
-  'horror-comedy',
-  'short',
-  'films',
-  'series',
-] as const
+export const FILTER_SHELVES = ['romance', 'historical', 'thrillers', 'short', 'films'] as const
 export type FilterShelf = typeof FILTER_SHELVES[number]
 export const isFilterShelf = (v: unknown): v is FilterShelf => typeof v === 'string' && (FILTER_SHELVES as readonly string[]).includes(v)
 
@@ -302,7 +211,6 @@ export function hubLogoCandidates(logos: any[] | null | undefined, hub: HubId): 
     hub === 'turkish' ? ['en', null, 'tr'] :
     hub === 'chinese' ? ['en', null, 'zh'] :
     hub === 'thai'    ? ['en', null, 'th'] :
-    hub === 'indonesian' ? ['en', null, 'id'] :
     ['en', null]
   const usable = (logos ?? []).filter((item) => item?.file_path)
   return order
