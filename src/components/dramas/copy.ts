@@ -13,6 +13,7 @@ export function rowTitle(t: Translate, hub: HubId, shelf: FilterShelf | 'favouri
   switch (shelf) {
     case 'historical': return t(k(`dramas.row.historical.${hub}`))
     case 'films': return t(k(`dramas.row.films.${hub}`))
+    case 'series': return t(k(`dramas.row.series.${hub}`))
     default: return t(k(`dramas.row.${shelf}`))
   }
 }
@@ -21,6 +22,7 @@ export function gridTitle(t: Translate, hub: HubId, shelf: FilterShelf): string 
   switch (shelf) {
     case 'historical': return t(k(`dramas.filter.historical.${hub}`))
     case 'films': return t(k(`dramas.row.films.${hub}`))
+    case 'series': return t(k(`dramas.row.series.${hub}`))
     default: return t(k(`dramas.grid.${shelf}.${hub}`))
   }
 }
@@ -29,8 +31,13 @@ export function gridText(t: Translate, hub: HubId, shelf: FilterShelf): string {
   switch (shelf) {
     case 'romance': return t('dramas.grid.romanceText')
     case 'historical': return t(k(`dramas.grid.historicalText.${hub}`))
-    case 'thrillers': return t('dramas.grid.thrillersText')
+    case 'fantasy': return t('dramas.grid.fantasyText')
+    case 'romcom': return t('dramas.grid.romcomText')
+    case 'crime-mystery': return t('dramas.grid.crimeMysteryText')
+    case 'action-adventure': return t('dramas.grid.actionAdventureText')
+    case 'horror-comedy': return t('dramas.grid.horrorComedyText')
     case 'short': return t('dramas.grid.shortText', { max: HUBS[hub].shortMaxEpisodes })
     case 'films': return t('dramas.grid.filmsText')
+    case 'series': return t('dramas.grid.seriesText')
   }
 }
