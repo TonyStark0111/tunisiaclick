@@ -44,6 +44,29 @@ export function ChangsalMark({ className }: { className?: string }) {
   )
 }
 
-export function HubWatermark({ kind, className }: { kind: 'kafes' | 'changsal', className?: string }) {
-  return kind === 'kafes' ? <KafesMark className={className} /> : <ChangsalMark className={className} />
+/** A Chinese lattice window: square frame with interlocking geometric bars. */
+export function LatticeMark({ className }: { className?: string }) {
+  const bars: string[] = []
+  for (let i = 12; i <= 88; i += 8) {
+    bars.push(`M${i} 12 V88`, `M12 ${i} H88`)
+  }
+  for (let o = -80; o <= 80; o += 16) {
+    bars.push(`M${o} 12 L${o + 76} 88`, `M${o + 76} 12 L${o} 88`)
+  }
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden className={className} fill="none" stroke="currentColor">
+      <rect x="6" y="6" width="88" height="88" rx="1.5" strokeWidth={3} />
+      <rect x="10" y="10" width="80" height="80" strokeWidth={1.1} />
+      <g strokeWidth={1} opacity={0.9}>
+        <path d={bars.join(' ')} />
+      </g>
+      <path d="M50 6 V94 M6 50 H94" strokeWidth={1.8} />
+    </svg>
+  )
+}
+
+export function HubWatermark({ kind, className }: { kind: 'kafes' | 'changsal' | 'lattice', className?: string }) {
+  if (kind === 'kafes') return <KafesMark className={className} />
+  if (kind === 'changsal') return <ChangsalMark className={className} />
+  return <LatticeMark className={className} />
 }
