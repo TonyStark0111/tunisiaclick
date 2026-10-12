@@ -1,25 +1,26 @@
-// The Turkish, Korean and Chinese drama hubs: what each hub is (language, country, accent, thresholds), its
-// shelves, and the pure rules the data layer (lib/dramas.ts) and the pages share: queries, daily
-// rotation, air-date badges, the featured series' reasons, logos and trailers, plural keys.
-// No I/O here, so unit tests can import it as is.
+// The Turkish, Korean, Chinese and Thai drama hubs: what each hub is (language, country, accent,
+// thresholds), its shelves, and the pure rules the data layer (lib/dramas.ts) and the pages share:
+// queries, daily rotation, air-date badges, the featured series' reasons, logos and trailers,
+// plural keys. No I/O here, so unit tests can import it as is.
 import type { Locale } from '@/src/lib/i18n/locales'
 import { htmlLang } from '@/src/lib/i18n/locales'
 import { addDays } from '@/src/lib/hijri'
 import { hash, shuffled } from '@/src/lib/seed'
 
-export type HubId = 'turkish' | 'korean' | 'chinese'
-export const HUB_IDS: readonly HubId[] = ['turkish', 'korean', 'chinese']
-export const isHubId = (v: unknown): v is HubId => v === 'turkish' || v === 'korean' || v === 'chinese'
+export type HubId = 'turkish' | 'korean' | 'chinese' | 'thai'
+export const HUB_IDS: readonly HubId[] = ['turkish', 'korean', 'chinese', 'thai']
+export const isHubId = (v: unknown): v is HubId =>
+  v === 'turkish' || v === 'korean' || v === 'chinese' || v === 'thai'
 
 export type HubConfig = {
   id: HubId
   /** TMDB original language and origin country. */
-  language: 'tr' | 'ko' | 'zh'
-  country: 'TR' | 'KR' | 'CN'
+  language: 'tr' | 'ko' | 'zh' | 'th'
+  country: 'TR' | 'KR' | 'CN' | 'TH'
   /** "r g b": the room light, the watermark and glows. Never a button. */
   accent: string
-  /** The lattice drawn behind the hub's title: Ottoman kafes, Korean changsal, or Chinese lattice. */
-  watermark: 'kafes' | 'changsal' | 'lattice'
+  /** The lattice drawn behind the hub's title: Ottoman kafes, Korean changsal, Chinese lattice, Thai temple window. */
+  watermark: 'kafes' | 'changsal' | 'lattice' | 'thai'
   /** A "short series" has at most this many episodes. */
   shortMaxEpisodes: number
   /** Minimum TMDB vote counts: series rows, the all-time favourites, films. */
@@ -74,6 +75,29 @@ export const HUBS: Record<HubId, HubConfig> = {
         'wuxia',
         'xianxia',
         'palace intrigue',
+      ],
+    },
+  },
+  thai: {
+    id: 'thai',
+    language: 'th',
+    country: 'TH',
+    accent: '215 165 45',
+    watermark: 'thai',
+    shortMaxEpisodes: 16,
+    votes: { tv: 10, favourites: 40, movie: 20 },
+    favouritesMinRating: 7.4,
+    keywords: {
+      romance: ROMANCE,
+      historical: [
+        'ayutthaya',
+        'sukhothai',
+        'rattanakosin',
+        'siam',
+        'thai history',
+        'historical drama',
+        'period drama',
+        'thai monarchy',
       ],
     },
   },
@@ -172,14 +196,21 @@ export function isHanOnly(text: string | null | undefined): boolean {
   return /\p{Script=Han}/u.test(text) && !/[\p{Script=Latin}\p{Script=Arabic}\p{Script=Hangul}]/u.test(text)
 }
 
+/** Text written only in Thai script (no Latin/Arabic): shown with its English title instead. */
+export function isThaiOnly(text: string | null | undefined): boolean {
+  if (!text) return false
+  return /\p{Script=Thai}/u.test(text) && !/[\p{Script=Latin}\p{Script=Arabic}\p{Script=Hangul}\p{Script=Han}]/u.test(text)
+}
+
 /**
- * Every usable title-treatment logo, best first: English, then textless, then (Turkish hub)
- * Turkish. Never one in Korean script, which most viewers can't read.
+ * Every usable title-treatment logo, best first: English, then textless, then (in each hub's own
+ * language) Turkish, Chinese or Thai. Never one in Korean script, which most viewers can't read.
  */
 export function hubLogoCandidates(logos: any[] | null | undefined, hub: HubId): { path: string, ratio: number }[] {
   const order: (string | null)[] =
     hub === 'turkish' ? ['en', null, 'tr'] :
     hub === 'chinese' ? ['en', null, 'zh'] :
+    hub === 'thai'    ? ['en', null, 'th'] :
     ['en', null]
   const usable = (logos ?? []).filter((item) => item?.file_path)
   return order
