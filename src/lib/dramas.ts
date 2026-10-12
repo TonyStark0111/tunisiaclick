@@ -9,7 +9,7 @@ import { hash } from '@/src/lib/seed'
 import { createTranslator, dateLocale, type Locale, type TKey } from '@/src/lib/i18n'
 import {
   GRID_SIZE, HISTORICAL_FALLBACK_GENRE, HUB_IDS, HUBS, LOGO_MIN_LIGHTNESS, ROW_SIZE,
-  airState, belongsToHub, chooseFeatured, chooseKeywordId, compareAir, hubLogoCandidates, isHanOnly, isHangulOnly, logoLightness,
+  airState, belongsToHub, chooseFeatured, chooseKeywordId, compareAir, hubLogoCandidates, isHanOnly, isHangulOnly, isThaiOnly, logoLightness,
   movieBaseParams, pickHubTrailer, reasonFor, rotate, rotationSeed, rowMinimum, tvBaseParams,
   type AirState, type DataShelf, type FeaturedReason, type HubId,
 } from '@/src/lib/dramas-config'
@@ -77,17 +77,17 @@ function unique(items: DramaItem[]): DramaItem[] {
 const seriesDetail = (id: number, ttl = 6 * HOUR) => tmdbFetchSafe<any>(`tv/${id}`, {}, ttl)
 
 /**
- * TMDB answers with the original Hangul when it has no translation in the UI language: those
- * titles get their English name (and overview) instead.
+ * TMDB answers with the original Hangul / Han / Thai when it has no translation in the UI
+ * language: those titles get their English name (and overview) instead.
  */
 async function readableTitles(items: DramaItem[], language: string): Promise<DramaItem[]> {
   if (language === 'en-US') return items
   return Promise.all(items.map(async (item) => {
     const title = titleOf(item)
-    if (!isHangulOnly(title) && !isHanOnly(title)) return item
+    if (!isHangulOnly(title) && !isHanOnly(title) && !isThaiOnly(title)) return item
     const english = await tmdbFetchSafe<any>(`${item.media_type}/${item.id}`, {}, 7 * DAY)
     const name = english?.name || english?.title
-    if (!name || isHangulOnly(name) || isHanOnly(name)) return item
+    if (!name || isHangulOnly(name) || isHanOnly(name) || isThaiOnly(name)) return item
     return { ...item, ...(item.media_type === 'tv' ? { name } : { title: name }), overview: item.overview || english.overview || '' }
   }))
 }
@@ -363,6 +363,7 @@ export const getFeatured = cache(async (hub: HubId, locale: Locale): Promise<Fea
   const imageLanguages =
     hub === 'turkish' ? 'en,null,tr' :
     hub === 'chinese' ? 'en,null,zh' :
+    hub === 'thai'    ? 'en,null,th' :
     'en,null'
   const [data, english] = await Promise.all([
     tmdbFetchSafe<any>(`tv/${id}`, { language, append_to_response: 'images,videos', include_image_language: imageLanguages, include_video_language: `en,${HUBS[hub].language},null` }, DAY),
@@ -373,7 +374,7 @@ export const getFeatured = cache(async (hub: HubId, locale: Locale): Promise<Fea
   const index = candidates.findIndex((candidate) => candidate.id === id)
   const reason = index >= 0 ? candidates[index].reason : reasonFor(english ?? data, { today })
   const rawName = data.name || english?.name || ''
-  const name = (isHangulOnly(rawName) || isHanOnly(rawName)) && english?.name ? english.name : rawName
+  const name = (isHangulOnly(rawName) || isHanOnly(rawName) || isThaiOnly(rawName)) && english?.name ? english.name : rawName
   const logo = await legibleLogo(data.images?.logos, hub)
   return {
     id,
@@ -411,7 +412,8 @@ export { GRID_SIZE, ROW_SIZE }
 /**
  * A hub's share card (what a link to /dramas/turkish looks like in WhatsApp): English words over a
  * wall of the hub's most popular posters, lit in its accent. The shape of a SHARE_SECTIONS entry
- * (lib/share-sections.ts), so it can be registered there as 'dramas-turkish' / 'dramas-korean'.
+ * (lib/share-sections.ts), so it can be registered there as 'dramas-turkish' / 'dramas-korean' /
+ * 'dramas-chinese' / 'dramas-thai'.
  */
 export function dramaShareSection(hub: HubId | 'index') {
   const t = createTranslator('en')
@@ -423,7 +425,7 @@ export function dramaShareSection(hub: HubId | 'index') {
     glow: HUBS[hub === 'index' ? 'turkish' : hub].accent,
     posters: async () => {
       const lists = await Promise.all(hubs.map((id) => getShelf(id, 'trending', 'en', 12)))
-      // Interleaved, so the index card shows both hubs.
+      // Interleaved, so the index card shows every hub.
       const mixed = Array.from({ length: 12 }, (_, index) => lists.map((list) => list[index])).flat()
       return mixed
         .filter((item): item is DramaItem => !!item?.poster_path)
