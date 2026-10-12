@@ -1,4 +1,4 @@
-// The Turkish and Korean drama hubs: what each hub is (language, country, accent, thresholds), its
+// The Turkish, Korean and Chinese drama hubs: what each hub is (language, country, accent, thresholds), its
 // shelves, and the pure rules the data layer (lib/dramas.ts) and the pages share: queries, daily
 // rotation, air-date badges, the featured series' reasons, logos and trailers, plural keys.
 // No I/O here, so unit tests can import it as is.
@@ -7,19 +7,19 @@ import { htmlLang } from '@/src/lib/i18n/locales'
 import { addDays } from '@/src/lib/hijri'
 import { hash, shuffled } from '@/src/lib/seed'
 
-export type HubId = 'turkish' | 'korean'
-export const HUB_IDS: readonly HubId[] = ['turkish', 'korean']
-export const isHubId = (v: unknown): v is HubId => v === 'turkish' || v === 'korean'
+export type HubId = 'turkish' | 'korean' | 'chinese'
+export const HUB_IDS: readonly HubId[] = ['turkish', 'korean', 'chinese']
+export const isHubId = (v: unknown): v is HubId => v === 'turkish' || v === 'korean' || v === 'chinese'
 
 export type HubConfig = {
   id: HubId
   /** TMDB original language and origin country. */
-  language: 'tr' | 'ko'
-  country: 'TR' | 'KR'
+  language: 'tr' | 'ko' | 'zh'
+  country: 'TR' | 'KR' | 'CN'
   /** "r g b": the room light, the watermark and glows. Never a button. */
   accent: string
-  /** The lattice drawn behind the hub's title: an Ottoman kafes screen, a Korean changsal window. */
-  watermark: 'kafes' | 'changsal'
+  /** The lattice drawn behind the hub's title: Ottoman kafes, Korean changsal, or Chinese lattice. */
+  watermark: 'kafes' | 'changsal' | 'lattice'
   /** A "short series" has at most this many episodes. */
   shortMaxEpisodes: number
   /** Minimum TMDB vote counts: series rows, the all-time favourites, films. */
@@ -54,6 +54,29 @@ export const HUBS: Record<HubId, HubConfig> = {
     favouritesMinRating: 7.8,
     keywords: { romance: ROMANCE, historical: ['joseon dynasty', 'goryeo dynasty', 'historical drama', 'period drama', 'sageuk'] },
   },
+  chinese: {
+    id: 'chinese',
+    language: 'zh',
+    country: 'CN',
+    accent: '200 16 46',
+    watermark: 'lattice',
+    shortMaxEpisodes: 16,
+    votes: { tv: 20, favourites: 80, movie: 50 },
+    favouritesMinRating: 7.6,
+    keywords: {
+      romance: ROMANCE,
+      historical: [
+        'qing dynasty',
+        'tang dynasty',
+        'song dynasty',
+        'historical drama',
+        'period drama',
+        'wuxia',
+        'xianxia',
+        'palace intrigue',
+      ],
+    },
+  },
 }
 
 /** TMDB's "War & Politics": history rows top up with it when the keywords find too little. */
@@ -81,7 +104,10 @@ export function rowMinimum(shelf: ShelfId): number {
 }
 
 export const hubPath = (hub: HubId, shelf?: FilterShelf | null) => (shelf ? `/dramas/${hub}?shelf=${shelf}` : `/dramas/${hub}`)
-export const otherHub = (hub: HubId): HubId => (hub === 'turkish' ? 'korean' : 'turkish')
+export const otherHub = (hub: HubId): HubId => {
+  const i = HUB_IDS.indexOf(hub)
+  return HUB_IDS[(i + 1) % HUB_IDS.length]
+}
 
 type Params = Record<string, string | number | boolean>
 
@@ -140,12 +166,21 @@ export function isHangulOnly(text: string | null | undefined): boolean {
   return /\p{Script=Hangul}/u.test(text) && !/[\p{Script=Latin}\p{Script=Arabic}]/u.test(text)
 }
 
+/** Text written only in Han characters (no Latin/Arabic): shown with its English title instead. */
+export function isHanOnly(text: string | null | undefined): boolean {
+  if (!text) return false
+  return /\p{Script=Han}/u.test(text) && !/[\p{Script=Latin}\p{Script=Arabic}\p{Script=Hangul}]/u.test(text)
+}
+
 /**
  * Every usable title-treatment logo, best first: English, then textless, then (Turkish hub)
  * Turkish. Never one in Korean script, which most viewers can't read.
  */
 export function hubLogoCandidates(logos: any[] | null | undefined, hub: HubId): { path: string, ratio: number }[] {
-  const order: (string | null)[] = hub === 'turkish' ? ['en', null, 'tr'] : ['en', null]
+  const order: (string | null)[] =
+    hub === 'turkish' ? ['en', null, 'tr'] :
+    hub === 'chinese' ? ['en', null, 'zh'] :
+    ['en', null]
   const usable = (logos ?? []).filter((item) => item?.file_path)
   return order
     .flatMap((language) => usable.filter((item) => (item.iso_639_1 ?? null) === language))
