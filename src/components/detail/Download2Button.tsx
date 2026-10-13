@@ -7,6 +7,8 @@ import { cn } from '@/src/lib/utils'
 
 type Props = {
   tmdbId: number | string
+  /** 'movie' or 'tv' — sent as ?type= so the correct data file is used */
+  kind?: 'movie' | 'tv'
   className?: string
 }
 
@@ -16,10 +18,15 @@ type Props = {
  * controls sit cleanly side-by-side:
  *   [ Theater mode ]  [ Download ]  [ Download 2 ]
  */
-export default function Download2Button({ tmdbId, className }: Props) {
+export default function Download2Button({ tmdbId, kind, className }: Props) {
+  const href =
+    kind === 'movie' || kind === 'tv'
+      ? `/download2/${tmdbId}?type=${kind}`
+      : `/download2/${tmdbId}`
+
   return (
     <Link
-      href={`/download2/${tmdbId}`}
+      href={href}
       className={cn(
         'pressable inline-flex h-9 shrink-0 items-center gap-2 rounded-full bg-white/[0.1] px-3.5 text-[13px] font-medium text-white outline-none transition-colors hover:bg-white/[0.16] focus-visible:ring-2 focus-visible:ring-red-500',
         className,
