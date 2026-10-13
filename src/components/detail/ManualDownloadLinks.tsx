@@ -87,7 +87,7 @@ export default function ManualDownloadLinks({ entry, className, compact = false 
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cn(
-                    'pressable group flex w-full items-center gap-3 overflow-hidden rounded-2xl p-3.5 ring-1 transition-all',
+                    'pressable group flex w-full items-start gap-3 rounded-2xl p-3.5 ring-1 transition-all',
                     BUTTON_BG[group.color] ?? BUTTON_BG.white,
                   )}
                 >
@@ -106,11 +106,11 @@ export default function ManualDownloadLinks({ entry, className, compact = false 
                   >
                     <Download className="h-4 w-4" aria-hidden />
                   </span>
-                  <div className="min-w-0 flex-1 overflow-hidden">
-                    <p className="truncate text-sm font-medium text-white group-hover:underline" dir="auto" title={link.label}>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium leading-snug text-white group-hover:underline break-words" dir="auto">
                       {link.label}
                     </p>
-                    <p className="mt-0.5 flex flex-wrap gap-x-3 text-xs text-white/50">
+                    <p className="mt-1 flex flex-wrap gap-x-3 text-xs text-white/50">
                       {link.quality && <span>{link.quality}</span>}
                       {link.size && <span>{link.size}</span>}
                     </p>
