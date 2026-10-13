@@ -42,8 +42,8 @@ const RAW: Record<string, CRow> = {
     ['green', 'Sub main title 3', [['Audio / Soundtrack', 'https://example.com/download/969681-audio', 'FLAC', '450 MB']]],
   ]],
 
-  // TMDB 1148365
-  '1148365': ['Download Links', 'Official / direct links for this title', [
+  // TMDB 1101413
+  '1101412': ['Download Links', 'Official / direct links for this title', [
     ['green', 'Encoded Version', [
       ['Spider.Man.Brand.New.Day.2026.720p.10bit.Multi.Audio.Hindi.English.Kannada.Malayalam.Tamil.Telugu.WEB-DL', 'https://gofile.io/d/amINuWCr', '720p IMAX 10BIT', '1.2 GB'],
       ['Spider-Man:Brand New Day 2026 1080p 10bit Multi', 'https://z1.kmphotos.cv/download99.php?file=Spider.Man.Brand.New.Day.2026.1080p.10bit.Multi.Audio.Hindi.English.Kannada.Malayalam.Tamil.Telugu.WEB-DL.KMMOVIES.COM.mkv&dl=r2&exp=1791873812&sig=e67021fdce0fa86ea65d6f73816e283591777d626d4afc738269c74516caed58', '1080p IMAX 10BIT', '3.8 GB'],
