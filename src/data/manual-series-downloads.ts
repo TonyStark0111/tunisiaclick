@@ -59,6 +59,18 @@ const RAW: Record<string, CRow> = {
   // ]],
 
   // Add more SERIES below:
+
+  // ── TMDB 1148365 ─────────────────────────────────────────────
+     '108978': ['Download Links', 'Official / direct links for this title', [
+       ['red', 'Sub Main title 1', [
+         ['1080p BluRay', 'https://example.com/download/1148365-1080p', '1080p', '2.1 GB'],
+         ['720p WEB-DL', 'https://example.com/download/1148365-720p', '720p', '1.2 GB'],
+      ]],
+      ['orange', 'Sub Main title 2', [
+        ['4K HDR', 'https://example.com/download/1148365-4k', '2160p', '8.5 GB'],
+      ]],
+    ]],
+  
 }
 
 // ---- Expand compact format → full shape ----
