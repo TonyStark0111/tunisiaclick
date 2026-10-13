@@ -14,7 +14,15 @@
  * Example for TMDB 1291595 is included below. Paste more entries as needed.
  */
 
-export type ManualLinkColor = 'red' | 'orange' | 'green' | 'blue' | 'purple' | 'yellow' | 'white' | 'cyan'
+export type ManualLinkColor =
+  | 'red'
+  | 'orange'
+  | 'green'
+  | 'blue'
+  | 'purple'
+  | 'yellow'
+  | 'white'
+  | 'cyan'
 
 export type ManualLink = {
   label: string
@@ -93,12 +101,114 @@ export const MANUAL_DOWNLOADS: Record<string, ManualDownloadEntry> = {
     ],
   },
 
+  // TMDB ID 969681
+  '969681': {
+    mainTitle: 'Download Links',
+    note: 'Official / direct links for this title',
+    groups: [
+      {
+        title: 'Sub Main title 1',
+        color: 'red',
+        links: [
+          {
+            label: '1080p BluRay',
+            url: 'https://example.com/download/969681-1080p',
+            quality: '1080p',
+            size: '2.1 GB',
+          },
+          {
+            label: '720p WEB-DL',
+            url: 'https://example.com/download/969681-720p',
+            quality: '720p',
+            size: '1.2 GB',
+          },
+        ],
+      },
+      {
+        title: 'Sub main title 2',
+        color: 'orange',
+        links: [
+          {
+            label: '4K HDR',
+            url: 'https://example.com/download/969681-4k',
+            quality: '2160p',
+            size: '8.5 GB',
+          },
+        ],
+      },
+      {
+        title: 'Sub main title 3',
+        color: 'green',
+        links: [
+          {
+            label: 'Audio / Soundtrack',
+            url: 'https://example.com/download/969681-audio',
+            quality: 'FLAC',
+            size: '450 MB',
+          },
+        ],
+      },
+    ],
+  },
+
+  // TMDB ID 1148365
+  '1148365': {
+    mainTitle: 'Download Links',
+    note: 'Official / direct links for this title',
+    groups: [
+      {
+        title: 'Sub Main title 1',
+        color: 'red',
+        links: [
+          {
+            label: '1080p BluRay',
+            url: 'https://example.com/download/1148365-1080p',
+            quality: '1080p',
+            size: '2.1 GB',
+          },
+          {
+            label: '720p WEB-DL',
+            url: 'https://example.com/download/1148365-720p',
+            quality: '720p',
+            size: '1.2 GB',
+          },
+        ],
+      },
+      {
+        title: 'Sub main title 2',
+        color: 'orange',
+        links: [
+          {
+            label: '4K HDR',
+            url: 'https://example.com/download/1148365-4k',
+            quality: '2160p',
+            size: '8.5 GB',
+          },
+        ],
+      },
+      {
+        title: 'Sub main title 3',
+        color: 'green',
+        links: [
+          {
+            label: 'Audio / Soundtrack',
+            url: 'https://example.com/download/1148365-audio',
+            quality: 'FLAC',
+            size: '450 MB',
+          },
+        ],
+      },
+    ],
+  },
+
   // Add more entries below, for example:
   // '550': { ... }  // Fight Club
 }
 
 /** Helper to look up by TMDB ID (number or string). Returns null when none. */
-export function getManualDownloads(tmdbId: string | number | null | undefined): ManualDownloadEntry | null {
+export function getManualDownloads(
+  tmdbId: string | number | null | undefined
+): ManualDownloadEntry | null {
   if (tmdbId == null || tmdbId === '') return null
   return MANUAL_DOWNLOADS[String(tmdbId)] ?? null
 }
