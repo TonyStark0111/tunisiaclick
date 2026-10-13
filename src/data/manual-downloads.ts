@@ -107,26 +107,26 @@ export const MANUAL_DOWNLOADS: Record<string, ManualDownloadEntry> = {
     note: 'Official / direct links for this title',
     groups: [
       {
-        title: 'Sub Main title 1',
+        title: 'Encoded Version',
         color: 'red',
         links: [
           {
-            label: '1080p BluRay',
-            url: 'https://example.com/download/969681-1080p',
-            quality: '1080p',
-            size: '2.1 GB',
+            label: 'Spider.Man.Brand.New.Day.2026.720p.10bit.Multi.Audio.Hindi.English.Kannada.Malayalam.Tamil.Telugu.WEB-DL',
+            url: 'https://gofile.io/d/amINuWCr',
+            quality: '720p IMAX 10BIT',
+            size: '1.2 GB',
           },
           {
-            label: '720p WEB-DL',
-            url: 'https://example.com/download/969681-720p',
-            quality: '720p',
-            size: '1.2 GB',
+            label: 'Spider.Man.Brand.New.Day.2026.1080p.10bit.Multi.Audio.Hindi.English.Kannada.Malayalam.Tamil.Telugu.WEB',
+            url: 'https://z1.kmphotos.cv/download99.php?file=Spider.Man.Brand.New.Day.2026.1080p.10bit.Multi.Audio.Hindi.English.Kannada.Malayalam.Tamil.Telugu.WEB-DL.KMMOVIES.COM.mkv&dl=r2&exp=1791873812&sig=e67021fdce0fa86ea65d6f73816e283591777d626d4afc738269c74516caed58',
+            quality: '1080p IMAX 10BIT',
+            size: '3.8 GB',
           },
         ],
       },
       {
         title: 'Sub main title 2',
-        color: 'orange',
+        color: 'green',
         links: [
           {
             label: '4K HDR',
