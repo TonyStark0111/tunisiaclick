@@ -236,7 +236,7 @@ export default function WatchPlayer(props: WatchPlayerProps) {
                 )
               ) : null}
 
-              <Download2Button tmdbId={id} />
+              <Download2Button tmdbId={id} kind={props.kind} />
             </>
           }
         />
