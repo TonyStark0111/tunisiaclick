@@ -79,7 +79,7 @@ export default function ManualDownloadLinks({ entry, className, compact = false 
             </h3>
 
             {/* Big buttons for each link */}
-            <div className={cn('grid gap-2', compact ? 'grid-cols-1' : 'sm:grid-cols-2')}>
+            <div className="grid grid-cols-1 gap-2">
               {group.links.map((link, lIdx) => (
                 <a
                   key={`${link.url}-${lIdx}`}
@@ -87,7 +87,7 @@ export default function ManualDownloadLinks({ entry, className, compact = false 
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cn(
-                    'pressable group flex items-center gap-3 rounded-2xl p-3.5 ring-1 transition-all',
+                    'pressable group flex w-full items-center gap-3 overflow-hidden rounded-2xl p-3.5 ring-1 transition-all',
                     BUTTON_BG[group.color] ?? BUTTON_BG.white,
                   )}
                 >
@@ -106,8 +106,8 @@ export default function ManualDownloadLinks({ entry, className, compact = false 
                   >
                     <Download className="h-4 w-4" aria-hidden />
                   </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-white group-hover:underline" dir="auto">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <p className="truncate text-sm font-medium text-white group-hover:underline" dir="auto" title={link.label}>
                       {link.label}
                     </p>
                     <p className="mt-0.5 flex flex-wrap gap-x-3 text-xs text-white/50">
