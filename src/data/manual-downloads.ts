@@ -108,7 +108,7 @@ export const MANUAL_DOWNLOADS: Record<string, ManualDownloadEntry> = {
     groups: [
       {
         title: 'Encoded Version',
-        color: 'red',
+        color: 'green',
         links: [
           {
             label: 'Spider.Man.Brand.New.Day.2026.720p.10bit.Multi.Audio.Hindi.English.Kannada.Malayalam.Tamil.Telugu.WEB-DL',
@@ -117,7 +117,7 @@ export const MANUAL_DOWNLOADS: Record<string, ManualDownloadEntry> = {
             size: '1.2 GB',
           },
           {
-            label: 'Spider.Man.Brand.New.Day.2026.1080p.10bit.Multi.Audio.Hindi.English.Kannada.Malayalam.Tamil.Telugu.WEB',
+            label: 'Spider-Man:Brand New Day 2026 1080p 10bit Multi',
             url: 'https://z1.kmphotos.cv/download99.php?file=Spider.Man.Brand.New.Day.2026.1080p.10bit.Multi.Audio.Hindi.English.Kannada.Malayalam.Tamil.Telugu.WEB-DL.KMMOVIES.COM.mkv&dl=r2&exp=1791873812&sig=e67021fdce0fa86ea65d6f73816e283591777d626d4afc738269c74516caed58',
             quality: '1080p IMAX 10BIT',
             size: '3.8 GB',
