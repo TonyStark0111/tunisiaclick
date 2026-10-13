@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, Clapperboard, Heart, Pause, Play, Plus, Share2, Star, Volume2, VolumeX } from 'lucide-react'
+import { AudioLines, Check, Clapperboard, Heart, MessageSquare, Pause, Play, Plus, Share2, Star, Volume2, VolumeX } from 'lucide-react'
 import { Button } from '@/src/components/ui/button'
 import FollowButton from '@/src/components/FollowButton'
 import ReleaseCountdown from '@/src/components/detail/ReleaseCountdown'
@@ -91,13 +91,33 @@ export default function MediaHero({ kind, data, playLabel, onPlay, trailers, kid
 
     const startDate: string = (kind === 'tv' ? data.first_air_date : data.release_date) || ''
     const ended = data.status === 'Ended' || data.status === 'Canceled'
-    const years = kind === 'tv' && startDate
-        ? `${startDate.substring(0, 4)}–${ended ? (data.last_air_date ?? '').substring(0, 4) : t('hero.present')}`
-        : startDate.substring(0, 4)
+    const years = startDate ? startDate.substring(0, 4) : ''
+    // Caption length: "2 h 7 min" for movies, "8 episodes" for series (matches reference UI)
     const length = kind === 'movie'
-        ? data.runtime ? t('pick.runtime', { hours: Math.floor(data.runtime / 60), minutes: data.runtime % 60 }) : ''
-        : data.number_of_seasons > 1 ? t('pick.seasons', { count: data.number_of_seasons }) : data.number_of_seasons === 1 ? t('pick.oneSeason') : ''
+        ? data.runtime
+            ? `${Math.floor(data.runtime / 60)} h ${data.runtime % 60} min`
+            : ''
+        : data.number_of_episodes
+            ? `${data.number_of_episodes} episodes`
+            : data.number_of_seasons > 1
+                ? t('pick.seasons', { count: data.number_of_seasons })
+                : data.number_of_seasons === 1
+                    ? t('pick.oneSeason')
+                    : ''
     const genres = (data.genres ?? []).slice(0, 3).map((genre: any) => genre.name)
+    // Content rating badge (PG-13, TV-MA, …) when TMDB provided it
+    const certification: string = (() => {
+        if (kind === 'movie') {
+            const us = (data.release_dates?.results ?? []).find((r: any) => r.iso_3166_1 === 'US')
+            const cert = (us?.release_dates ?? []).map((r: any) => r.certification).find((c: string) => c && c.trim())
+            if (cert) return cert
+        } else {
+            const us = (data.content_ratings?.results ?? []).find((r: any) => r.iso_3166_1 === 'US')
+            if (us?.rating) return us.rating
+        }
+        if (data.adult) return '18+'
+        return ''
+    })()
     // Alerts only make sense for a movie that isn't out yet, or a show that's still running.
     const followable = kind === 'tv' ? !ended : !data.release_date || data.release_date > new Date().toISOString().slice(0, 10)
     const release = useMemo(() => upcomingRelease(kind, data), [kind, data])
@@ -200,17 +220,35 @@ export default function MediaHero({ kind, data, playLabel, onPlay, trailers, kid
                         <p aria-hidden className="animate-focus-in text-balance font-display text-[clamp(40px,6vw,88px)] font-extrabold leading-[0.95]"><bdi>{title}</bdi></p>
                     )}
 
-                    <p className="mt-5 flex animate-focus-in flex-wrap items-center gap-x-3 gap-y-1 text-[15px] text-white/80 [animation-delay:80ms]">
+                    {/* Caption row — IMDb · year · length · badges · icons (reference style) */}
+                    <div className="mt-5 flex animate-focus-in flex-wrap items-center gap-x-2.5 gap-y-2 text-[14px] text-white/85 [animation-delay:80ms]">
                         {data.vote_average > 0 && (
-                            <span className="inline-flex items-center gap-1 font-semibold text-white" aria-label={t('detail.ratingOutOf', { rating: data.vote_average.toFixed(1) })}>
-                                <Star aria-hidden className="h-4 w-4 fill-star text-star" />{data.vote_average.toFixed(1)}
+                            <span className="inline-flex items-center gap-1.5 font-medium text-white" aria-label={t('detail.ratingOutOf', { rating: data.vote_average.toFixed(1) })}>
+                                <span className="text-white/70">IMDb</span>
+                                <span className="font-semibold">{data.vote_average.toFixed(1)}</span>
                             </span>
                         )}
-                        {years && <span>{years}</span>}
-                        {length && <span>{length}</span>}
-                        {data.adult && <span className="rounded-md bg-red-600 px-1.5 text-[12px] font-semibold text-white">18+</span>}
-                        {genres.length > 0 && <span className="text-white/60">{genres.join(isArabicScript(locale) ? '، ' : ' / ')}</span>}
-                    </p>
+                        {years && <span className="text-white/80">{years}</span>}
+                        {length && <span className="text-white/80">{length}</span>}
+
+                        {/* Quality / feature badges */}
+                        <span className="inline-flex flex-wrap items-center gap-1.5">
+                            <span className="rounded-md border border-white/25 bg-white/[0.08] px-1.5 py-0.5 text-[11px] font-semibold tracking-wide text-white/90">X-RAY</span>
+                            <span className="rounded-md border border-white/25 bg-white/[0.08] px-1.5 py-0.5 text-[11px] font-semibold tracking-wide text-white/90">HDR</span>
+                            <span className="rounded-md border border-white/25 bg-white/[0.08] px-1.5 py-0.5 text-[11px] font-semibold tracking-wide text-white/90">4K Ultra HD</span>
+                            {certification && (
+                                <span className="rounded-md border border-white/25 bg-white/[0.08] px-1.5 py-0.5 text-[11px] font-semibold tracking-wide text-white/90">
+                                    {certification}
+                                </span>
+                            )}
+                        </span>
+
+                        {/* Snake-style symbols (speech + waveform) */}
+                        <span className="inline-flex items-center gap-2 text-white/55">
+                            <MessageSquare aria-hidden className="h-4 w-4" strokeWidth={1.75} />
+                            <AudioLines aria-hidden className="h-4 w-4" strokeWidth={1.75} />
+                        </span>
+                    </div>
 
                     {data.tagline && <p dir="auto" className="mt-4 animate-focus-in text-pretty text-lg leading-snug text-white/90 [animation-delay:130ms]">{quote(data.tagline, locale)}</p>}
                     {data.overview && (
@@ -222,10 +260,23 @@ export default function MediaHero({ kind, data, playLabel, onPlay, trailers, kid
                     {release && <ReleaseCountdown event={release} />}
 
                     <div className="mt-6 flex animate-focus-in flex-col gap-3 [animation-delay:220ms] md:flex-row md:items-center">
-                        <div className="flex gap-3">
-                            <Button size="lg" onClick={onPlay} className="flex-1 px-8 md:flex-none">
-                                <Play aria-hidden className="h-5 w-5 fill-current rtl:-scale-x-100" />{playLabel}
-                            </Button>
+                        <div className="flex flex-wrap items-center gap-3">
+                            {/* Oval “Movie Watch now” / series continue style */}
+                            <button
+                                type="button"
+                                onClick={onPlay}
+                                className="pressable inline-flex items-center gap-3 rounded-full bg-white px-5 py-2.5 text-black shadow-lg outline-none transition hover:bg-white/90 focus-visible:ring-2 focus-visible:ring-red-500"
+                            >
+                                <Play aria-hidden className="h-5 w-5 shrink-0 fill-current rtl:-scale-x-100" />
+                                <span className="flex min-w-0 flex-col items-start leading-tight">
+                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-black/55">
+                                        {kind === 'movie' ? 'Movie' : playLabel}
+                                    </span>
+                                    <span className="text-[15px] font-semibold">
+                                        {kind === 'movie' ? 'Watch now' : 'Continue watching'}
+                                    </span>
+                                </span>
+                            </button>
                             {trailer && (
                                 <Button size="lg" variant="secondary" onClick={() => { setTrailerIndex(0); setTrailerOpen(true) }} className="flex-1 md:flex-none">
                                     <Clapperboard aria-hidden className="h-5 w-5" />{t('detail.trailer')}
