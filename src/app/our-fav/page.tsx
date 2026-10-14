@@ -52,19 +52,15 @@ export default async function OurFavPage({
         ) : (
           <>
             <ol className={GRID_CLASS}>
-              {results.map((item: any, index: number) => {
+              {results.map((item: any) => {
                 const kind = item.media_type === 'tv' ? 'tv' : 'movie'
-                const rank = (page - 1) * 20 + index + 1
+                const props = cardProps(item, kind)
                 return (
                   <li key={`${kind}-${item.id}`}>
                     <PosterCard
-                      {...cardProps(item, kind)}
-                      showTypeBadge
-                      overlay={
-                        <span className="absolute start-2 top-2 grid h-8 min-w-8 place-items-center rounded-full bg-black/70 px-2 font-display text-[15px] font-extrabold text-white ring-1 ring-white/15 backdrop-blur-md">
-                          {rank}
-                        </span>
-                      }
+                      {...props}
+                      showTypeBadge={false}
+                      voteAverage={undefined}
                     />
                   </li>
                 )
