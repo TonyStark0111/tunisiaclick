@@ -40,9 +40,30 @@ export function HeroSlider({ title, href, items, kind = 'movie', loading }: { ti
 }
 
 /** Row of poster cards. `kind="mixed"` routes each item by its own `media_type` (person credits, recommendations). */
-export function PosterSlider({ title, href, items, kind = 'movie', loading, subtitle }: { title: string, href?: string, items?: any[], kind?: Kind | 'mixed', loading?: boolean, subtitle?: React.ReactNode }) {
+export function PosterSlider({
+    title,
+    href,
+    items,
+    kind = 'movie',
+    loading,
+    subtitle,
+    /** Override type badge (default: on when kind is mixed). */
+    showTypeBadge,
+    /** When false, hide the star rating under the title. Default true. */
+    showRating = true,
+}: {
+    title: string
+    href?: string
+    items?: any[]
+    kind?: Kind | 'mixed'
+    loading?: boolean
+    subtitle?: React.ReactNode
+    showTypeBadge?: boolean
+    showRating?: boolean
+}) {
     const list = (items ?? []).filter(Boolean)
     if (!loading && list.length === 0) return null
+    const typeBadge = showTypeBadge ?? kind === 'mixed'
 
     return (
         <section aria-label={title} className="w-full">
@@ -50,9 +71,18 @@ export function PosterSlider({ title, href, items, kind = 'movie', loading, subt
             <Row itemClassName={ROW_WIDTH.poster}>
                 {loading
                     ? Array.from({ length: 10 }).map((_, index) => <PosterSkeleton key={index} />)
-                    : list.map((item) => (
-                        <PosterCard key={`${itemKind(kind, item)}-${item.id}`} {...cardProps(item, itemKind(kind, item))} showTypeBadge={kind === 'mixed'} />
-                    ))}
+                    : list.map((item) => {
+                        const k = itemKind(kind, item)
+                        const props = cardProps(item, k)
+                        return (
+                            <PosterCard
+                                key={`${k}-${item.id}`}
+                                {...props}
+                                showTypeBadge={typeBadge}
+                                voteAverage={showRating ? props.voteAverage : undefined}
+                            />
+                        )
+                    })}
             </Row>
         </section>
     )
