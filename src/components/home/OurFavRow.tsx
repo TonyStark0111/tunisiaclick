@@ -5,7 +5,7 @@ import { catalogueLanguage } from '@/src/lib/tmdb-locale'
 
 /**
  * Home row: Our Fav — only titles with manual download links.
- * Placed after Coming Soon (inspired by seasonal rows like Halloween).
+ * No Movie/TV badge, no star rating.
  */
 export default async function OurFavRow() {
   const items = await getOurFavRow(20, catalogueLanguage(getLocale()))
@@ -18,6 +18,8 @@ export default async function OurFavRow() {
       href="/our-fav"
       items={items}
       kind="mixed"
+      showTypeBadge={false}
+      showRating={false}
     />
   )
 }
