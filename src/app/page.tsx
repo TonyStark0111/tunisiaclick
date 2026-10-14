@@ -13,6 +13,7 @@ import Billboard from '@/src/components/home/Billboard'
 import ChipRail from '@/src/components/home/ChipRail'
 import Top10Row from '@/src/components/home/Top10Row'
 import { AnniversaryRow, SeasonRows, SequelRow } from '@/src/components/home/MomentRows'
+import OurFavRow from '@/src/components/home/OurFavRow'
 import getMovies from './(movies)/actions'
 import { getLocale, getT } from '@/src/lib/i18n/server'
 import { getKidsMode } from '@/src/lib/profiles'
@@ -38,6 +39,7 @@ export const metadata: Metadata = { alternates: { canonical: '/' } }
  * The home page, top to bottom in 20 slots (see docs/features-plan, "homeOrder"). New blocks render
  * nothing when they have nothing to show, never a placeholder, and stream in on their own.
  * Kids skip slots 5, 7 and 12; TV mode skips 5, 7 and 9.
+ * Our Fav sits last, after Coming Soon.
  */
 export default async function MainPage() {
   const kids = await getKidsMode()
@@ -95,6 +97,8 @@ export default async function MainPage() {
           <PosterSlider title={t('home.topRatedMovies')} href="/top-rated" items={data.topRatedMovies?.results} />
           <Suspense fallback={null}><AnniversaryRow kids={kids} /></Suspense>
           <PosterSlider title={t('home.comingSoon')} href="/upcoming" items={data.upcomingMovies?.results} />
+          {/* Our Fav — last place after Coming Soon (manual download titles only) */}
+          <Suspense fallback={null}><OurFavRow /></Suspense>
         </div>
       </div>
     </ClientMessages>
