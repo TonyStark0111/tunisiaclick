@@ -34,7 +34,7 @@ async function getShow(id: string, imageLanguages = 'en,null') {
   try {
     // Videos in English, Arabic and French (and without a language): the trailer and the extras
     // pick the viewer's language first.
-    return await tmdbFetch(`tv/${id}`, { append_to_response: 'images,credits,videos,external_ids', include_image_language: imageLanguages, include_video_language: 'en,ar,fr,null' })
+    return await tmdbFetch(`tv/${id}`, { append_to_response: 'images,credits,videos,external_ids,content_ratings', include_image_language: imageLanguages, include_video_language: 'en,ar,fr,null' })
   } catch (error) {
     if (error instanceof TmdbError && error.status === 404) notFound()
     throw error
