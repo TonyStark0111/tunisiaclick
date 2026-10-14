@@ -220,19 +220,26 @@ export default function MediaHero({ kind, data, playLabel, onPlay, trailers, kid
                         <p aria-hidden className="animate-focus-in text-balance font-display text-[clamp(40px,6vw,88px)] font-extrabold leading-[0.95]"><bdi>{title}</bdi></p>
                     )}
 
-                    {/* Caption row — IMDb · year · length · badges · icons (reference style) */}
-                    <div className="mt-5 flex animate-focus-in flex-wrap items-center gap-x-2.5 gap-y-2 text-[14px] text-white/85 [animation-delay:80ms]">
-                        {data.vote_average > 0 && (
-                            <span className="inline-flex items-center gap-1.5 font-medium text-white" aria-label={t('detail.ratingOutOf', { rating: data.vote_average.toFixed(1) })}>
-                                <span className="text-white/70">IMDb</span>
-                                <span className="font-semibold">{data.vote_average.toFixed(1)}</span>
-                            </span>
-                        )}
-                        {years && <span className="text-white/80">{years}</span>}
-                        {length && <span className="text-white/80">{length}</span>}
+                    {/* Caption — 3 lines (movie & series)
+                        Line 1: IMDb · year · duration / episodes
+                        Line 2: X-RAY HDR 4K Ultra HD cert · symbols
+                        Line 3: genres
+                    */}
+                    <div className="mt-5 space-y-2 animate-focus-in text-[14px] text-white/85 [animation-delay:80ms]">
+                        {/* Line 1 */}
+                        <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                            {data.vote_average > 0 && (
+                                <span className="inline-flex items-center gap-1.5 font-medium text-white" aria-label={t('detail.ratingOutOf', { rating: data.vote_average.toFixed(1) })}>
+                                    <span className="text-white/70">IMDb</span>
+                                    <span className="font-semibold">{data.vote_average.toFixed(1)}</span>
+                                </span>
+                            )}
+                            {years && <span className="text-white/80">{years}</span>}
+                            {length && <span className="text-white/80">{length}</span>}
+                        </p>
 
-                        {/* Quality / feature badges */}
-                        <span className="inline-flex flex-wrap items-center gap-1.5">
+                        {/* Line 2 — badges + parent guide (cert) + symbols */}
+                        <p className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
                             <span className="rounded-md border border-white/25 bg-white/[0.08] px-1.5 py-0.5 text-[11px] font-semibold tracking-wide text-white/90">X-RAY</span>
                             <span className="rounded-md border border-white/25 bg-white/[0.08] px-1.5 py-0.5 text-[11px] font-semibold tracking-wide text-white/90">HDR</span>
                             <span className="rounded-md border border-white/25 bg-white/[0.08] px-1.5 py-0.5 text-[11px] font-semibold tracking-wide text-white/90">4K Ultra HD</span>
@@ -241,13 +248,18 @@ export default function MediaHero({ kind, data, playLabel, onPlay, trailers, kid
                                     {certification}
                                 </span>
                             )}
-                        </span>
+                            <span className="inline-flex items-center gap-2 text-white/55">
+                                <MessageSquare aria-hidden className="h-4 w-4" strokeWidth={1.75} />
+                                <AudioLines aria-hidden className="h-4 w-4" strokeWidth={1.75} />
+                            </span>
+                        </p>
 
-                        {/* Snake-style symbols (speech + waveform) */}
-                        <span className="inline-flex items-center gap-2 text-white/55">
-                            <MessageSquare aria-hidden className="h-4 w-4" strokeWidth={1.75} />
-                            <AudioLines aria-hidden className="h-4 w-4" strokeWidth={1.75} />
-                        </span>
+                        {/* Line 3 — genres */}
+                        {genres.length > 0 && (
+                            <p className="text-white/60">
+                                {genres.join(isArabicScript(locale) ? '، ' : ' · ')}
+                            </p>
+                        )}
                     </div>
 
                     {data.tagline && <p dir="auto" className="mt-4 animate-focus-in text-pretty text-lg leading-snug text-white/90 [animation-delay:130ms]">{quote(data.tagline, locale)}</p>}
