@@ -38,6 +38,8 @@ export type ProviderTemplate = { name: string; movie: string; tv: string }
 // language switching. The template system here only fills in {id}/{season}/{episode}, so those
 // providers are locked to their Hindi default (lang=hi / dubLang=hi / server=hindi / sub).
 const BUILT_IN: ProviderTemplate[] = [
+  { name: 'ZXC Roxy', movie: 'https://zxcstream.icu/player/movie/{id}?dubLang=hi&server=0', tv: 'https://player.zxcprime.xyz/player/tv/{id}/{season}/{episode}?dubLang=hi&server=0' },
+  { name: 'ZXC Stream', movie: 'https://player.zxcprime.xyz/player/movie/{id}?dubLang=hi&server=0', tv: 'https://player.zxcprime.xyz/player/tv/{id}/{season}/{episode}?dubLang=hi&server=0' },
   { name: 'Vidy', movie: 'https://www.vidy.st/movie/{id}?color=DC2626', tv: 'https://www.vidy.st/tv/{id}/{season}/{episode}?color=DC2626&nextEpisode=true&episodeSelector=true' },
   { name: 'Filmu', movie: 'https://embed.filmu.in/movie/{id}', tv: 'https://embed.filmu.in/tv/{id}/{season}/{episode}' },
   { name: 'VidZee', movie: 'https://player.vidzee.wtf/embed/movie/{id}', tv: 'https://player.vidzee.wtf/embed/tv/{id}/{season}/{episode}' },
@@ -63,7 +65,6 @@ const BUILT_IN: ProviderTemplate[] = [
   // --- Ported from friend's streaming.js (Hindi default) ---
   { name: 'NxSha Prime', movie: 'https://nxsha.space/embed/movie/{id}?lang=hi&disable_app_ad=true', tv: 'https://nxsha.space/embed/tv/{id}/{season}/{episode}?lang=hi&disable_app_ad=true' },
   { name: 'TgVid Prime', movie: 'https://tgvid.lovable.app/embed/movie/{id}?color=38bdf8&back=true&server=hindi&lang=hi', tv: 'https://tgvid.lovable.app/embed/tv/{id}/{season}/{episode}?color=38bdf8&back=true&server=hindi&lang=hi&episodeSelector=false&autoplayNextEp=false' },
-  { name: 'ZXC Roxy', movie: 'https://player.zxcprime.xyz/player/movie/{id}?dubLang=hi&server=0', tv: 'https://player.zxcprime.xyz/player/tv/{id}/{season}/{episode}?dubLang=hi&server=0' },
   { name: 'MegaPlay Direct', movie: 'https://megaplay.buzz/stream/ani/{id}/1/sub?autoplay=true', tv: 'https://megaplay.buzz/stream/ani/{id}/{episode}/sub?autoplay=true' },
   { name: 'ZokoAnime Direct', movie: 'https://zokoanime.video/stream/ani/{id}/1/sub', tv: 'https://zokoanime.video/stream/ani/{id}/{episode}/sub' },
   { name: '4Animo Multi-Dub CDN', movie: 'https://cdn.4animo.xyz/embed/hd-3/ani/{id}/1/sub?k=1&autoplay=1', tv: 'https://cdn.4animo.xyz/embed/hd-3/ani/{id}/{episode}/sub?k=1&autoplay=1' },
