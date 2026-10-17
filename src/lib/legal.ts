@@ -127,9 +127,9 @@ const en: Record<LegalPageId, LegalDoc> = {
         ],
       },
       {
-        heading: 'Videos, Tunisian TV and soundtracks',
+        heading: 'Videos, and soundtracks',
         paragraphs: [
-          'Trailers, extras and the Tunisian channels’ videos come from YouTube. Their pictures reach you through our server, so YouTube is only contacted when you press play; the video then plays from YouTube (youtube-nocookie.com), under its own privacy policy. Soundtracks come from Deezer: we keep which album matches a title, never anything about you, and a track preview plays from Deezer only when you press it. A report that an album is wrong is counted once per network address, without storing that address.',
+          'Trailers, extras and the Tv channels’ videos come from YouTube. Their pictures reach you through our server, so YouTube is only contacted when you press play; the video then plays from YouTube (youtube-nocookie.com), under its own privacy policy. Soundtracks come from Deezer: we keep which album matches a title, never anything about you, and a track preview plays from Deezer only when you press it. A report that an album is wrong is counted once per network address, without storing that address.',
         ],
       },
       {
