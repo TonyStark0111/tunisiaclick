@@ -545,7 +545,7 @@ export const en = {
   'dmca.work': 'Copyrighted work',
   'dmca.workPlaceholder': 'Title of the work and your rights in it',
   'dmca.urls': 'Xeonflix page address(es)',
-  'dmca.urlsHelp': 'One address per line, e.g. https://tunisiaflicks.vercel.app/movie/123',
+  'dmca.urlsHelp': 'One address per line, e.g. https://xeonflix.xyzz/movie/1223',
   'dmca.details': 'Details',
   'dmca.signature': 'Signature (type your full name)',
   'dmca.goodFaith': 'I believe in good faith that this use is not authorised by the copyright owner, its agent or the law.',
