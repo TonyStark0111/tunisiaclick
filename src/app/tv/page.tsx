@@ -27,7 +27,7 @@ export default async function TVPage() {
       <Billboard items={billboard} />
       <div className="relative z-10 mt-6 space-y-10 sm:space-y-12 md:-mt-16">
         <ChipRail type="tv" />
-        <PosterSlider title={t('tvPage.trending')} href="/discover?type=tv" kind="tv" items={data.trendingTVShows?.results} />
+        <PosterSlider title={t('tvPage.trending')} kind="tv" items={data.trendingTVShows?.results} />
         <HeroSlider title={t('tvPage.onTheAir')} kind="tv" items={data.onTheAirTVShows?.results} />
         <PosterSlider title={t('tvPage.popular')} kind="tv" items={data.popularTVShows?.results} />
         <PosterSlider title={t('tvPage.topRated')} href="/top-rated?type=tv" kind="tv" items={data.topRatedTVShows?.results} />
