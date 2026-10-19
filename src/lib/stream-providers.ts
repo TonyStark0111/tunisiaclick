@@ -10,8 +10,9 @@
 // touching the code (Vercel → Settings → Environment Variables, then redeploy):
 //
 // - STREAM_PROVIDERS: the whole list, as JSON, best first. `{id}`, `{season}` and `{episode}`
-//   are filled in:
-//   [{"name":"Vidy","movie":"https://www.vidy.st/movie/{id}","tv":"https://www.vidy.st/tv/{id}/{season}/{episode}"}]
+//   are filled in. Optional `logo` is an absolute https image URL shown next to the name in the
+//   player source bar (XEONFLIX). If omitted, a favicon is derived from the movie URL host:
+//   [{"name":"Vidy","movie":"https://www.vidy.st/movie/{id}","tv":"https://www.vidy.st/tv/{id}/{season}/{episode}","logo":"https://www.vidy.st/favicon.ico"}]
 // - STREAM_PROVIDERS_OFF: names to switch off, comma-separated (e.g. "2Embed,AutoEmbed").
 //
 // Both are read on the server only (a client bundle never sees them, which is why the pages pass
@@ -23,10 +24,30 @@ import 'server-only'
 
 export type MediaType = 'movie' | 'tv'
 
-export type StreamProvider = { name: string; url: string }
+/** A filled-in source the player can open. `logo` is optional (provider icon from website URL). */
+export type StreamProvider = { name: string; url: string; logo?: string }
 
-/** A provider as URL templates: `{id}` (and for TV `{season}`, `{episode}`) get filled in. */
-export type ProviderTemplate = { name: string; movie: string; tv: string }
+/**
+ * A provider as URL templates: `{id}` (and for TV `{season}`, `{episode}`) get filled in.
+ * Optional `logo`: absolute https URL of the provider's logo/icon (shown in the XEONFLIX source bar).
+ */
+export type ProviderTemplate = { name: string; movie: string; tv: string; logo?: string }
+
+/** Favicon-style logo URL derived from a provider movie template host (Google s2 favicons). */
+export function logoFromMovieUrl(movieUrl: string): string | undefined {
+  try {
+    const host = new URL(movieUrl).hostname.replace(/^www\./, '')
+    if (!host) return undefined
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=64`
+  } catch {
+    return undefined
+  }
+}
+
+function withLogo(template: ProviderTemplate): ProviderTemplate {
+  const logo = template.logo?.trim() || logoFromMovieUrl(template.movie)
+  return logo ? { ...template, logo } : template
+}
 
 // Ordered best-first; the first one is selected by default.
 //
@@ -37,6 +58,8 @@ export type ProviderTemplate = { name: string; movie: string; tv: string }
 // NOTE: the last 6 entries were ported from a richer provider definition that supported per-audio
 // language switching. The template system here only fills in {id}/{season}/{episode}, so those
 // providers are locked to their Hindi default (lang=hi / dubLang=hi / server=hindi / sub).
+//
+// Logos: optional explicit `logo` URLs; otherwise derived from the movie host at runtime.
 const BUILT_IN: ProviderTemplate[] = [
   { name: 'ZXC Roxy', movie: 'https://zxcstream.icu/player/movie/{id}?dubLang=hi&server=0', tv: 'https://player.zxcprime.xyz/player/tv/{id}/{season}/{episode}?dubLang=hi&server=0' },
   { name: 'ZXC Stream', movie: 'https://player.zxcprime.xyz/player/movie/{id}?dubLang=hi&server=0', tv: 'https://player.zxcprime.xyz/player/tv/{id}/{season}/{episode}?dubLang=hi&server=0' },
@@ -70,7 +93,7 @@ const BUILT_IN: ProviderTemplate[] = [
   { name: '4Animo Multi-Dub CDN', movie: 'https://cdn.4animo.xyz/embed/hd-3/ani/{id}/1/sub?k=1&autoplay=1', tv: 'https://cdn.4animo.xyz/embed/hd-3/ani/{id}/{episode}/sub?k=1&autoplay=1' },
 ]
 
-type Template = { name?: unknown, movie?: unknown, tv?: unknown }
+type Template = { name?: unknown; movie?: unknown; tv?: unknown; logo?: unknown }
 
 /** STREAM_PROVIDERS, if it's set and valid; otherwise null (and the built-in list is used). */
 function fromEnv(raw: string | undefined): ProviderTemplate[] | null {
@@ -79,14 +102,15 @@ function fromEnv(raw: string | undefined): ProviderTemplate[] | null {
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed)) throw new Error('not an array')
     const list = (parsed as Template[]).flatMap((item): ProviderTemplate[] => {
-      const { name, movie, tv } = item ?? {}
+      const { name, movie, tv, logo } = item ?? {}
       const valid = typeof name === 'string' && name.trim() && typeof movie === 'string' && typeof tv === 'string'
         && movie.startsWith('https://') && tv.startsWith('https://') && movie.includes('{id}') && tv.includes('{id}')
       if (!valid) {
         console.error('STREAM_PROVIDERS: skipped an entry without a name and https movie/tv templates containing {id}:', item)
         return []
       }
-      return [{ name: name.trim(), movie, tv }]
+      const logoUrl = typeof logo === 'string' && logo.startsWith('https://') ? logo.trim() : undefined
+      return [withLogo({ name: name.trim(), movie, tv, logo: logoUrl })]
     })
     return list.length ? list : null
   } catch (error) {
@@ -95,12 +119,13 @@ function fromEnv(raw: string | undefined): ProviderTemplate[] | null {
   }
 }
 
-let memo: { key: string, list: ProviderTemplate[] } | null = null
+let memo: { key: string; list: ProviderTemplate[] } | null = null
 
 /**
  * The stream sources as templates, best first: STREAM_PROVIDERS (or the built-in list) without
- * the names in STREAM_PROVIDERS_OFF. Read from the environment on every call (memoised while it
- * doesn't change), so a test or a redeploy with new values takes effect.
+ * the names in STREAM_PROVIDERS_OFF. Each entry gets a `logo` (explicit or favicon from host).
+ * Read from the environment on every call (memoised while it doesn't change), so a test or a
+ * redeploy with new values takes effect.
  */
 export function getProviderTemplates(): ProviderTemplate[] {
   const raw = process.env.STREAM_PROVIDERS ?? ''
@@ -108,7 +133,7 @@ export function getProviderTemplates(): ProviderTemplate[] {
   const key = `${raw}\n${offRaw}`
   if (memo?.key === key) return memo.list
   const off = new Set(offRaw.split(',').map((name) => name.trim().toLowerCase()).filter(Boolean))
-  const list = (fromEnv(raw) ?? BUILT_IN).filter((provider) => !off.has(provider.name.toLowerCase()))
+  const list = (fromEnv(raw) ?? BUILT_IN.map(withLogo)).filter((provider) => !off.has(provider.name.toLowerCase()))
   memo = { key, list }
   return list
 }
