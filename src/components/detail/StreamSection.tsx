@@ -16,6 +16,27 @@ import TmdbImage from '@/src/components/TmdbImage'
 import { Button } from '@/src/components/ui/button'
 import { BrandLoader } from '@/src/components/brand/BrandMark'
 
+/** Provider logo from website URL (favicon or explicit logo field). Hides on load error. */
+function ProviderLogo({ src, name, active }: { src?: string; name: string; active?: boolean }) {
+    if (!src) return null
+    return (
+        // eslint-disable-next-line @next/next/no-img-element -- arbitrary third-party logo hosts
+        <img
+            src={src}
+            alt=""
+            width={16}
+            height={16}
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+            className={cn('h-4 w-4 shrink-0 rounded-sm object-contain', active ? 'opacity-100' : 'opacity-90')}
+            title={name}
+        />
+    )
+}
+
+
 /** TV mode: after this many briefings on a device, the briefing shrinks to a short hint. */
 const FULL_BRIEFINGS = 3
 const VISITS_KEY = 'tf-tv-player-visits'
@@ -379,6 +400,7 @@ export default function StreamSection({ services: providerServices, media, downl
                                                         className={cn('inline-flex h-[2.9em] items-center gap-2 rounded-full px-[1.2em] text-[16px] font-semibold outline-none', active ? 'bg-white text-black' : 'bg-white/[0.12] text-white')}
                                                     >
                                                         {active && <Check aria-hidden className="h-4 w-4" />}
+                                                        <ProviderLogo src={item.logo} name={item.name} active={active} />
                                                         {item.name}
                                                     </button>
                                                 )
@@ -438,6 +460,7 @@ export default function StreamSection({ services: providerServices, media, downl
                                             {remembered
                                                 ? <Check aria-hidden className={cn('h-3.5 w-3.5', active ? 'text-emerald-600' : 'text-emerald-400')} />
                                                 : (status === 'good' || status === 'down') && <span aria-hidden className={cn('h-1.5 w-1.5 rounded-full', status === 'down' ? 'bg-amber-400' : 'bg-emerald-400')} />}
+                                            <ProviderLogo src={item.logo} name={item.name} active={active} />
                                             {item.name}
                                         </span>
                                     </button>
