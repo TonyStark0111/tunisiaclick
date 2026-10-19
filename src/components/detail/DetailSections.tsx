@@ -78,23 +78,27 @@ export function CastRow({ cast, id, mediaType, mediaId, signedIn }: { cast: any[
  */
 export function CrewRow({ crew, id = 'crew' }: { crew: any[], id?: string }) {
     const { t } = useI18n()
-    // One card per person (first credit wins); prefer jobs viewers care about.
+    // Only the jobs we surface (same idea as TMDB “key crew”): Director, Producer,
+    // Original Music, Director of Photography, Screenplay, Writer, Editor — if present.
     const people = useMemo(() => {
-        const rank = (job: string) => {
-            const j = (job || '').toLowerCase()
+        const rankOf = (job: string): number | null => {
+            const j = (job || '').trim().toLowerCase()
             if (j === 'director') return 0
-            if (j.includes('writer') || j === 'screenplay' || j === 'story') return 1
-            if (j.includes('producer') && !j.includes('line')) return 2
-            if (j.includes('director of photography') || j === 'cinematography') return 3
-            if (j.includes('editor')) return 4
-            if (j.includes('music') || j.includes('composer')) return 5
-            if (j.includes('production design') || j.includes('costume')) return 6
-            return 20
+            if (j === 'producer') return 1
+            if (j === 'original music composer' || j === 'music' || j === 'composer') return 2
+            if (j === 'director of photography' || j === 'cinematography') return 3
+            if (j === 'screenplay') return 4
+            if (j === 'writer' || j === 'story' || j === 'teleplay') return 5
+            if (j === 'editor' || j === 'film editor') return 6
+            return null
         }
-        const sorted = [...(crew ?? [])].sort((a, b) => rank(a.job) - rank(b.job))
+        const sorted = [...(crew ?? [])]
+            .map((person) => ({ person, rank: rankOf(person.job) }))
+            .filter((entry): entry is { person: any, rank: number } => entry.rank !== null)
+            .sort((a, b) => a.rank - b.rank || String(a.person.name).localeCompare(String(b.person.name)))
         const seen = new Set<number>()
         const out: any[] = []
-        for (const person of sorted) {
+        for (const { person } of sorted) {
             const pid = person?.id
             if (typeof pid !== 'number' || seen.has(pid)) continue
             seen.add(pid)
