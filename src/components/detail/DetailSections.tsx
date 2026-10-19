@@ -72,6 +72,59 @@ export function CastRow({ cast, id, mediaType, mediaId, signedIn }: { cast: any[
     )
 }
 
+/**
+ * The crew as a row of portraits (same layout as Cast), with each person's job.
+ * Rendered directly under Cast; the page nav still only has one "Cast" link that lands on #cast.
+ */
+export function CrewRow({ crew, id = 'crew' }: { crew: any[], id?: string }) {
+    const { t } = useI18n()
+    // One card per person (first credit wins); prefer jobs viewers care about.
+    const people = useMemo(() => {
+        const rank = (job: string) => {
+            const j = (job || '').toLowerCase()
+            if (j === 'director') return 0
+            if (j.includes('writer') || j === 'screenplay' || j === 'story') return 1
+            if (j.includes('producer') && !j.includes('line')) return 2
+            if (j.includes('director of photography') || j === 'cinematography') return 3
+            if (j.includes('editor')) return 4
+            if (j.includes('music') || j.includes('composer')) return 5
+            if (j.includes('production design') || j.includes('costume')) return 6
+            return 20
+        }
+        const sorted = [...(crew ?? [])].sort((a, b) => rank(a.job) - rank(b.job))
+        const seen = new Set<number>()
+        const out: any[] = []
+        for (const person of sorted) {
+            const pid = person?.id
+            if (typeof pid !== 'number' || seen.has(pid)) continue
+            seen.add(pid)
+            out.push(person)
+            if (out.length >= 24) break
+        }
+        return out
+    }, [crew])
+    if (people.length === 0) return null
+
+    return (
+        <section id={id} aria-label={t('detail.crew')} className="scroll-mt-[calc(var(--topbar)+72px)]">
+            <SectionHeader title={t('detail.crew')} />
+            <Row itemClassName="w-[96px] sm:w-[118px]" gap="gap-3 sm:gap-5">
+                {people.map((person) => (
+                    <div key={person.credit_id ?? `${person.id}-${person.job}`} className="group/crew relative">
+                        <Link href={`/person/${person.id}`} className="group/person block text-center outline-none">
+                            <span className="relative mx-auto block aspect-square w-full overflow-hidden rounded-full bg-white/[0.06] ring-1 ring-white/10 transition-[transform,box-shadow] duration-300 ease-out group-hover/person:-translate-y-1 group-hover/person:ring-white/40 group-focus-visible/person:ring-2 group-focus-visible/person:ring-red-500 group-active/person:scale-[0.97]">
+                                <TmdbImage kind="profile" path={person.profile_path} fallback="/actor.png" alt="" fill sizes="118px" className="object-cover object-[50%_25%]" />
+                            </span>
+                            <span className="mt-2.5 block truncate text-[13px] font-medium text-white/90"><bdi>{person.name}</bdi></span>
+                            {person.job && <span className="block truncate text-[12px] text-white/50"><bdi>{person.job}</bdi></span>}
+                        </Link>
+                    </div>
+                ))}
+            </Row>
+        </section>
+    )
+}
+
 /** "$63M", "$1.2B": formatted by hand so server and browser (different ICU data) agree. */
 function money(value?: number) {
     if (!value) return ''

@@ -3,7 +3,7 @@ import React, { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import MediaHero from '@/src/components/detail/MediaHero'
 import SectionNav, { type Section } from '@/src/components/detail/SectionNav'
-import { CastRow, DetailsGrid } from '@/src/components/detail/DetailSections'
+import { CastRow, CrewRow, DetailsGrid } from '@/src/components/detail/DetailSections'
 import MoreLikeThis, { type SimilarTab } from '@/src/components/detail/MoreLikeThis'
 import ExtrasSection from '@/src/components/detail/ExtrasSection'
 import RatingsBand from '@/src/components/social/RatingsBand'
@@ -62,14 +62,16 @@ export default function MovieDetail({ id, data, similar, kids, signedIn, ratings
   const soundtrack = useSoundtrack({ type: 'movie', id, kids, initial: initialSoundtrack })
 
   const cast: any[] = data.credits?.cast ?? []
+  const crew: any[] = data.credits?.crew ?? []
   const media = useMemo(() => ({ media_type: 'movie' as const, id, title: data.title ?? '', poster_path: data.poster_path ?? null }), [id, data.title, data.poster_path])
 
   const sections = useMemo(() => detailSections(t, {
     ratings,
     similar: tabs.length > 0,
     extras: extras.length > 0 || initialSoundtrack.state === 'found',
-    cast: cast.length > 0,
-  }), [t, ratings, tabs.length, extras.length, initialSoundtrack.state, cast.length])
+    // One nav item "Cast" scrolls to #cast; crew sits under it (no separate Crew tab).
+    cast: cast.length > 0 || crew.length > 0,
+  }), [t, ratings, tabs.length, extras.length, initialSoundtrack.state, cast.length, crew.length])
 
   const router = useRouter()
 
@@ -87,6 +89,7 @@ export default function MovieDetail({ id, data, similar, kids, signedIn, ratings
         {tabs.length > 0 && <MoreLikeThis kind="movie" id={id} kids={kids} closest={similar} tabs={tabs} />}
         <ExtrasSection type="movie" id={id} title={data.title ?? ''} kids={kids} groups={extras} soundtrack={soundtrack} />
         <CastRow id="cast" cast={cast} mediaType="movie" mediaId={id} signedIn={signedIn} />
+        <CrewRow crew={crew} />
         <DetailsGrid id="details" kind="movie" data={data} soundtrack={soundtrack.status} kids={kids} />
       </div>
     </div>

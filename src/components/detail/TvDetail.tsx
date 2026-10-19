@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import MediaHero from '@/src/components/detail/MediaHero'
 import SectionNav from '@/src/components/detail/SectionNav'
 import EpisodeBrowser, { type Episode, type Season } from '@/src/components/detail/EpisodeBrowser'
-import { CastRow, DetailsGrid } from '@/src/components/detail/DetailSections'
+import { CastRow, CrewRow, DetailsGrid } from '@/src/components/detail/DetailSections'
 import MoreLikeThis from '@/src/components/detail/MoreLikeThis'
 import ExtrasSection from '@/src/components/detail/ExtrasSection'
 import { detailSections, type DetailServerProps } from '@/src/components/detail/MovieDetail'
@@ -122,6 +122,7 @@ export default function TvDetail({ id, data, similar, resume, providers, kids, s
     : firstSeason !== undefined ? t('detail.playEpisode', { episode: code({ season: firstSeason, episode: 1 }) }) : t('billboard.play')
 
   const cast: any[] = data.credits?.cast ?? []
+  const crew: any[] = data.credits?.crew ?? []
   const media = useMemo(() => ({ media_type: 'tv' as const, id, title: data.name ?? '', poster_path: data.poster_path ?? null }), [id, data.name, data.poster_path])
 
   const sections = useMemo(() => detailSections(t, {
@@ -129,8 +130,9 @@ export default function TvDetail({ id, data, similar, resume, providers, kids, s
     ratings,
     similar: tabs.length > 0,
     extras: extras.length > 0 || initialSoundtrack.state === 'found',
-    cast: cast.length > 0,
-  }), [t, seasons.length, ratings, tabs.length, extras.length, initialSoundtrack.state, cast.length])
+    // One nav item "Cast" scrolls to #cast; crew sits under it (no separate Crew tab).
+    cast: cast.length > 0 || crew.length > 0,
+  }), [t, seasons.length, ratings, tabs.length, extras.length, initialSoundtrack.state, cast.length, crew.length])
 
   return (
     <div className="w-full min-w-0 pb-6" {...ambientStyle(ambient)}>
@@ -154,6 +156,7 @@ export default function TvDetail({ id, data, similar, resume, providers, kids, s
         {tabs.length > 0 && <MoreLikeThis kind="tv" id={id} kids={kids} closest={similar} tabs={tabs} />}
         <ExtrasSection type="tv" id={id} title={data.name ?? ''} kids={kids} groups={extras} soundtrack={soundtrack} />
         <CastRow id="cast" cast={cast} mediaType="tv" mediaId={id} signedIn={signedIn} />
+        <CrewRow crew={crew} />
         <DetailsGrid id="details" kind="tv" data={data} soundtrack={soundtrack.status} kids={kids} />
       </div>
     </div>
