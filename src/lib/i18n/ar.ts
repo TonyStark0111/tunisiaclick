@@ -120,6 +120,7 @@ export const ar: Record<CoreKey, string> = {
   'home.continueBadge': 'م{season} · ح{episode}',
   'home.becauseYouWatched': 'لأنك شاهدت {title}',
   'home.trendingMovies': 'الأفلام الرائجة',
+  'home.trendingSeries': 'المسلسلات الرائجة',
   'home.popularMovies': 'الأفلام الشائعة',
   'home.topRatedMovies': 'الأفلام الأعلى تقييماً',
   'home.nowPlaying': 'يُعرض الآن',

@@ -118,6 +118,7 @@ export const en = {
   'home.continueBadge': 'S{season} · E{episode}',
   'home.becauseYouWatched': 'Because you watched {title}',
   'home.trendingMovies': 'Trending Movies',
+  'home.trendingSeries': 'Trending Series',
   'home.popularMovies': 'Popular Movies',
   'home.topRatedMovies': 'Top Rated Movies',
   'home.nowPlaying': 'Now Playing',

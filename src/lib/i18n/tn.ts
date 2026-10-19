@@ -101,6 +101,7 @@ export const tn: Partial<Record<TKey, string>> = {
   'home.continueRemoveTitle': 'نحّيه من «كمّل تفرّج»',
   'home.becauseYouWatched': 'خاطر تفرّجت في {title}',
   'home.trendingMovies': 'أفلام عاملة الحس',
+  'home.trendingSeries': 'مسلسلات عاملة الحس',
   'home.popularMovies': 'أفلام معروفة برشا',
   'home.topRatedMovies': 'أحسن الأفلام',
   'home.nowPlaying': 'توّا في السينما',

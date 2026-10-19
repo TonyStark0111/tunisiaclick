@@ -278,6 +278,7 @@ export const SERVER_ONLY_KEYS: readonly string[] = [
   'home.top10WorldNote',
   'home.topRatedMovies',
   'home.trendingMovies',
+  'home.trendingSeries',
   'kids.backHome',
   'languages.meta.description',
   'languages.meta.title',

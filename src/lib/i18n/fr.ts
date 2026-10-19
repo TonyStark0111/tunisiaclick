@@ -131,6 +131,7 @@ export const fr: Record<CoreKey, string> = {
   'home.continueBadge': 'S{season}:É{episode}',
   'home.becauseYouWatched': 'Parce que vous avez regardé {title}',
   'home.trendingMovies': 'Films tendance',
+  'home.trendingSeries': 'Séries tendance',
   'home.popularMovies': 'Films populaires',
   'home.topRatedMovies': 'Films les mieux notés',
   'home.nowPlaying': 'En salle',
