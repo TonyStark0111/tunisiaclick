@@ -820,6 +820,7 @@ export const fr: Record<CoreKey, string> = {
   'detail.watch': 'Regarder',
   'detail.moreLikeThis': 'Dans le même esprit',
   'detail.cast': 'Distribution',
+  'detail.crew': 'Équipe technique',
   'detail.details': 'Détails',
   'detail.sections': 'Sur cette page',
   'detail.trailer': 'Bande-annonce',

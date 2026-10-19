@@ -808,6 +808,7 @@ export const ar: Record<CoreKey, string> = {
   'detail.watch': 'مشاهدة',
   'detail.moreLikeThis': 'أعمال مشابهة',
   'detail.cast': 'طاقم التمثيل',
+  'detail.crew': 'طاقم العمل',
   'detail.details': 'التفاصيل',
   'detail.sections': 'في هذه الصفحة',
   'detail.trailer': 'الإعلان',

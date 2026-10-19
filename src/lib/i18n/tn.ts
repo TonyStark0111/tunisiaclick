@@ -408,6 +408,7 @@ export const tn: Partial<Record<TKey, string>> = {
   'detail.watch': 'تفرّج',
   'detail.moreLikeThis': 'حاجات كيفو',
   'detail.cast': 'الممثلين',
+  'detail.crew': 'فريق العمل',
   'detail.details': 'التفاصيل',
   'detail.sections': 'في الصفحة هاذي',
   'detail.trailer': 'البرومو',

@@ -807,6 +807,7 @@ export const en = {
   'detail.watch': 'Watch',
   'detail.moreLikeThis': 'More like this',
   'detail.cast': 'Cast',
+  'detail.crew': 'Crew',
   'detail.details': 'Details',
   'detail.sections': 'On this page',
   'detail.trailer': 'Trailer',
