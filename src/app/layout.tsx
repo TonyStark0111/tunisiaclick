@@ -31,6 +31,7 @@ import { getAppReleases, getDesktopRelease } from "@/src/lib/app-releases";
 import { INSTALL_PROMPT_SCRIPT } from "@/src/lib/install-prompt-script";
 import { LAUNCH_SCRIPT } from "@/src/lib/launch-script";
 import AppLaunch from "@/src/components/brand/AppLaunch";
+import ProviderIntro from "@/src/components/brand/ProviderIntro";
 import { withTimeout } from "@/src/lib/with-timeout";
 import { clientMessages, dirOf, htmlLang } from "@/src/lib/i18n";
 import { getLocale, getT } from "@/src/lib/i18n/server";
@@ -197,6 +198,8 @@ export default async function RootLayout({
         {/* Before anything else: keep the browser's one-time "install this site" offer for later. */}
         <script dangerouslySetInnerHTML={{ __html: INSTALL_PROMPT_SCRIPT }} />
         <AppLaunch />
+        {/* Web: OTT provider logos intro (Netflix, Amazon, Zee5…) then XEONFLIX brand. Skip / Don't show again. */}
+        <ProviderIntro />
         <NextTopLoader color="#FF2414" height={2} showSpinner={false} shadow={false} easing="cubic-bezier(0.23, 1, 0.32, 1)" speed={260} />
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:start-3 focus:top-3 focus:z-[100] focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-black">
           {t('nav.skipToContent')}
