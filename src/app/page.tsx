@@ -15,6 +15,7 @@ import Top10Row from '@/src/components/home/Top10Row'
 import { AnniversaryRow, SeasonRows, SequelRow } from '@/src/components/home/MomentRows'
 import OurFavRow from '@/src/components/home/OurFavRow'
 import getMovies from './(movies)/actions'
+import getTVShows from './tv/actions'
 import { getLocale, getT } from '@/src/lib/i18n/server'
 import { getKidsMode } from '@/src/lib/profiles'
 import { isTvMode } from '@/src/lib/tv-mode'
@@ -45,8 +46,9 @@ export default async function MainPage() {
   const kids = await getKidsMode()
   const tv = isTvMode()
   const locale = getLocale()
-  const [data, pick, community, billboard] = await Promise.all([
+  const [data, tvData, pick, community, billboard] = await Promise.all([
     getMovies(kids, catalogueLanguage(locale)),
+    getTVShows(kids, catalogueLanguage(locale)),
     getPickOfTheDay(kids, locale),
     getCommunityTrending(kids, locale),
     getBillboard(kids, locale),
@@ -81,6 +83,8 @@ export default async function MainPage() {
           {!tv && <PushPrompt />}
           {/* 10 */}
           <PosterSlider title={t('home.trendingMovies')} href="/discover" items={data.TrendingMovies?.results} />
+          {/* 10b — Trending Series, See all opens /tv */}
+          <PosterSlider title={t('home.trendingSeries')} href="/tv" kind="tv" items={tvData.trendingTVShows?.results} />
           {/* 11 */}
           <PickOfTheDay pick={pick} />
           {/* 12. Beyond Hollywood: one door per hub. */}
