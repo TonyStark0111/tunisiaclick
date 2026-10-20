@@ -61,35 +61,41 @@ const notFoundPage = (req: NextRequest) => NextResponse.rewrite(new URL('/404', 
  * Pages stream from the root loading.tsx, so inside a page a redirect can only be a 200 with a meta
  * refresh, and notFound() a 200 too. The sections whose addresses are a closed set get their real
  * statuses here instead:
- * - /arab-cinema/<cc>: a lowercase ISO code of an Arab League member. /arab-cinema/EG is a 308 to
- *   /arab-cinema/eg, Tunisia's page is /tunisian/cinema, anything else is a 404.
+ * - /world-cinema/<cc>: a lowercase ISO code of a world cinema country. /world-cinema/US is a 308 to
+ *   /world-cinema/us; anything else is a 404.
  * - /dramas/<hub>: turkish or korean.
  * - /tunisian/tv/<channel>: an enabled channel.
  * Deeper paths (share cards, a channel's avatar) are left to their own routes.
  */
 function closedSetStatus(req: NextRequest): NextResponse | null {
-  const match = /^\/(arab-cinema|dramas)\/([^/]+)\/?$/.exec(req.nextUrl.pathname);
+  const match = /^\/(world-cinema|dramas)\/([^/]+)\/?$/.exec(req.nextUrl.pathname);
   if (!match) return null;
   const [, section, segment] = match;
   // Next's own files next to the pages (share cards).
   if (/^(opengraph|twitter)-image/.test(segment)) return null;
   if (section === 'dramas') return isHubId(segment) ? null : notFoundPage(req);
   const code = segment.toLowerCase();
-  if (code === 'tn') return null;
   if (!isArabCountry(code)) return notFoundPage(req);
   if (code === segment) return null;
   const url = req.nextUrl.clone();
-  url.pathname = `/arab-cinema/${code}`;
+  url.pathname = `/world-cinema/${code}`;
   return NextResponse.redirect(url, 308);
 }
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Legacy Arab cinema routes → World cinema
+  if (pathname === '/arab-cinema' || pathname.startsWith('/arab-cinema/')) {
+    const url = req.nextUrl.clone();
+    url.pathname = pathname.replace(/^\/arab-cinema/, '/world-cinema');
+    return NextResponse.redirect(url, 308);
+  }
+
   if (pathname === '/') return switchTvMode(req) ?? NextResponse.next();
   // The real 404, 308 and 302 of people's pages (see src/app/u/_lib/gate.ts).
   if (pathname === '/me' || pathname.startsWith('/u/')) return (await profilePageGate(req)) ?? NextResponse.next();
-  if (/^\/(arab-cinema|dramas)\//.test(pathname)) return closedSetStatus(req) ?? NextResponse.next();
+  if (/^\/(world-cinema|dramas)\//.test(pathname)) return closedSetStatus(req) ?? NextResponse.next();
   if (!AUTH_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))) return NextResponse.next();
 
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -114,5 +120,5 @@ export async function middleware(req: NextRequest) {
 export const config = {
   // '/' only for the ?tv= switch (no session lookup there). `:path*`, not a lone `:param` at the end:
   // Next 14.2 compiles '/u/:handle' to a pattern that only matches '/u'.
-  matcher: ['/', '/dashboard', '/login', '/signup', '/profiles', '/me', '/u/:path*', '/arab-cinema/:path*', '/dramas/:path*'],
+  matcher: ['/', '/dashboard', '/login', '/signup', '/profiles', '/me', '/u/:path*', '/world-cinema/:path*', '/arab-cinema/:path*', '/dramas/:path*'],
 };
