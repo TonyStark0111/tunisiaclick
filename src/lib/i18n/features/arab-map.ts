@@ -1,4 +1,4 @@
-// Strings for: The Arab cinema map (/arab-cinema and a page per country).
+// Strings for: The Arab cinema map (/world-cinema and a page per country).
 //
 // Counts never go inside sentences (Arabic has six plural forms): a number and its label are two
 // separate spans ('Films' over '1,204'). Country names come from Intl (arabCountryName), so
@@ -9,11 +9,11 @@ const NBSP = ' '
 
 export const arabMap = defineStrings({
   en: {
-    'arabMap.nav': 'Arab cinema',
-    'arabMap.title': 'Arab cinema',
-    'arabMap.intro': 'Films and series from the 22 countries of the Arab world, on one map. Each country is lit by its film of the day.',
+    'arabMap.nav': 'World cinema',
+    'arabMap.title': 'World cinema',
+    'arabMap.intro': 'Films and series from major cinema countries around the world, on one map. Each country is lit by its film of the day.',
 
-    'arabMap.mapLabel': 'Map of the Arab world',
+    'arabMap.mapLabel': 'World cinema map',
     'arabMap.mapHelp': 'Use the arrow keys to move from country to country, and Enter to open one.',
     'arabMap.hint': 'Choose a country to see its films and series.',
     'arabMap.hintTouch': 'Tap a country to open it. Slide across the map to look around.',
@@ -27,7 +27,7 @@ export const arabMap = defineStrings({
     'arabMap.close': 'All countries',
 
     'arabMap.all': 'All countries',
-    'arabMap.today': 'Today across the Arab world',
+    'arabMap.today': 'Today across the world',
     'arabMap.todaySubtitle': 'Every country’s film of the day',
     'arabMap.source': 'Titles and counts come from TMDB, by country of origin. The films of the day change at midnight, Tunis time.',
     'arabMap.sourceCountry': 'From TMDB: the films and series whose country of origin is {country}.',
@@ -50,16 +50,16 @@ export const arabMap = defineStrings({
     'arabMap.error.text': 'The film database didn’t answer. Try again in a moment.',
     'arabMap.error.retry': 'Try again',
 
-    'arabMap.door.title': 'See the Arab cinema map',
-    'arabMap.door.text': 'Films and series from the 22 countries of the Arab world',
+    'arabMap.door.title': 'See the World cinema map',
+    'arabMap.door.text': 'Films and series from major cinema countries around the world',
     'arabMap.meta.country': '{country}: films and series',
     'arabMap.meta.countryText': 'Films and series from {country}: new releases, all-time favourites, classics and the people born there.',
     'arabMap.notFound.title': 'Not on the map',
-    'arabMap.notFound.text': 'This address isn’t one of the 22 countries. Choose one on the map or in the list.',
+    'arabMap.notFound.text': 'This address isn’t one of the countries on the map. Choose one on the map or in the list.',
   },
   ar: {
-    'arabMap.nav': 'السينما العربية',
-    'arabMap.title': 'السينما العربية',
+    'arabMap.nav': 'سينما العالم',
+    'arabMap.title': 'سينما العالم',
     'arabMap.intro': 'أفلام ومسلسلات من بلدان العالم العربي الـ22 على خريطة واحدة. كل بلد يضيئه فيلم يومه.',
 
     'arabMap.mapLabel': 'خريطة العالم العربي',

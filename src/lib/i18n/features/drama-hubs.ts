@@ -130,7 +130,7 @@ export const dramaHubs = defineStrings({
     'dramas.shelf.tunisianLine': 'Series and films made in Tunisia',
     'dramas.shelf.tunisianTv': 'Tunisian TV',
     'dramas.shelf.tunisianTvLine': 'The channels and shows of home',
-    'dramas.shelf.arab': 'Arab cinema',
+    'dramas.shelf.arab': 'World cinema',
     'dramas.shelf.arabLine': 'Today: {title}',
 
     'video.watchOnYouTube': 'Watch on YouTube',
@@ -264,7 +264,7 @@ export const dramaHubs = defineStrings({
     'dramas.shelf.tunisianLine': 'مسلسلات وأفلام صُنعت في تونس',
     'dramas.shelf.tunisianTv': 'التلفزة التونسية',
     'dramas.shelf.tunisianTvLine': 'قنوات البلاد وبرامجها',
-    'dramas.shelf.arab': 'السينما العربية',
+    'dramas.shelf.arab': 'سينما العالم',
     'dramas.shelf.arabLine': 'اليوم: {title}',
 
     'video.watchOnYouTube': 'شاهد على يوتيوب',
@@ -398,7 +398,7 @@ export const dramaHubs = defineStrings({
     'dramas.shelf.tunisianLine': 'مسلسلات وأفلام مصنوعة في تونس',
     'dramas.shelf.tunisianTv': 'التلفزة التونسية',
     'dramas.shelf.tunisianTvLine': 'قنوات البلاد وبرامجها',
-    'dramas.shelf.arab': 'السينما العربية',
+    'dramas.shelf.arab': 'سينما العالم',
     'dramas.shelf.arabLine': 'اليوم: {title}',
 
     'video.watchOnYouTube': 'تفرّج على يوتيوب',
@@ -532,7 +532,7 @@ export const dramaHubs = defineStrings({
     'dramas.shelf.tunisianLine': 'Séries et films faits en Tunisie',
     'dramas.shelf.tunisianTv': 'TV tunisienne',
     'dramas.shelf.tunisianTvLine': 'Les chaînes et émissions du pays',
-    'dramas.shelf.arab': 'Cinéma arabe',
+    'dramas.shelf.arab': 'Cinéma du monde',
     'dramas.shelf.arabLine': 'Aujourd’hui : {title}',
 
     'video.watchOnYouTube': 'Regarder sur YouTube',
