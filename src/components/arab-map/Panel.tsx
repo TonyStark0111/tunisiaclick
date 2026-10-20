@@ -15,7 +15,7 @@ import { neighbours } from '@/src/lib/arab-map'
 import { richT } from '@/src/lib/i18n/rich'
 import { dateLocale, type Locale } from '@/src/lib/i18n/locales'
 import type { Translate } from '@/src/lib/i18n/translate'
-import type { CountryPick } from '@/src/lib/arab-cinema'
+import type { CountryPick } from '@/src/lib/world-cinema'
 import type { CountryPerson, MapTitle } from '@/src/lib/country-cinema'
 import CountryLink from './CountryLink'
 
@@ -77,7 +77,7 @@ export function CountryTitle({ name, t }: { name: string, t: Translate }) {
       <div className="flex items-start justify-between gap-3">
         <h1 dir="auto" className="min-w-0 text-balance font-display text-[clamp(40px,5.2vw,68px)] font-extrabold leading-[0.95] text-white">{name}</h1>
         <CountryLink
-          href="/arab-cinema"
+          href="/world-cinema"
           aria-label={t('arabMap.close')}
           title={t('arabMap.close')}
           className="pressable -me-1 grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/[0.06] text-white/80 outline-none transition-colors hover:bg-white/[0.1] hover:text-white focus-visible:ring-2 focus-visible:ring-red-500"

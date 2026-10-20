@@ -7,7 +7,7 @@ import { cn } from '@/src/lib/utils'
 export function MapSkeleton({ label }: { label: string }) {
   return (
     <div className="w-full" aria-busy="true" aria-label={label}>
-      <div dir="ltr" className="grid grid-cols-9 gap-1 sm:gap-1.5 xl:gap-2">
+      <div dir="ltr" className="grid grid-cols-10 gap-1 sm:gap-1.5 xl:gap-2">
         {MAP_CELLS.map((cell) => (
           <Skeleton
             key={cell.code}

@@ -7,7 +7,7 @@ import { useTvMode } from '@/src/hooks/use-tv-mode'
 import { cn } from '@/src/lib/utils'
 
 /**
- * /arab-cinema and every country page share this frame, so the map stays mounted (and keeps its
+ * /world-cinema and every country page share this frame, so the map stays mounted (and keeps its
  * state) while the panel beside it changes. The URL's country segment selects the tile.
  *
  * From 1280px: two columns, the map sticky on the start side and the panel scrolling on the end

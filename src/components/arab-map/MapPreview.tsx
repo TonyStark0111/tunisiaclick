@@ -4,7 +4,7 @@ import { useI18n } from '@/src/components/I18nProvider'
 import { dirOf } from '@/src/lib/i18n/locales'
 import { cn } from '@/src/lib/utils'
 import MapStats from './MapStats'
-import type { MapCountry } from '@/src/lib/arab-cinema'
+import type { MapCountry } from '@/src/lib/world-cinema'
 
 export type PreviewPlace = { left: number, top?: number, bottom?: number, below: boolean }
 

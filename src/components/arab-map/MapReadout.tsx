@@ -4,7 +4,7 @@ import { ChevronRight } from 'lucide-react'
 import { useT } from '@/src/components/I18nProvider'
 import { arabCountryHref } from '@/src/lib/arab-countries'
 import MapStats from './MapStats'
-import type { MapCountry } from '@/src/lib/arab-cinema'
+import type { MapCountry } from '@/src/lib/world-cinema'
 
 /**
  * The line under the map: the country being looked at (a finger sliding across the map, or the

@@ -7,7 +7,7 @@ import { dateLocale, htmlLang, type Locale } from '@/src/lib/i18n/locales'
 import type { Translate } from '@/src/lib/i18n/translate'
 import { cn } from '@/src/lib/utils'
 import CountryLink from './CountryLink'
-import type { MapCountry } from '@/src/lib/arab-cinema'
+import type { MapCountry } from '@/src/lib/world-cinema'
 
 /**
  * Every country as a 60px row, alphabetical in the viewer's language ('ال' set aside): the map's
@@ -40,7 +40,7 @@ export default function CountryList({ countries, kids, locale, t }: {
                 )}
               >
                 {pick?.poster && <TmdbImage kind="poster" path={pick.poster} fill sizes="32px" alt="" className="object-cover" />}
-                {!pick?.poster && country.code === 'tn' && <TunisiaMark className="h-5 w-5 text-red-500" />}
+                
               </span>
               <span className="min-w-0 flex-1">
                 <span dir="auto" className="block truncate text-[15px] font-semibold leading-tight text-white">{country.name}</span>

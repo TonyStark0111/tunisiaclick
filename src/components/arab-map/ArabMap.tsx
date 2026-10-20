@@ -12,7 +12,7 @@ import { haptic, spring } from '@/src/lib/motion'
 import MapTile from './MapTile'
 import MapPreview, { type PreviewPlace } from './MapPreview'
 import MapReadout from './MapReadout'
-import type { MapCountry } from '@/src/lib/arab-cinema'
+import type { MapCountry } from '@/src/lib/world-cinema'
 
 // The entrance ripple plays once per visit, not on every return to the map.
 let rippled = false
@@ -39,7 +39,7 @@ const CARD_WIDTH = 248
 export default function ArabMap({ countries, kids }: { countries: MapCountry[], kids: boolean }) {
   const t = useT()
   const router = useRouter()
-  // Rendered by the /arab-cinema layout: its selected segment is the open country.
+  // Rendered by the /world-cinema layout: its selected segment is the open country.
   const segment = useSelectedLayoutSegment()
   const selected: ArabCountryCode | null = segment && isArabCountry(segment) ? segment : null
   const helpId = useId()
@@ -275,7 +275,7 @@ export default function ArabMap({ countries, kids }: { countries: MapCountry[], 
         onPointerLeave={onMapLeave}
         onClickCapture={onClickCapture}
         onBlur={onMapBlur}
-        className="relative grid grid-cols-9 gap-1 [touch-action:pan-y] sm:gap-1.5 xl:gap-2"
+        className="relative grid grid-cols-10 gap-1 [touch-action:pan-y] sm:gap-1.5 xl:gap-2"
         style={{ '--map-accent': MAP_ACCENT } as React.CSSProperties}
       >
         {countries.map((country) => (

@@ -2,7 +2,7 @@
 import { useI18n } from '@/src/components/I18nProvider'
 import { dateLocale } from '@/src/lib/i18n/locales'
 import { cn } from '@/src/lib/utils'
-import type { MapCountry } from '@/src/lib/arab-cinema'
+import type { MapCountry } from '@/src/lib/world-cinema'
 
 /** A count in the viewer's language (Latin digits in Arabic too, like the rest of the site). */
 export function useCount() {
