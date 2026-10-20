@@ -3,10 +3,9 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import PageHeader from '@/src/components/browse/PageHeader'
-import MediaGrid, { EmptyState } from '@/src/components/MediaGrid'
-import PageNav from '@/src/components/PageNav'
+import ProviderInfiniteGrid from '@/src/components/providers/ProviderInfiniteGrid'
 import { getProviderById, TMDB_LOGO_BASE, PROVIDERS_LIST } from '@/src/lib/providers'
-import { getList, parsePage } from '@/src/lib/lists'
+import { getList } from '@/src/lib/lists'
 import { pageMetadata } from '@/src/lib/seo'
 import { catalogueLanguage } from '@/src/lib/tmdb-locale'
 import { getLocale } from '@/src/lib/i18n/server'
@@ -17,7 +16,7 @@ export const dynamic = 'force-dynamic'
 
 type Props = {
   params: { id: string }
-  searchParams: { page?: string; type?: string }
+  searchParams: { type?: string }
 }
 
 export function generateStaticParams() {
@@ -36,13 +35,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 /**
  * /exploreworld/[id] — content available on a specific streaming provider (TMDB watch providers).
+ * Infinite scroll (no next/previous buttons), matching Xilfflix behaviour.
  */
 export default async function ProviderDetailPage({ params, searchParams }: Props) {
   const provider = getProviderById(params.id)
   if (!provider) notFound()
 
   const kind = searchParams.type === 'tv' ? 'tv' : 'movie'
-  const page = parsePage(searchParams.page)
   const kids = await getKidsMode()
   const locale = getLocale()
   const lang = catalogueLanguage(locale)
@@ -50,7 +49,8 @@ export default async function ProviderDetailPage({ params, searchParams }: Props
   const path = kind === 'tv' ? '/discover/tv' : '/discover/movie'
   const kidsParams = kids ? kidsDiscoverParams(kind) : {}
 
-  const { results, totalPages, failed } = await getList(path, page, {
+  // Load first page on the server; client component loads the rest on scroll
+  const { results, totalPages, failed } = await getList(path, 1, {
     with_watch_providers: provider.tmdbId,
     watch_region: 'US',
     sort_by: 'popularity.desc',
@@ -113,20 +113,14 @@ export default async function ProviderDetailPage({ params, searchParams }: Props
       </PageHeader>
 
       <div className="page-x">
-        {failed ? (
-          <EmptyState title="Couldn’t load titles">
-            Try again in a moment.
-          </EmptyState>
-        ) : results.length === 0 ? (
-          <EmptyState title="Nothing here yet">
-            No {kind === 'tv' ? 'TV shows' : 'movies'} found for {provider.name} right now.
-          </EmptyState>
-        ) : (
-          <>
-            <MediaGrid items={results} kind={kind} />
-            <PageNav currentPage={page} totalPages={totalPages} />
-          </>
-        )}
+        <ProviderInfiniteGrid
+          providerId={provider.id}
+          kind={kind}
+          initialItems={results}
+          initialTotalPages={totalPages}
+          failed={failed}
+          emptyLabel={`No ${kind === 'tv' ? 'TV shows' : 'movies'} found for ${provider.name} right now.`}
+        />
       </div>
     </div>
   )
