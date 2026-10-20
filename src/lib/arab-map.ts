@@ -1,76 +1,75 @@
-// The Arab cinema map's geometry: the 22 Arab League members as tiles on a 9×5 grid, roughly where
-// they sit on a real map (west to east, north to south), and what the keyboard, the ripple and the
-// neighbour chips do with it. Pure helpers, safe on the server and the client (no data here).
-//
-// The grid is always laid out left to right, in every language: it is a map, and maps don't mirror.
-import type { ArabCountryCode } from '@/src/lib/arab-countries'
+// World cinema map geometry: 17 countries as tiles on a grid (rough geographic placement).
+// Grid is always LTR. Pure helpers — safe on server and client.
+import type { WorldCountryCode } from '@/src/lib/world-countries'
 
-export const MAP_COLUMNS = 9
+export const MAP_COLUMNS = 10
 export const MAP_ROWS = 5
 
-export type MapCell = { code: ArabCountryCode, x: number, y: number }
+export type MapCell = { code: WorldCountryCode, x: number, y: number }
 
-/** Every tile, row by row (reading order of the grid, which is also the tab and D-pad fallback). */
+/**
+ * Tiles in fixed display order (user-specified country list).
+ * Positions are approximate world geography (west → east, north → south).
+ */
 export const MAP_CELLS: readonly MapCell[] = [
-  { code: 'ma', x: 0, y: 0 }, { code: 'dz', x: 1, y: 0 }, { code: 'tn', x: 2, y: 0 },
-  { code: 'lb', x: 4, y: 0 }, { code: 'sy', x: 5, y: 0 }, { code: 'iq', x: 6, y: 0 }, { code: 'kw', x: 7, y: 0 },
-  { code: 'mr', x: 0, y: 1 }, { code: 'ly', x: 2, y: 1 }, { code: 'eg', x: 3, y: 1 }, { code: 'ps', x: 4, y: 1 },
-  { code: 'jo', x: 5, y: 1 }, { code: 'sa', x: 6, y: 1 }, { code: 'bh', x: 7, y: 1 }, { code: 'qa', x: 8, y: 1 },
-  { code: 'sd', x: 3, y: 2 }, { code: 'ye', x: 6, y: 2 }, { code: 'ae', x: 7, y: 2 }, { code: 'om', x: 8, y: 2 },
-  { code: 'dj', x: 5, y: 3 }, { code: 'so', x: 6, y: 3 },
-  { code: 'km', x: 6, y: 4 },
+  // Americas
+  { code: 'ca', x: 0, y: 0 },
+  { code: 'us', x: 1, y: 0 },
+  { code: 'mx', x: 1, y: 1 },
+  { code: 'br', x: 2, y: 2 },
+  // Europe
+  { code: 'gb', x: 4, y: 0 },
+  { code: 'dk', x: 5, y: 0 },
+  { code: 'pl', x: 6, y: 0 },
+  { code: 'fr', x: 4, y: 1 },
+  { code: 'es', x: 3, y: 1 },
+  // Asia
+  { code: 'in', x: 7, y: 1 },
+  { code: 'cn', x: 8, y: 1 },
+  { code: 'kr', x: 9, y: 1 },
+  { code: 'jp', x: 9, y: 0 },
+  { code: 'th', x: 8, y: 2 },
+  { code: 'ph', x: 9, y: 2 },
+  { code: 'id', x: 8, y: 3 },
+  // Oceania
+  { code: 'nz', x: 9, y: 4 },
 ]
 
 const BY_CODE = new Map(MAP_CELLS.map((cell) => [cell.code, cell]))
 
-export function cellOf(code: ArabCountryCode): MapCell {
+export function cellOf(code: WorldCountryCode): MapCell {
   return BY_CODE.get(code)!
 }
 
-/** The map's own colour: desert sand ('r g b'), the same as the Arab cinema door on the home page. */
-export const MAP_ACCENT = '200 162 122'
+/** Map accent colour (cool world-blue, rgb channels). */
+export const MAP_ACCENT = '59 130 246'
 
-/** Where the entrance ripple starts. */
-export const MAP_ORIGIN: ArabCountryCode = 'tn'
+/** Entrance ripple origin (United States — first in the list). */
+export const MAP_ORIGIN: WorldCountryCode = 'us'
 
-/** Grid distance from Tunisia: the entrance ripple reaches a tile after 40ms per step. */
-export function rippleDistance(code: ArabCountryCode): number {
+export function rippleDistance(code: WorldCountryCode): number {
   const from = cellOf(MAP_ORIGIN)
   const to = cellOf(code)
   return Math.hypot(to.x - from.x, to.y - from.y)
 }
 
-/** The ripple delay of a tile, in milliseconds. */
-export const rippleDelay = (code: ArabCountryCode) => Math.round(40 * rippleDistance(code))
+export const rippleDelay = (code: WorldCountryCode) => Math.round(40 * rippleDistance(code))
 
-/**
- * How lit a tile is (0 to 1) for `n` titles on record: log scale, so a country with 40 titles
- * still glows next to one with 4,000; 5,000 or more is full.
- */
 export function intensity(n: number | null | undefined): number {
   if (!n || n <= 0) return 0
   return Math.min(1, Math.log10(n + 1) / Math.log10(5000))
 }
 
-/**
- * The poster's opacity on a tile at rest. Rounded: the server's and the browser's Math.log10 can
- * differ in the last digit, and the value is written into the HTML.
- */
-export const posterOpacity = (n: number | null | undefined) => Math.round((0.14 + 0.26 * intensity(n)) * 1000) / 1000
+export const posterOpacity = (n: number | null | undefined) =>
+  Math.round((0.14 + 0.26 * intensity(n)) * 1000) / 1000
 
 export type Direction = 'left' | 'right' | 'up' | 'down'
 
-/**
- * The tile an arrow key moves to: the nearest one in the half-plane the arrow points at, scored
- * by the distance along the arrow plus twice the distance across it (so a tile straight ahead
- * beats a closer one off to the side). Ties go to the nearer tile, then to the east or south one.
- * Null at the edge of the map (nothing that way).
- */
-export function step(from: ArabCountryCode, direction: Direction): ArabCountryCode | null {
+export function step(from: WorldCountryCode, direction: Direction): WorldCountryCode | null {
   const origin = cellOf(from)
   const horizontal = direction === 'left' || direction === 'right'
   const sign = direction === 'right' || direction === 'down' ? 1 : -1
-  let best: { code: ArabCountryCode, score: number, distance: number, across: number } | null = null
+  let best: { code: WorldCountryCode, score: number, distance: number, across: number } | null = null
   for (const cell of MAP_CELLS) {
     const dx = cell.x - origin.x
     const dy = cell.y - origin.y
@@ -91,86 +90,62 @@ export function step(from: ArabCountryCode, direction: Direction): ArabCountryCo
   return best?.code ?? null
 }
 
-/** Home and End on the map: the first tile (Morocco) and the last (Comoros). */
-export const FIRST_TILE: ArabCountryCode = 'ma'
-export const LAST_TILE: ArabCountryCode = 'km'
+export const FIRST_TILE: WorldCountryCode = 'us'
+export const LAST_TILE: WorldCountryCode = 'nz'
 
-/**
- * Each country's nearest Arab neighbours, nearest first (land borders, then across a strait or a
- * short stretch of sea). At most four: the chip row on a country's page.
- */
-const NEIGHBOURS: Record<ArabCountryCode, readonly ArabCountryCode[]> = {
-  ma: ['dz', 'mr', 'tn'],
-  dz: ['ma', 'tn', 'ly', 'mr'],
-  tn: ['dz', 'ly', 'ma', 'eg'],
-  ly: ['tn', 'eg', 'dz', 'sd'],
-  eg: ['ly', 'sd', 'ps', 'jo'],
-  mr: ['ma', 'dz'],
-  sd: ['eg', 'ly', 'sa', 'ye'],
-  ps: ['jo', 'eg', 'lb', 'sy'],
-  lb: ['sy', 'ps', 'jo'],
-  sy: ['lb', 'iq', 'jo', 'ps'],
-  iq: ['sy', 'jo', 'kw', 'sa'],
-  jo: ['ps', 'sy', 'iq', 'sa'],
-  sa: ['jo', 'iq', 'ye', 'ae'],
-  kw: ['iq', 'sa', 'bh'],
-  bh: ['sa', 'qa', 'kw'],
-  qa: ['sa', 'bh', 'ae'],
-  ae: ['om', 'sa', 'qa'],
-  om: ['ae', 'ye', 'sa'],
-  ye: ['sa', 'om', 'dj', 'so'],
-  dj: ['so', 'ye'],
-  so: ['dj', 'ye', 'km'],
-  km: ['so', 'dj'],
+/** Rough cultural / geographic neighbours for the chip row on a country page. */
+const NEIGHBOURS: Record<WorldCountryCode, readonly WorldCountryCode[]> = {
+  us: ['ca', 'mx', 'gb'],
+  ca: ['us', 'gb', 'fr'],
+  mx: ['us', 'br', 'es'],
+  br: ['mx', 'es', 'us'],
+  gb: ['fr', 'us', 'ca', 'dk'],
+  fr: ['gb', 'es', 'pl', 'dk'],
+  es: ['fr', 'mx', 'br'],
+  dk: ['gb', 'pl', 'fr'],
+  pl: ['dk', 'fr', 'gb'],
+  in: ['cn', 'th', 'id'],
+  cn: ['jp', 'kr', 'in'],
+  jp: ['kr', 'cn', 'ph'],
+  kr: ['jp', 'cn', 'ph'],
+  th: ['id', 'ph', 'in', 'cn'],
+  ph: ['id', 'th', 'jp', 'kr'],
+  id: ['th', 'ph', 'in', 'nz'],
+  nz: ['id', 'ph', 'jp'],
 }
 
-export function neighbours(code: ArabCountryCode, limit = 4): ArabCountryCode[] {
-  return NEIGHBOURS[code].slice(0, limit)
+export function neighbours(code: WorldCountryCode, limit = 4): WorldCountryCode[] {
+  return (NEIGHBOURS[code] ?? []).slice(0, limit)
 }
-
-// ---------------------------------------------------------------------------------------------
-// Names: sorting and typing to find a country.
 
 const ARTICLE = /^\s*ال(?=\S)/u
 const MARKS = /\p{M}/gu
 
-/**
- * A name as typeahead and sorting see it: without the Arabic article ('المغرب' → 'مغرب'), accents,
- * hamza seats and short vowels ('Égypte' → 'egypte', 'الإمارات' → 'امارات'), in lower case.
- */
 export function foldName(name: string): string {
   return name
     .replace(ARTICLE, '')
     .normalize('NFD')
     .replace(MARKS, '')
-    // Alef variants and the tatweel that NFD leaves alone.
     .replace(/[ٱٲٳ]/g, 'ا')
     .replace(/ـ/g, '')
     .toLocaleLowerCase('en')
     .trim()
 }
 
-/** Countries in alphabetical order of their names in `lang`, 'ال' set aside ('الأردن' sorts under أ). */
-export function sortByName<T extends { name: string }>(items: readonly T[], lang: string): T[] {
-  let collator: Intl.Collator
-  try {
-    collator = new Intl.Collator(lang, { sensitivity: 'base', ignorePunctuation: true })
-  } catch {
-    collator = new Intl.Collator('en', { sensitivity: 'base' })
-  }
-  const key = (name: string) => name.replace(ARTICLE, '')
-  return [...items].sort((a, b) => collator.compare(key(a.name), key(b.name)))
+/** Keep fixed user order (WORLD_COUNTRY_CODES) — do NOT sort alphabetically. */
+export function sortByName<T extends { code: string }>(items: readonly T[], _lang?: string): T[] {
+  // Lazy import avoided: order matches MAP_CELLS codes via WORLD_COUNTRY_CODES in world-countries.
+  // Import order list inline to avoid circular deps.
+  const ORDER = ['us','in','cn','jp','kr','id','ph','th','gb','ca','mx','es','br','fr','pl','dk','nz'] as const
+  const order = new Map(ORDER.map((c, i) => [c, i]))
+  return [...items].sort((a, b) => (order.get(a.code as any) ?? 99) - (order.get(b.code as any) ?? 99))
 }
 
-/**
- * Typeahead: the country whose name (any of `names`, folded) starts with what was typed. A single
- * repeated letter cycles through the matches after `current`; a longer word starts from `current`.
- */
 export function typeahead(
   typed: string,
-  entries: readonly { code: ArabCountryCode, names: readonly string[] }[],
-  current?: ArabCountryCode | null,
-): ArabCountryCode | null {
+  entries: readonly { code: WorldCountryCode, names: readonly string[] }[],
+  current?: WorldCountryCode | null,
+): WorldCountryCode | null {
   const query = foldName(typed)
   if (!query) return null
   const cycling = [...query].every((char) => char === query[0])

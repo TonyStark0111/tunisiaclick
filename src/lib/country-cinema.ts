@@ -39,7 +39,7 @@ const tagged = (page: DiscoverPage | null, kind: Kind) => (page?.results ?? []).
  * Titles TMDB files under the wrong country: Cambodian films in Khmer ('km') land under Comoros
  * (KM). Their original language gives them away.
  */
-const MISLABELLED: Partial<Record<ArabCountryCode, readonly string[]>> = { km: ['km'] }
+const MISLABELLED: Partial<Record<ArabCountryCode, readonly string[]>> = {}
 
 /**
  * A page without the mislabelled titles, and a count to match: exact on a single page, otherwise
@@ -105,7 +105,7 @@ export function filmOfTheDay(code: ArabCountryCode, date: string, pages: { known
   // Prefer titles with a backdrop (the pick card and the room light look better with one).
   const wide = pool.filter((item) => item.backdrop_path)
   const choice = (wide.length >= 3 ? wide : pool)
-  const item = choice[hash(`${date}:arab-map:${code}`) % choice.length]
+  const item = choice[hash(`${date}:world-map:${code}`) % choice.length]
   return toMapTitle(item, item.media_type)
 }
 
@@ -118,32 +118,24 @@ export function filmOfTheDay(code: ArabCountryCode, date: string, pages: { known
  * spelled alike), never a bare 'Tripoli' (Lebanon and Libya both have one), and South Sudan is not
  * Sudan.
  */
-const BORN_IN: Record<ArabCountryCode, { match: RegExp, not?: RegExp }> = {
-  ma: { match: /morocc|maroc|المغرب|casablanca|الدار البيضاء|\brabat\b|الرباط|marrakesh|marrakech|مراكش|\bf[eè]s\b|\bfez\b|فاس|tangier|tanger|طنجة|agadir|أكادير|mekn[eè]s|مكناس|oujda|وجدة|t[eé]touan|تطوان/i },
-  dz: { match: /alg[eé]ri|الجزائر|algiers|\balger\b|\boran\b|وهران|\bconstantine\b|قسنطينة|annaba|عنابة|\bblida\b|البليدة|tizi ouzou|تيزي وزو|s[eé]tif|سطيف|b[eé]ja[iï]a|بجاية/i },
-  tn: { match: /tunisi|تونس|\bsfax\b|صفاقس|\bsousse\b|سوسة|bizerte|بنزرت|kairouan|القيروان|monastir|المنستير|gab[eè]s|قابس|nabeul|نابل(?!س)/i },
-  ly: { match: /libya|libye|ليبيا|benghazi|بنغازي|misrata|مصراتة/i },
-  eg: { match: /egypt|[ée]gypte|مصر|\bcairo\b|le caire|القاهرة|الإسكندرية|الاسكندرية|\bgiza\b|الجيزة|port said|بورسعيد|بور سعيد|mansoura|المنصورة|\btanta\b|طنطا|asyut|assiut|أسيوط|\bluxor\b|الأقصر|\baswan\b|أسوان|ismailia|الإسماعيلية/i },
-  mr: { match: /mauritani|موريتانيا|nouakchott|نواكشوط|nouadhibou|نواذيبو/i },
-  sd: {
-    match: /\bsudan\b|soudan|السودان|khartoum|khartum|الخرطوم|omdurman|أم درمان|ام درمان|بورتسودان/i,
-    not: /south(ern)? sudan|soudan du sud|sud-soudan|جنوب السودان|\bjuba\b|جوبا/i,
-  },
-  ps: { match: /palestin|فلسطين|\bgaza\b|غزة|ramallah|رام الله|nablus|naplouse|نابلس|h[eé]bron|الخليل|bethl[eé]em|bethlehem|بيت لحم|\bjenin\b|جنين|west bank|cisjordanie|الضفة الغربية|tulkarm|طولكرم|jericho|j[ée]richo|أريحا|qalqilya|قلقيلية|khan yunis|khan younis|خان يونس/i },
-  lb: { match: /leban|liban|لبنان|beirut|beyrouth|بيروت|\bsidon\b|صيدا|zahl[eé]|زحلة|baalbek|بعلبك|jounieh|جونيه/i },
-  sy: { match: /syria|syrie|سوريا|سورية|damascus|\bdamas\b|دمشق|aleppo|\balep\b|حلب|\bhoms\b|حمص|\bhama\b|حماة|latakia|lattaqui[eé]|اللاذقية|tartus|طرطوس|deir ez-zor|دير الزور/i },
-  iq: { match: /iraq|irak|العراق|baghdad|bagdad|بغداد|\bbasra\b|bassora|البصرة|\bmosul\b|mossoul|الموصل|\berbil\b|\barbil\b|أربيل|najaf|النجف|karbala|كربلاء|kirkuk|كركوك|sulaymaniyah|السليمانية/i },
-  jo: { match: /jordan|jordanie|الأردن|الاردن|\bamman\b|عمّان|\birbid\b|إربد|اربد|\bzarqa\b|الزرقاء|\baqaba\b|العقبة/i },
-  sa: { match: /saudi|arabie saoudite|السعودية|riyadh|\briyad\b|الرياض|jeddah|jiddah|djeddah|جدة|\bmecca\b|makkah|la mecque|مكة|المدينة المنورة|dammam|الدمام|\bta[iï]f\b|الطائف|\babha\b|أبها/i },
-  kw: { match: /kuwait|kowe[iï]t|الكويت/i },
-  bh: { match: /bahrain|bahre[iï]n|البحرين|manama|المنامة|muharraq|المحرق/i },
-  qa: { match: /qatar|قطر|\bdoha\b|الدوحة/i },
-  ae: { match: /emirates|[ée]mirats|الإمارات|الامارات|\buae\b|dubai|duba[iï]|دبي|abu dhabi|abou dabi|أبو ظبي|أبوظبي|ابوظبي|sharjah|charjah|الشارقة|\bajman\b|عجمان|ras al[- ]khaimah|رأس الخيمة/i },
-  om: { match: /\boman\b|سلطنة عمان|عُمان|muscat|mascate|مسقط|salalah|صلالة|\bnizwa\b|نزوى|\bsohar\b|صحار/i },
-  ye: { match: /yemen|y[ée]men|اليمن|sanaa|sana['’]a|صنعاء|\baden\b|عدن|\btaiz\b|ta['’]izz|تعز|hodeidah|الحديدة|mukalla|المكلا/i },
-  dj: { match: /djibouti|جيبوتي/i },
-  so: { match: /somalia|somalie|الصومال|mogadishu|mogadiscio|مقديشو|hargeisa|هرجيسا|kismayo|كيسمايو/i },
-  km: { match: /comoros|comores|جزر القمر|\bmoroni\b|موروني|anjouan|moh[eé]li/i },
+const BORN_IN: Partial<Record<ArabCountryCode, { match: RegExp, not?: RegExp }>> = {
+  us: { match: /\bunited states\b|\busa\b|\bu\.s\.a?\b|america|new york|los angeles|hollywood|chicago|hollywood|hollywood/i },
+  ca: { match: /\bcanada\b|toronto|montreal|vancouver|ottawa|quebec/i },
+  mx: { match: /\bmexico\b|méxico|mexico city|ciudad de m[eé]xico|guadalajara|monterrey/i },
+  br: { match: /\bbrazil\b|brasil|s[aã]o paulo|rio de janeiro|bras[ií]lia/i },
+  gb: { match: /\bunited kingdom\b|\bengland\b|\bscotland\b|\bwales\b|london|manchester|birmingham|glasgow|edinburgh/i },
+  fr: { match: /\bfrance\b|paris|lyon|marseille|toulouse|bordeaux/i },
+  es: { match: /\bspain\b|espa[nñ]a|madrid|barcelona|valencia|seville|sevilla/i },
+  dk: { match: /\bdenmark\b|danmark|copenhagen|k[øo]benhavn/i },
+  pl: { match: /\bpoland\b|polska|warsaw|warszawa|krak[oó]w|gdansk/i },
+  in: { match: /\bindia\b|mumbai|bombay|delhi|kolkata|calcutta|chennai|madras|hyderabad|bangalore|bengaluru/i },
+  cn: { match: /\bchina\b|beijing|peking|shanghai|guangzhou|shenzhen|hong kong/i },
+  jp: { match: /\bjapan\b|tokyo|osaka|kyoto|yokohama|nagoya/i },
+  kr: { match: /\bkorea\b|seoul|busan|incheon/i },
+  th: { match: /\bthailand\b|bangkok|chiang mai/i },
+  ph: { match: /\bphilippines\b|manila|quezon|cebu|davao/i },
+  id: { match: /\bindonesia\b|jakarta|surabaya|bandung|bali/i },
+  nz: { match: /\bnew zealand\b|auckland|wellington|christchurch/i },
 }
 
 /** Lebanon, Pennsylvania; Palestine, Texas; Bethlehem, Pennsylvania; Cairo, Illinois... */
@@ -153,7 +145,11 @@ const ELSEWHERE = /\b(usa|u\.s\.a?\.?|united states)\b/i
 export function bornIn(code: ArabCountryCode, place: string | null | undefined): boolean {
   if (!place) return false
   const rule = BORN_IN[code]
-  return rule.match.test(place) && !(rule.not?.test(place) ?? false) && !ELSEWHERE.test(place)
+  if (!rule) return false
+  if (!rule.match.test(place) || (rule.not?.test(place) ?? false)) return false
+  // Avoid US hometowns matching other countries' city names (Cairo IL, Palestine TX, …)
+  if (code !== 'us' && ELSEWHERE.test(place)) return false
+  return true
 }
 
 export type CountryPerson = { id: number, name: string, profile_path: string, knownFor: string, kind: Kind, workId: number }
