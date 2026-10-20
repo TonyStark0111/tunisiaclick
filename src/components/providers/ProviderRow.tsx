@@ -187,8 +187,8 @@ export default function ProviderRow({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`${TMDB_LOGO_BASE}${provider.logoPath}`}
-                    alt=""
-                    className="h-full w-full object-contain p-3 sm:p-3.5"
+                    alt={provider.name}
+                    className="h-full w-full object-cover"
                     loading="lazy"
                     onError={(e) => {
                       const img = e.currentTarget
