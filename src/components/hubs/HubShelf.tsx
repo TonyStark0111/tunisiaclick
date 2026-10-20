@@ -16,7 +16,7 @@ import { HUBS, hubPath } from '@/src/lib/dramas-config'
 import type { Locale } from '@/src/lib/i18n'
 
 const DAY = 86400
-const ARAB_SAND = '200 162 122'
+const WORLD_BLUE = '59 130 246'
 
 /**
  * The Tunisian door's picture: the backdrop of the most popular Tunisian film. Exactly the
@@ -39,7 +39,7 @@ async function arabPick(locale: Locale): Promise<{ title: string, backdrop: stri
   }, DAY)
   const usable = (data?.results ?? []).filter((item) => item.backdrop_path && item.title).slice(0, 12)
   if (usable.length === 0) return null
-  const pick = usable[hash(`${tunisDate()}:arab-cinema:door`) % usable.length]
+  const pick = usable[hash(`${tunisDate()}:world-cinema:door`) % usable.length]
   return { title: pick.title, backdrop: pick.backdrop_path }
 }
 
@@ -72,7 +72,7 @@ export default async function HubShelf({ kids }: { kids: boolean }): Promise<JSX
     { key: 'korean', href: hubPath('korean'), title: t('dramas.korean.title'), line: t('dramas.korean.line'), picture: backdrop(korean), accent: HUBS.korean.accent },
     { key: 'chinese', href: hubPath('chinese'), title: t('dramas.chinese.title'), line: t('dramas.chinese.line'), picture: backdrop(chinese), accent: HUBS.chinese.accent },
     { key: 'thai', href: hubPath('thai'), title: t('dramas.thai.title'), line: t('dramas.thai.line'), picture: backdrop(thai), accent: HUBS.thai.accent },
-    { key: 'arab', href: '/arab-cinema', title: t('dramas.shelf.arab'), line: arab ? t('dramas.shelf.arabLine', { title: arab.title }) : undefined, picture: backdrop(arab?.backdrop ?? null), accent: ARAB_SAND },
+    { key: 'arab', href: '/world-cinema', title: t('dramas.shelf.arab'), line: arab ? t('dramas.shelf.arabLine', { title: arab.title }) : undefined, picture: backdrop(arab?.backdrop ?? null), accent: WORLD_BLUE },
   ]
   const title = t('dramas.shelf.title')
   return (
