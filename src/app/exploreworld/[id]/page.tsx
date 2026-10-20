@@ -77,14 +77,14 @@ export default async function ProviderDetailPage({ params, searchParams }: Props
         title={
           <span className="inline-flex items-center gap-3 sm:gap-4">
             <span
-              className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-white/10 sm:h-14 sm:w-14"
+              className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[14px] ring-1 ring-white/15 sm:h-14 sm:w-14 sm:rounded-[16px]"
               style={{ backgroundColor: provider.bgColor }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`${TMDB_LOGO_BASE}${provider.logoPath}`}
                 alt={`${provider.name} logo`}
-                className="h-full w-full object-contain p-2"
+                className="h-full w-full object-cover"
               />
             </span>
             {provider.name}
