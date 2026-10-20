@@ -23,7 +23,7 @@ const COLUMNS: { heading: TKey, links: FooterLink[] }[] = [
       { href: '/clips', label: 'nav.clips' },
       { href: '/swipe', label: 'swipe.title' },
       { href: '/movie-night', label: 'movieNight.nav', grownUp: true },
-      { href: '/arab-cinema', label: 'arabMap.nav' },
+      { href: '/world-cinema', label: 'arabMap.nav' },
       { href: '/dramas', label: 'dramas.nav', grownUp: true },
     ],
   },
