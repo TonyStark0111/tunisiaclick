@@ -41,7 +41,7 @@ export const BROWSE: NavItem[] = [
 export const WORLD: NavItem[] = [
   { href: '/dramas', label: 'dramas.nav', icon: Drama, grownUp: true },
   // Kids get a dimmed, filtered map (no grownUp).
-  { href: '/arab-cinema', label: 'arabMap.nav', icon: MapIcon },
+  { href: '/world-cinema', label: 'arabMap.nav', icon: MapIcon },
 ]
 
 /** Saved first: the Library landing page is the first tab (LibraryTabs and the menu sheet follow this order). */
