@@ -8,7 +8,7 @@
 export type MessageScope =
   | 'activate/layout'
   | 'app/layout'
-  | 'arab-cinema/layout'
+  | 'world-cinema/layout'
   | 'auth/layout'
   | 'clips/layout'
   | 'contact/layout'
@@ -703,7 +703,7 @@ export const SCOPE_KEYS: Record<MessageScope, readonly string[]> = {
     'tvMode.setting.hint',
     'tvMode.setting.label',
   ],
-  'arab-cinema/layout': [
+  'world-cinema/layout': [
     'arabMap.back',
     'arabMap.empty.text',
     'arabMap.empty.title',
