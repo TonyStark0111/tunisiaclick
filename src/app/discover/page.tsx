@@ -64,9 +64,7 @@ function parseFilters(searchParams: SearchParams) {
 
 export default async function DiscoverPage({ searchParams }: { searchParams: SearchParams }) {
   const page = parsePage(searchParams.page)
-  // Anime is a special TV-based catalogue (Japanese Animation). Media kind stays 'tv' for cards/links.
-  const isAnime = searchParams.type === 'anime'
-  const kind: 'movie' | 'tv' = searchParams.type === 'tv' || isAnime ? 'tv' : 'movie'
+  const kind: 'movie' | 'tv' = searchParams.type === 'tv' ? 'tv' : 'movie'
   const filters = parseFilters(searchParams)
   const locale = getLocale()
   const t = createTranslator(locale)
@@ -85,16 +83,11 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Sea
           ? { sort_by: 'popularity.desc', 'vote_count.gte': 100 }
           : { sort_by: 'popularity.desc' }
 
-  // Anime: always Japanese + Animation (genre 16). Extra user genre is AND-ed when present.
-  // Language filter is used for Movies/TV; Anime tab keeps Japanese.
-  const animeGenre = filters.genre && filters.genre !== '16' ? `16,${filters.genre}` : '16'
-  const originalLanguage = isAnime ? 'ja' : filters.language
-
   const params = {
     ...sortParams,
     include_adult: false,
-    with_genres: isAnime ? animeGenre : filters.genre,
-    ...(originalLanguage ? { with_original_language: originalLanguage } : {}),
+    with_genres: filters.genre,
+    ...(filters.language ? { with_original_language: filters.language } : {}),
     ...(filters.year ? { [kind === 'movie' ? 'primary_release_year' : 'first_air_date_year']: filters.year } : {}),
     'vote_average.gte': filters.rating,
     // "I have 90 minutes": TMDB lists unknown runtimes as 0, so short filters also need a floor.
@@ -117,9 +110,8 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Sea
         <SegmentedLinks
           label={t('browse.typeSwitch')}
           items={[
-            { href: '/discover', label: t('common.movies'), active: !isAnime && kind === 'movie' },
-            { href: '/discover?type=tv', label: t('common.tvShows'), active: !isAnime && kind === 'tv' },
-            { href: '/discover?type=anime', label: t('common.anime'), active: isAnime },
+            { href: '/discover', label: t('common.movies'), active: kind === 'movie' },
+            { href: '/discover?type=tv', label: t('common.tvShows'), active: kind === 'tv' },
           ]}
         />
       </PageHeader>
