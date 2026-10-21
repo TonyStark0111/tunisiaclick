@@ -18,6 +18,7 @@ const toProfile = (raw: any): Profile => ({
   name: String(raw.name),
   color: PROFILE_COLORS.includes(raw.color) ? raw.color : PROFILE_COLORS[0],
   kids: raw.kids === true,
+  halal: raw.halal === true,
 })
 
 export function newProfile(name: string, color: string = PROFILE_COLORS[0], kids = false) {
@@ -105,6 +106,17 @@ export async function getKidsMode(): Promise<boolean> {
  * and not on a device with no valid pick when the account has Kids profiles (clearing the cookie
  * mustn't unlock), unless the user has only just signed in.
  */
+/**
+ * Halal mode for the catalogue. Returns false when profile has no halal flag.
+ */
+export async function getHalalMode(): Promise<boolean> {
+  const active = await getActiveProfile()
+  if (!active) return false
+  if (active.profile) return (active.profile as { halal?: boolean }).halal === true
+  return active.profiles.some((profile) => (profile as { halal?: boolean }).halal === true)
+}
+
+
 export function canSwitchFreely(active: ActiveProfile) {
   // A TV pinned to a Kids profile never unlocks a grown-up one without the password (and a TV
   // session never counts as a fresh sign-in: it has no loginAt).
