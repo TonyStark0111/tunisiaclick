@@ -240,19 +240,42 @@ ${CARD_FRAGMENT}`
 export type AnimeSource = { name: string, url: string }
 
 /**
- * The players for one episode, best first. They take AniList's id (or MyAnimeList's) and the
- * episode number of that entry, and play subtitled or dubbed. The colour is the site's red where
- * a player lets us set it. Checked in a browser (2026-10): Videasy and VidNest load the right show
- * and episode, sub and dub; VidLink answers by MyAnimeList id.
+ * The players for one episode, best first. AniList id for most embeds; MyAnimeList id where the
+ * provider needs it (VidLink). Sub/dub via path or query. Includes every anime-capable server from
+ * the site's stream list (MegaPlay, ZokoAnime, 4Animo, …) so anime pages match the same breadth
+ * as movies/TV instead of only Videasy / VidNest / VidLink.
  */
 export function animeSources(card: Pick<AnimeCard, 'id' | 'idMal' | 'format'>, episode: number, dub: boolean): AnimeSource[] {
   const ep = Math.max(1, Math.floor(episode))
   const lang = dub ? 'dub' : 'sub'
   const movie = card.format === 'MOVIE'
+  const id = card.id
+  const mal = card.idMal
+
   const sources: AnimeSource[] = [
-    { name: 'Videasy', url: `https://player.videasy.net/anime/${card.id}${movie ? '' : `/${ep}`}?color=ff0f00${dub ? '&dub=true' : ''}` },
-    { name: 'VidNest', url: `https://vidnest.fun/anime/${card.id}/${ep}/${lang}` },
+    // --- core AniList embeds (reliable) ---
+    { name: 'Videasy', url: `https://player.videasy.net/anime/${id}${movie ? '' : `/${ep}`}?color=ff0f00${dub ? '&dub=true' : ''}` },
+    { name: 'VidNest', url: `https://vidnest.fun/anime/${id}/${ep}/${lang}` },
+    { name: 'VidNest Pahe', url: `https://vidnest.fun/animepahe/${id}/${ep}/${lang}` },
+    { name: 'VidRift', url: `https://embed.vidrift.net/embed/anilist/${id}/${ep}${dub ? '?dub=1' : ''}` },
+
+    // --- from site stream-providers (anime-native paths) ---
+    { name: 'MegaPlay Direct', url: `https://megaplay.buzz/stream/ani/${id}/${ep}/${lang}?autoplay=true` },
+    { name: 'ZokoAnime Direct', url: `https://zokoanime.video/stream/ani/${id}/${ep}/${lang}` },
+    { name: '4Animo Multi-Dub CDN', url: `https://cdn.4animo.xyz/embed/hd-3/ani/${id}/${ep}/${lang}?k=1&autoplay=1` },
+
+    // --- extra AniList embeds ---
+    { name: 'VidHawk', url: `https://vidhawk.buzz/embed/ani/${id}/${ep}/${lang}` },
   ]
-  if (card.idMal) sources.push({ name: 'VidLink', url: `https://vidlink.pro/anime/${card.idMal}/${ep}/${lang}?fallback=true&primaryColor=ff0f00` })
+
+  // Providers that work with MyAnimeList id
+  if (mal) {
+    sources.push(
+      { name: 'VidLink', url: `https://vidlink.pro/anime/${mal}/${ep}/${lang}?fallback=true&primaryColor=ff0f00` },
+      { name: 'MegaPlay MAL', url: `https://megaplay.buzz/stream/mal/${mal}/${ep}/${lang}?autoplay=true` },
+      { name: 'VidHawk MAL', url: `https://vidhawk.buzz/embed/mal/${mal}/${ep}/${lang}` },
+    )
+  }
+
   return sources
 }
