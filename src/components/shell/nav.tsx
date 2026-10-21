@@ -4,7 +4,7 @@
 import {
   Drama,
   Bookmark, CalendarClock, CalendarHeart, Clapperboard, Compass, Dices, Flag, Heart, HeartHandshake, History, House,
-  Library, ListVideo, Map as MapIcon, MoonStar, Popcorn, Search, Trophy, Tv, UsersRound, type LucideIcon,
+  Library, ListVideo, Map as MapIcon, MoonStar, Popcorn, Search, Swords, Trophy, Tv, UsersRound, type LucideIcon,
 } from 'lucide-react'
 import type { TKey } from '@/src/lib/i18n'
 import type { SeasonalIconKey, SeasonalNav } from '@/src/lib/seasons'
@@ -40,6 +40,8 @@ export const BROWSE: NavItem[] = [
 /** The world's cinema and TV: hubs, then the seasonal slot (see Rail). */
 export const WORLD: NavItem[] = [
   { href: '/dramas', label: 'dramas.nav', icon: Drama, grownUp: true },
+  // Kids get a filtered catalogue (no grownUp; see lib/anime/model).
+  { href: '/anime', label: 'anime.nav', icon: Swords },
   // Kids get a dimmed, filtered map (no grownUp).
   { href: '/world-cinema', label: 'arabMap.nav', icon: MapIcon },
 ]
