@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Tv,
   Search,
@@ -12,8 +12,8 @@ import {
   Star,
   Globe,
 } from "lucide-react";
-import Hls from "hls.js";
 import type { ChannelStream, WorldPayload, CountrySummary } from "@/src/lib/iptv";
+import PlayerModal, { type PlayableChannel } from "@/src/components/live-tv/PlayerModal";
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -63,110 +63,6 @@ function groupStreams(streams: ChannelStream[]): ChannelTile[] {
   );
 }
 
-function proxyUrl(url: string, ua?: string, ref?: string) {
-  const params = new URLSearchParams({ u: url });
-  if (ua) params.set("ua", ua);
-  if (ref) params.set("ref", ref);
-  return `/api/stream?${params.toString()}`;
-}
-
-function flagEmoji(code: string): string {
-  if (!code || code === "UN" || code.length !== 2) return "🌐";
-  const A = 0x1f1e6;
-  return String.fromCodePoint(
-    ...code
-      .toUpperCase()
-      .split("")
-      .map((c) => A + c.charCodeAt(0) - 65)
-  );
-}
-
-/* ─── HLS Player ────────────────────────────────────────────────────────── */
-
-function HlsPlayer({
-  src,
-  onError,
-}: {
-  src: string;
-  onError: () => void;
-}) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const hlsRef = useRef<Hls | null>(null);
-  const [isMuted, setIsMuted] = useState(true);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !src) return;
-
-    if (hlsRef.current) {
-      hlsRef.current.destroy();
-      hlsRef.current = null;
-    }
-
-    if (Hls.isSupported()) {
-      const hls = new Hls({
-        enableWorker: true,
-        lowLatencyMode: true,
-        backBufferLength: 30,
-      });
-      hlsRef.current = hls;
-      hls.loadSource(src);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.muted = true;
-        video.play().catch(() => {});
-      });
-      hls.on(Hls.Events.ERROR, (_evt, data) => {
-        if (data.fatal) onError();
-      });
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = src;
-      video.muted = true;
-      video.addEventListener(
-        "loadedmetadata",
-        () => video.play().catch(() => {}),
-        { once: true }
-      );
-      video.addEventListener("error", onError, { once: true });
-    } else {
-      onError();
-    }
-
-    return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-    };
-  }, [src, onError]);
-
-  return (
-    <div className="relative w-full h-full">
-      <video
-        ref={videoRef}
-        className="w-full h-full object-contain bg-black"
-        controls
-        autoPlay
-        muted={isMuted}
-        playsInline
-      />
-      {isMuted && (
-        <button
-          onClick={() => {
-            if (videoRef.current) {
-              videoRef.current.muted = false;
-              setIsMuted(false);
-            }
-          }}
-          className="absolute top-3 right-3 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/80 hover:bg-black/95 text-white text-xs font-semibold backdrop-blur-md shadow-lg border border-white/15 transition-all"
-        >
-          🔊 Click to Unmute
-        </button>
-      )}
-    </div>
-  );
-}
-
 /* ─── Main Page ─────────────────────────────────────────────────────────── */
 
 export default function LiveTvPage() {
@@ -177,7 +73,7 @@ export default function LiveTvPage() {
   const [country, setCountry] = useState<string>(ALL);
   const [view, setView] = useState<ViewMode>("browse");
   const [selected, setSelected] = useState<ChannelTile | null>(null);
-  const [streamIndex, setStreamIndex] = useState(0);
+  const [playing, setPlaying] = useState<PlayableChannel | null>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [favorites, setFavorites] = useState<string[]>([]); // channelIds
 
@@ -297,25 +193,24 @@ export default function LiveTvPage() {
 
   const visibleTiles = filteredTiles.slice(0, visibleCount);
 
-  // Current stream URL
-  const currentStream = selected?.streams[streamIndex] ?? selected?.streams[0];
-  const playSrc = currentStream
-    ? proxyUrl(currentStream.url, currentStream.ua, currentStream.ref)
-    : null;
-
-  const handleStreamError = useCallback(() => {
-    if (!selected) return;
-    // Try next alternate stream
-    if (streamIndex + 1 < selected.streams.length) {
-      setStreamIndex((i) => i + 1);
-    }
-  }, [selected, streamIndex]);
-
-  const selectChannel = useCallback((tile: ChannelTile) => {
+  const openPlayer = useCallback((tile: ChannelTile) => {
     setSelected(tile);
-    setStreamIndex(0);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setPlaying({
+      name: tile.name,
+      logo: tile.logo,
+      countryName: tile.countryName,
+      categories: tile.categories,
+      streams: tile.streams.map((s) => s.url),
+    });
   }, []);
+
+  const selectChannel = useCallback(
+    (tile: ChannelTile) => {
+      setSelected(tile);
+      openPlayer(tile);
+    },
+    [openPlayer]
+  );
 
   const totals = payload?.totals;
   const countries = payload?.countries ?? [];
@@ -479,24 +374,36 @@ export default function LiveTvPage() {
           </div>
         )}
 
-        {/* ── Player card ── */}
+        {/* ── Now playing / preview card ── */}
         <div className="rounded-2xl border border-white/10 bg-[#0e0e14] overflow-hidden shadow-2xl mb-5">
-          <div className="relative aspect-video w-full bg-black">
-            {playSrc && selected ? (
-              <HlsPlayer
-                key={`${selected.channelId}-${streamIndex}-${playSrc}`}
-                src={playSrc}
-                onError={handleStreamError}
+          <button
+            type="button"
+            onClick={() => selected && openPlayer(selected)}
+            className="relative aspect-video w-full bg-black flex flex-col items-center justify-center gap-3 text-left group"
+            disabled={!selected}
+          >
+            {selected?.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={selected.logo}
+                alt=""
+                className="absolute inset-0 h-full w-full object-contain opacity-30 p-8"
               />
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full gap-3 text-white/40 p-6 text-center">
-                <Tv className="w-10 h-10 text-white/25" />
-                <p className="text-sm font-semibold text-white/60">
-                  Select a channel to start watching
-                </p>
+            ) : null}
+            <div className="relative z-10 flex flex-col items-center gap-3">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600/90 shadow-lg group-hover:scale-105 transition">
+                <Play className="h-7 w-7 fill-white text-white ml-1" />
               </div>
-            )}
-          </div>
+              <p className="text-sm font-semibold text-white/80">
+                {selected ? "Tap to watch with full player" : "Select a channel"}
+              </p>
+              {selected && (
+                <p className="text-xs text-white/45 max-w-xs text-center truncate px-4">
+                  {selected.name}
+                </p>
+              )}
+            </div>
+          </button>
 
           {selected && (
             <div className="px-4 py-4 sm:px-5">
@@ -533,7 +440,7 @@ export default function LiveTvPage() {
                       <>
                         <span className="text-white/20 text-xs">·</span>
                         <span className="rounded-md bg-white/8 px-2 py-0.5 text-[10px] font-semibold text-white/55">
-                          Stream {streamIndex + 1}/{selected.streams.length}
+                          {selected.streams.length} sources
                         </span>
                       </>
                     )}
@@ -557,27 +464,21 @@ export default function LiveTvPage() {
                 </button>
               </div>
 
-              {/* Alternate streams */}
-              {selected.streams.length > 1 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {selected.streams.map((s, i) => (
-                    <button
-                      key={`${s.url}-${i}`}
-                      onClick={() => setStreamIndex(i)}
-                      className={`rounded-lg px-2.5 py-1 text-[10px] font-semibold border transition ${
-                        i === streamIndex
-                          ? "bg-red-600/20 border-red-500/40 text-red-300"
-                          : "bg-white/5 border-white/10 text-white/45 hover:text-white"
-                      }`}
-                    >
-                      Source {i + 1}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <button
+                onClick={() => openPlayer(selected)}
+                className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 py-3 text-sm font-bold text-white transition"
+              >
+                <Play className="h-4 w-4 fill-white" />
+                Watch now
+              </button>
             </div>
           )}
         </div>
+
+        {/* fabwaseem full player (proxy + stream fallback) */}
+        {playing && (
+          <PlayerModal channel={playing} onClose={() => setPlaying(null)} />
+        )}
 
         {/* ── Channels list ── */}
         <div className="rounded-2xl border border-white/10 bg-[#0e0e14] overflow-hidden">
