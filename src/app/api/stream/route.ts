@@ -1,6 +1,6 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { NextRequest } from "next/server";
-import { getStreamByUrl } from "@/lib/iptv";
+import { getStreamByUrl } from "@/src/lib/iptv";
 
 /**
  * Same-origin stream proxy — the playback fix.
