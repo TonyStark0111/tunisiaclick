@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import type { CountrySummary } from "@/lib/iptv";
+import type { CountrySummary } from "@/src/lib/iptv";
 
 export const ALL_COUNTRIES = "ALL";
 

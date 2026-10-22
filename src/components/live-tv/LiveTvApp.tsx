@@ -8,10 +8,10 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import type { ChannelStream, WorldPayload } from "@/lib/iptv";
-import ChannelTile, { type TileData } from "@/components/live-tv/ChannelTile";
-import CountrySelect, { ALL_COUNTRIES } from "@/components/live-tv/CountrySelect";
-import PlayerModal, { type PlayableChannel } from "@/components/live-tv/PlayerModal";
+import type { ChannelStream, WorldPayload } from "@/src/lib/iptv";
+import ChannelTile, { type TileData } from "@/src/components/live-tv/ChannelTile";
+import CountrySelect, { ALL_COUNTRIES } from "@/src/components/live-tv/CountrySelect";
+import PlayerModal, { type PlayableChannel } from "@/src/components/live-tv/PlayerModal";
 
 const PAGE_SIZE = 120;
 const FAV_KEY = "live-tv:favorites:v1";
