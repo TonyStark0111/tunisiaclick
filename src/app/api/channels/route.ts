@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getWorldPayload } from "@/lib/iptv";
+import { getWorldPayload } from "@/src/lib/iptv";
 
 // The catalogue is joined from multi-MB upstream files at request time
 // (the handler reads searchParams and fetches upstream, so Cache
