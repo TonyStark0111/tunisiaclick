@@ -1,4 +1,4 @@
-import LiveTvApp from "@/components/live-tv/LiveTvApp";
+import LiveTvApp from "@/src/components/live-tv/LiveTvApp";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
