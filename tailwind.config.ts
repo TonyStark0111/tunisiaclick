@@ -72,6 +72,22 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Live TV tokens (from fabwaseem live-tv)
+        surface: {
+          1: "#101014",
+          2: "#17171d",
+          3: "#20202a",
+        },
+        inset: "#0b0b0e",
+        line: "rgb(255 255 255 / 0.08)",
+        "line-strong": "rgb(255 255 255 / 0.14)",
+        "accent-soft": "rgb(220 38 38 / 0.16)",
+      },
+      boxShadow: {
+        card: "0 1px 2px rgb(0 0 0 / 0.45), 0 10px 28px -14px rgb(0 0 0 / 0.6)",
+        lift: "0 2px 4px rgb(0 0 0 / 0.5), 0 18px 38px -14px rgb(0 0 0 / 0.75)",
+        pop: "0 24px 70px -16px rgb(0 0 0 / 0.85), 0 6px 18px rgb(0 0 0 / 0.5)",
+        header: "0 10px 34px -14px rgb(0 0 0 / 0.9)",
       },
       fontFamily: {
         // Readex Pro covers Latin and Arabic, so the UI reads the same in every language.
