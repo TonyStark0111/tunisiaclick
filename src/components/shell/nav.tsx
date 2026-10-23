@@ -30,7 +30,7 @@ export type NavItem = {
 export const BROWSE: NavItem[] = [
   { href: '/', label: 'nav.home', icon: House },
   { href: '/tv', label: 'nav.tvShows', icon: Tv },
-  { href: '/discover', label: 'nav.discover', icon: Compass },
+  { href: '/exploreworld', label: 'nav.explor', icon: Compass },
   { href: '/clips', label: 'nav.clips', icon: Clapperboard },
   { href: '/upcoming', label: 'nav.comingSoon', icon: CalendarClock },
   { href: '/top-rated', label: 'nav.topRated', icon: Trophy },
@@ -67,7 +67,7 @@ export const YOURS: NavItem[] = [
 /** The mobile tab bar: the four places people go most, plus "You" (the menu sheet). */
 export const TABS: NavItem[] = [
   { href: '/', label: 'nav.home', icon: House },
-  { href: '/discover', label: 'nav.discover', icon: Compass },
+  { href: '/exploreworld', label: 'nav.explore', icon: Compass },
   { href: '/clips', label: 'nav.clips', icon: Clapperboard },
   { href: '/search', label: 'nav.search', icon: Search },
 ]
