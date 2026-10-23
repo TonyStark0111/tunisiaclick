@@ -54,6 +54,7 @@ export const fr: Record<CoreKey, string> = {
   'nav.movies': 'Films',
   'nav.tvShows': 'Séries',
   'nav.discover': 'Découvrir',
+  'nav.explore': 'Explorer',
   'nav.discovery': 'Découverte',
   'nav.search': 'Rechercher',
   'nav.tunisian': 'Tunisie',

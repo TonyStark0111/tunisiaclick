@@ -36,6 +36,7 @@ export const tn: Partial<Record<TKey, string>> = {
   'nav.movies': 'أفلام',
   'nav.tvShows': 'مسلسلات',
   'nav.discover': 'اكتشف',
+  'nav.explore': 'استكشف',
   'nav.discovery': 'اكتشف',
   'nav.search': 'لوّج',
   'nav.tunisian': 'تونسي',

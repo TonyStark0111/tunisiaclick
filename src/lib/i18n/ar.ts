@@ -43,6 +43,7 @@ export const ar: Record<CoreKey, string> = {
   'nav.movies': 'أفلام',
   'nav.tvShows': 'مسلسلات',
   'nav.discover': 'اكتشف',
+  'nav.explore': 'استكشف',
   'nav.discovery': 'استكشاف',
   'nav.search': 'بحث',
   'nav.tunisian': 'تونسي',

@@ -41,6 +41,7 @@ export const en = {
   'nav.movies': 'Movies',
   'nav.tvShows': 'TV Shows',
   'nav.discover': 'Discover',
+  'nav.explore': 'Explore',
   'nav.discovery': 'Discovery',
   'nav.search': 'Search',
   'nav.tunisian': 'Tunisian',
