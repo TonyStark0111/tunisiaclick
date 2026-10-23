@@ -7,26 +7,8 @@ import { supportUrl } from '@/src/lib/support-url'
 /** `grownUp`: hidden on Kids profiles. `support`: only once support is open (and never for Kids: no money talk). */
 type FooterLink = { href: string, label: TKey, grownUp?: boolean, support?: boolean }
 
+/** Site + Legal only — Browse / Explore link columns removed (nav already covers those places). */
 const COLUMNS: { heading: TKey, links: FooterLink[] }[] = [
-  {
-    heading: 'footer.browse',
-    links: [
-      { href: '/', label: 'nav.movies' },
-      { href: '/tv', label: 'nav.tvShows' },
-      { href: '/discover', label: 'nav.discover' },
-      { href: '/upcoming', label: 'nav.comingSoon' },
-    ],
-  },
-  {
-    heading: 'footer.explore',
-    links: [
-      { href: '/clips', label: 'nav.clips' },
-      { href: '/swipe', label: 'swipe.title' },
-      { href: '/movie-night', label: 'movieNight.nav', grownUp: true },
-      { href: '/world-cinema', label: 'arabMap.nav' },
-      { href: '/dramas', label: 'dramas.nav', grownUp: true },
-    ],
-  },
   {
     heading: 'footer.site',
     links: [
@@ -34,6 +16,7 @@ const COLUMNS: { heading: TKey, links: FooterLink[] }[] = [
       { href: '/contact', label: 'footer.contact' },
       { href: '/app', label: 'apps.menu' },
       { href: '/desktop', label: 'desktop.footer' },
+      { href: '/swipe', label: 'swipe.title' },
       { href: '/support', label: 'support.footer', support: true },
     ],
   },
@@ -56,7 +39,7 @@ export default function Footer({ kids = false }: { kids?: boolean }) {
     // Bottom padding on phones clears the floating tab bar.
     <footer aria-label={t('footer.aria')} className="page-x pb-tabbar mt-16 text-white/50">
       <div className="border-t border-white/[0.07] py-12">
-        <div className="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-[1.6fr_repeat(4,1fr)]">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-[1.6fr_repeat(2,1fr)]">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" aria-label={t('nav.homeAria')} className="inline-flex items-center gap-3">
               <Image src="/A.svg" alt="" width={36} height={31} className="h-8 w-auto drop-shadow-[0_0_18px_rgb(255_16_0/0.4)]" />
