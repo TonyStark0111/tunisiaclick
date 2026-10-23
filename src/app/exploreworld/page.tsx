@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Clapperboard, Radio } from 'lucide-react'
+import { Clapperboard, Compass, Radio } from 'lucide-react'
 import PageHeader from '@/src/components/browse/PageHeader'
 import ProviderRow from '@/src/components/providers/ProviderRow'
 import { pageMetadata } from '@/src/lib/seo'
@@ -49,9 +49,17 @@ async function TrendingAnimeRow() {
   )
 }
 
-/** Destination cards for Live TV and Clips. */
+/** Destination cards: Discover · Live TV · Clips */
 function DestinationCards() {
   const cards = [
+    {
+      href: '/discover',
+      title: 'Discover',
+      subtitle: 'Every movie and show, filtered your way',
+      icon: Compass,
+      accent: 'from-sky-500/25 to-blue-600/10',
+      ring: 'hover:border-sky-400/40',
+    },
     {
       href: '/live-tv',
       title: 'Live TV',
@@ -71,11 +79,11 @@ function DestinationCards() {
   ] as const
 
   return (
-    <section className="page-x" aria-label="Live TV and Clips">
+    <section className="page-x" aria-label="Discover, Live TV and Clips">
       <h2 className="mb-4 font-display text-lg font-bold tracking-tight text-white sm:text-xl">
         Watch now
       </h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {cards.map(({ href, title, subtitle, icon: Icon, accent, ring }) => (
           <Link
             key={href}
