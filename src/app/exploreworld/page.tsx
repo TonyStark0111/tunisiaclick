@@ -1,16 +1,16 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Clapperboard, Radio, Tv } from 'lucide-react'
+import { Clapperboard, Radio } from 'lucide-react'
 import PageHeader from '@/src/components/browse/PageHeader'
 import ProviderRow from '@/src/components/providers/ProviderRow'
-import { PROVIDERS_LIST, TMDB_LOGO_BASE } from '@/src/lib/providers'
 import { pageMetadata } from '@/src/lib/seo'
 import Top10Row from '@/src/components/home/Top10Row'
 import OurFavRow from '@/src/components/home/OurFavRow'
 import HubShelf from '@/src/components/hubs/HubShelf'
 import { PosterSlider } from '@/src/components/Sliders'
 import { AnimeRow } from '@/src/components/anime/AnimeSections'
+import ClientMessages from '@/src/components/ClientMessages'
 import getMovies from '@/src/app/(movies)/actions'
 import getTVShows from '@/src/app/tv/actions'
 import { getTop10 } from '@/src/lib/top10'
@@ -33,18 +33,23 @@ export const generateMetadata = (): Metadata => {
   })
 }
 
-/** Trending anime row from AniList — streams in independently. */
+/**
+ * Trending anime from AniList.
+ * Wrapped in ClientMessages scope="anime/layout" so AnimeCard can resolve
+ * anime.format.* / anime.nextEp / anime.ep (otherwise raw keys show on the badge).
+ */
 async function TrendingAnimeRow() {
-  const t = getT()
   const viewer = await animeViewer()
   const cards = await withTimeout(getAnimeRow('trending', viewer), 12_000, null)
   if (!cards?.length) return null
-  return <AnimeRow title={t('anime.row.trending') ?? 'Trending Animes'} cards={cards} href="/anime" />
+  return (
+    <ClientMessages scope="anime/layout">
+      <AnimeRow title="Trending Animes" cards={cards} href="/anime" />
+    </ClientMessages>
+  )
 }
 
-/**
- * Destination cards for Live TV and Clips (full pages live elsewhere).
- */
+/** Destination cards for Live TV and Clips. */
 function DestinationCards() {
   const cards = [
     {
@@ -99,8 +104,7 @@ function DestinationCards() {
 /**
  * /exploreworld — Discovery hub.
  *
- * Layout (exact order requested):
- * 1. Header — Explore World + subtitle
+ * 1. Header
  * 2. Browse by provider
  * 3. Top 10 this week
  * 4. Trending Movies  → /discover
@@ -110,6 +114,8 @@ function DestinationCards() {
  * 8. Beyond Hollywood (world cinema · K-drama · C-dramas · Thai · Turkish)
  * 9. Live TV          → /live-tv
  * 10. Clips           → /clips
+ *
+ * No “All providers” grid — Browse by Provider already covers that.
  */
 export default async function ExploreWorldPage() {
   const kids = await getKidsMode()
@@ -132,22 +138,22 @@ export default async function ExploreWorldPage() {
       />
 
       <div className="space-y-10 sm:space-y-12">
-        {/* 1. Browse by provider */}
+        {/* Browse by provider */}
         <section className="mt-2 sm:mt-0">
           <ProviderRow title="Browse by Provider" basePath="/exploreworld" />
         </section>
 
-        {/* 2. Top 10 this week */}
+        {/* Top 10 this week */}
         <Top10Row top10={top10} />
 
-        {/* 3. Trending Movies → /discover */}
+        {/* Trending Movies → /discover */}
         <PosterSlider
           title={t('home.trendingMovies') ?? 'Trending Movies'}
           href="/discover"
           items={movieData.TrendingMovies?.results}
         />
 
-        {/* 4. Trending Series → /tv */}
+        {/* Trending Series → /tv */}
         <PosterSlider
           title={t('home.trendingSeries') ?? 'Trending Series'}
           href="/tv"
@@ -155,65 +161,25 @@ export default async function ExploreWorldPage() {
           items={tvData.trendingTVShows?.results}
         />
 
-        {/* 5. Trending Animes → /anime (AniList) */}
+        {/* Trending Animes → /anime (AniList) — ClientMessages loads anime.format / nextEp strings */}
         <Suspense fallback={null}>
           <TrendingAnimeRow />
         </Suspense>
 
-        {/* 6. Our Fav → /our-fav */}
+        {/* Our Fav → /our-fav */}
         <Suspense fallback={null}>
           <OurFavRow />
         </Suspense>
 
-        {/* 7. Beyond Hollywood — world cinema · kdrama · cdramas · thai · turkish */}
+        {/* Beyond Hollywood */}
         {!kids && (
           <Suspense fallback={null}>
             <HubShelf kids={kids} />
           </Suspense>
         )}
 
-        {/* 8–9. Live TV + Clips destination cards */}
+        {/* Live TV + Clips */}
         <DestinationCards />
-
-        {/* Full provider grid (kept for large-screen scanning) */}
-        <section className="page-x mt-4 sm:mt-6">
-          <h2 className="mb-6 font-display text-lg font-bold tracking-tight text-white sm:text-xl">
-            All providers
-          </h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 lg:grid-cols-6">
-            {PROVIDERS_LIST.map((provider) => (
-              <Link
-                key={provider.id}
-                href={`/exploreworld/${provider.id}`}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.06]"
-                style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.35)' }}
-              >
-                <div
-                  className="relative flex aspect-[16/10] items-center justify-center p-6 transition-shadow duration-300 group-hover:shadow-[0_0_28px_var(--glow)]"
-                  style={
-                    {
-                      backgroundColor: provider.bgColor,
-                      ['--glow' as string]: provider.glowColor,
-                    } as React.CSSProperties
-                  }
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`${TMDB_LOGO_BASE}${provider.logoPath}`}
-                    alt=""
-                    className="max-h-14 max-w-[70%] object-contain sm:max-h-16"
-                    loading="lazy"
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/20" />
-                </div>
-                <div className="flex flex-1 flex-col gap-1 p-3.5 sm:p-4">
-                  <p className="font-display text-[15px] font-semibold text-white">{provider.name}</p>
-                  <p className="line-clamp-2 text-[12px] leading-snug text-white/45">{provider.tagline}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
       </div>
     </div>
   )
