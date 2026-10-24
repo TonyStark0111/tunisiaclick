@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#000000" />
-<title>You're offline | TunisiaFlicks</title>
+<title>You're offline | XeonFlix</title>
 <style>
   * { box-sizing: border-box; }
   html { background: #000; }
@@ -33,9 +33,9 @@
 </head>
 <body>
   <main>
-    <img src="/icons/icon-192.png" alt="TunisiaFlicks" />
+    <img src="/icons/icon-192.png" alt="XeonFlix" />
     <h1 id="title">You're offline</h1>
-    <p id="text">XeonFlixs needs an internet connection. Check your connection and try again.</p>
+    <p id="text">XeonFlix needs an internet connection. Check your connection and try again.</p>
     <button type="button" id="retry" onclick="location.reload()">Try again</button>
   </main>
   <script>
@@ -43,10 +43,10 @@
     // on the server: it reads the language cookie (or the browser's languages) and translates itself.
     (function () {
       var strings = {
-        en: { dir: 'ltr', doc: "You're offline | TunisiaFlicks", title: "You're offline", text: 'TunisiaFlicks needs an internet connection. Check your connection and try again.', retry: 'Try again' },
-        fr: { dir: 'ltr', doc: 'Vous êtes hors ligne | TunisiaFlicks', title: 'Vous êtes hors ligne', text: 'TunisiaFlicks a besoin d’une connexion internet. Vérifiez votre connexion, puis réessayez.', retry: 'Réessayer' },
-        ar: { dir: 'rtl', doc: 'أنت غير متصل | TunisiaFlicks', title: 'أنت غير متصل بالإنترنت', text: 'يحتاج TunisiaFlicks إلى اتصال بالإنترنت. تحقّق من اتصالك ثم حاول مجددًا.', retry: 'حاول مجددًا' },
-        tn: { dir: 'rtl', doc: 'ماكش متصل | TunisiaFlicks', title: 'ماكش متصل بالإنترنت', text: 'TunisiaFlicks يستحق الإنترنت. ثبّت في الكونيكسيون متاعك وعاود جرّب.', retry: 'عاود جرّب' }
+        en: { dir: 'ltr', doc: "You're offline | XeonFlix", title: "You're offline", text: 'XeonFlix needs an internet connection. Check your connection and try again.', retry: 'Try again' },
+        fr: { dir: 'ltr', doc: 'Vous êtes hors ligne | XeonFlix', title: 'Vous êtes hors ligne', text: 'XeonFlix a besoin d’une connexion internet. Vérifiez votre connexion, puis réessayez.', retry: 'Réessayer' },
+        ar: { dir: 'rtl', doc: 'أنت غير متصل | XeonFlix', title: 'أنت غير متصل بالإنترنت', text: 'يحتاج XeonFlix إلى اتصال بالإنترنت. تحقّق من اتصالك ثم حاول مجددًا.', retry: 'حاول مجددًا' },
+        tn: { dir: 'rtl', doc: 'ماكش متصل | XeonFlix', title: 'ماكش متصل بالإنترنت', text: 'XeonFlix يستحق الإنترنت. ثبّت في الكونيكسيون متاعك وعاود جرّب.', retry: 'عاود جرّب' }
       };
       var lang = 'en';
       try {
