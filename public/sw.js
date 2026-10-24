@@ -1,10 +1,10 @@
-// TunisiaFlicks service worker — deliberately minimal.
+// XeonFlix service worker — deliberately minimal.
 //
 // It lets the site be installed as an app, shows a branded offline page when a page navigation
 // fails because there's no network, and displays push notifications (daily pick, release alerts). It never caches app pages, scripts or
 // API responses, so a new deploy is always picked up immediately (no stale-app bugs).
-const VERSION = 'v4'
-const CACHE = `tunisiaflicks-${VERSION}`
+const VERSION = 'v5-xeonflix'
+const CACHE = `xeonflix-${VERSION}`
 const OFFLINE_URL = '/offline.html'
 const PRECACHE = [OFFLINE_URL, '/icons/icon-192.png']
 
@@ -34,10 +34,10 @@ self.addEventListener('push', (event) => {
   try {
     data = event.data ? event.data.json() : {}
   } catch {
-    data = { title: 'TunisiaFlicks', body: event.data ? event.data.text() : '' }
+    data = { title: 'XeonFlix', body: event.data ? event.data.text() : '' }
   }
   event.waitUntil(
-    self.registration.showNotification(data.title || 'TunisiaFlicks', {
+    self.registration.showNotification(data.title || 'XeonFlix', {
       body: data.body || '',
       icon: '/icons/icon-192.png',
       badge: '/icons/icon-192.png',
@@ -48,7 +48,7 @@ self.addEventListener('push', (event) => {
   )
 })
 
-// Focus an open TunisiaFlicks tab (navigating it to the link) or open a new one.
+// Focus an open XeonFlix tab (navigating it to the link) or open a new one.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
   const target = new URL(event.notification.data?.url || '/', self.location.origin)
