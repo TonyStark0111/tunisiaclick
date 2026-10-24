@@ -69,10 +69,10 @@ const baseMetadata: Metadata = {
   // The defaults below are for pages that set nothing; no twitter title or description, or X
   // would show the site's on every page that only sets Open Graph ones.
   openGraph: {
-    title: 'TunisiaFlicks: movies and TV shows',
+    title: 'XeonFlix: movies, TV shows and Animes',
     description: SITE_DESCRIPTION,
     siteName: 'XeonFlix',
-    images: [{ url: '/og/home', width: 1200, height: 630, alt: 'TunisiaFlicks' }],
+    images: [{ url: '/og/home', width: 1200, height: 630, alt: 'XeonFlix' }],
     locale: 'en_US',
     alternateLocale: ['ar_TN'],
     type: 'website',
@@ -109,7 +109,7 @@ const baseMetadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: 'TunisiaFlicks',
+    title: 'XeonFlix',
     statusBarStyle: 'black-translucent',
   },
 };
