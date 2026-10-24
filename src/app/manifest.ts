@@ -6,9 +6,9 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     // A stable identity for the installed app (and the Google Play app built from it).
     id: '/',
-    name: 'TunisiaFlicks',
-    short_name: 'TunisiaFlicks',
-    description: 'Movies and TV shows in one place.',
+    name: 'XeonFlix',
+    short_name: 'XeonFlix',
+    description: 'Movies, TV shows and Animes in one place.',
     start_url: '/',
     scope: '/',
     display: 'standalone',
