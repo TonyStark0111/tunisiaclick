@@ -14,7 +14,7 @@ export const languages = defineStrings({
     'languages.switched': 'Language: {language}',
     'languages.offline': 'You’re offline. The language will change as soon as you’re back online.',
     // The site's own title and description (the root layout's metadata, see siteMetadata in lib/seo).
-    'languages.meta.title': 'TunisiaFlicks: movies, TV shows and Tunisian series',
+    'languages.meta.title': 'XeonFlix: movies, TV shows and Animes',
     'languages.meta.description': 'Movies, TV shows and Tunisian series in one place: what’s trending today, trailers, a daily Top 10, Ramadan series and release alerts, in English, French and Arabic.',
   },
   ar: {
@@ -27,7 +27,7 @@ export const languages = defineStrings({
     'languages.hint.others': 'لغات أخرى',
     'languages.switched': 'اللغة: {language}',
     'languages.offline': 'أنت غير متصل بالإنترنت. ستتغيّر اللغة فور عودة الاتصال.',
-    'languages.meta.title': 'TunisiaFlicks: أفلام ومسلسلات ومسلسلات تونسية',
+    'languages.meta.title': 'XeonFlix: أفلام ومسلسلات وأنمي',
     'languages.meta.description': 'الأفلام والمسلسلات والمسلسلات التونسية في مكان واحد: الرائج اليوم، والمقاطع الدعائية، وأفضل 10 كل يوم، ومسلسلات رمضان وتنبيهات الإصدارات، بالعربية والفرنسية والإنجليزية.',
   },
   tn: {
@@ -40,7 +40,7 @@ export const languages = defineStrings({
     'languages.hint.others': 'لغات أخرين',
     'languages.switched': 'اللغة: {language}',
     'languages.offline': 'ماكش متصل بالإنترنت. اللغة تتبدّل كي يرجع الإنترنت.',
-    'languages.meta.title': 'TunisiaFlicks: أفلام، مسلسلات ومسلسلات تونسية',
+    'languages.meta.title': 'XeonFlix: أفلام، مسلسلات وأنمي',
     'languages.meta.description': 'الأفلام والمسلسلات والمسلسلات التونسية في بلاصة وحدة: شنوّة الرائج اليوم، البروموات، أفضل 10 كل نهار، مسلسلات رمضان وتنبيهات كي يخرج عنوان، بالعربي والفرنساوي والإنڨليزي.',
   },
   fr: {
@@ -53,7 +53,7 @@ export const languages = defineStrings({
     'languages.hint.others': 'Autres langues',
     'languages.switched': 'Langue\u00a0: {language}',
     'languages.offline': 'Vous êtes hors ligne. La langue changera dès le retour de la connexion.',
-    'languages.meta.title': 'TunisiaFlicks : films, séries et séries tunisiennes',
+    'languages.meta.title': 'XeonFlix : films, séries et animés',
     'languages.meta.description': 'Films, séries et séries tunisiennes au même endroit : les tendances du jour, les bandes-annonces, un Top 10 quotidien, les séries du Ramadan et des alertes de sortie, en français, en anglais et en arabe.',
   },
 })
