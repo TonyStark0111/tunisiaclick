@@ -27,6 +27,7 @@ import TvModeProvider from "@/src/components/tv/TvModeProvider";
 import TvShell from "@/src/components/tv/TvShell";
 import TvModeOffer from "@/src/components/tv/TvModeOffer";
 import AppOffer from "@/src/components/apps/AppOffer";
+import { isAppDownloadNotifyEnabled } from "@/src/lib/app-download-notify";
 import { getAppReleases, getDesktopRelease } from "@/src/lib/app-releases";
 import { INSTALL_PROMPT_SCRIPT } from "@/src/lib/install-prompt-script";
 import { LAUNCH_SCRIPT } from "@/src/lib/launch-script";
@@ -169,7 +170,7 @@ export default async function RootLayout({
     <div className="relative flex min-h-dvh flex-col">
       <VerifyEmailBanner />
       {!tv && <TvModeOffer />}
-      <AppOffer apps={offeredApps} />
+      {isAppDownloadNotifyEnabled() && <AppOffer apps={offeredApps} />}
       <main id="main" role="main" className="flex-1 min-w-0">
         {children}
       </main>
