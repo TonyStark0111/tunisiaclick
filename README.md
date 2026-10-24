@@ -4,6 +4,7 @@ MONGODB_URI
 Yes (app will crash without it)
 NEXTAUTH_SECRET
 Yes
+APP_DOWNLOAD_NOTIFY - off
 NEXTAUTH_URL
 Movies and TV shows browser built with [Next.js](https://nextjs.org/) (App Router), Tailwind CSS and TMDB data.
 
