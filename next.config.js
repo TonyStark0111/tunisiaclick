@@ -1,3 +1,5 @@
+const path = require('path')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // A production build can go to its own folder (NEXT_DIST_DIR=.next-build) while a dev server uses .next.
@@ -33,6 +35,17 @@ const nextConfig = {
   experimental: {
     // Next 14: enables src/instrumentation.ts (server-side error monitoring setup).
     instrumentationHook: true,
+  },
+  // ── Link masking (href unexposure) ──────────────────────────
+  // Every `import Link from 'next/link'` uses SoftLink instead.
+  // No real href in the DOM → long-press never shows the URL
+  // (browser + Telegram Mini App).
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'next/link': path.resolve(__dirname, 'src/components/SoftLink.tsx'),
+    }
+    return config
   },
   async headers() {
     // Pages whose URL carries a secret (a signed unsubscribe link, a TV pairing code) send no
