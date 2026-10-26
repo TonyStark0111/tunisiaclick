@@ -19,6 +19,7 @@ import { Toaster } from "@/src/components/ui/toaster";
 import ServiceWorkerRegister from "@/src/components/ServiceWorkerRegister";
 import DailyPushTrigger from "@/src/components/DailyPushTrigger";
 import ErrorReporter from "@/src/components/ErrorReporter";
+import LinkMaskGuard from "@/src/components/LinkMaskGuard";
 import { I18nProvider } from "@/src/components/I18nProvider";
 import ShareSheetHost from "@/src/components/share/ShareSheetHost";
 import AddToListHost from "@/src/components/lists/AddToListHost";
@@ -240,6 +241,7 @@ export default async function RootLayout({
         <ServiceWorkerRegister />
         <DailyPushTrigger />
         <ErrorReporter />
+        <LinkMaskGuard />
       </body>
     </html>
   );
