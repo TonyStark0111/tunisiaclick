@@ -6,6 +6,7 @@ NEXTAUTH_SECRET
 Yes
 APP_DOWNLOAD_NOTIFY - off
 NEXTAUTH_URL
+NEXT_PUBLIC_MASK_LINKS=0
 Movies and TV shows browser built with [Next.js](https://nextjs.org/) (App Router), Tailwind CSS and TMDB data.
 
 ## Getting started
