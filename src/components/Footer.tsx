@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import Image from 'next/image'
+import SoftLink from '@/src/components/SoftLink'
 import { getT } from '@/src/lib/i18n/server'
 import type { TKey } from '@/src/lib/i18n'
 import { supportUrl } from '@/src/lib/support-url'
@@ -39,10 +39,10 @@ export default function Footer({ kids = false }: { kids?: boolean }) {
       <div className="border-t border-white/[0.07] py-12">
         <div className="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-[1.6fr_repeat(2,1fr)]">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" aria-label={t('nav.homeAria')} className="inline-flex items-center gap-3">
+            <SoftLink href="/" ariaLabel={t('nav.homeAria')} className="inline-flex items-center gap-3">
               <Image src="/A.svg" alt="" width={36} height={31} className="h-8 w-auto drop-shadow-[0_0_18px_rgb(255_16_0/0.4)]" />
               <Image src="/TunisiaFlicks.svg" alt="TunisiaFlicks" width={150} height={20} className="h-[18px] w-auto" />
-            </Link>
+            </SoftLink>
             <p className="mt-4 max-w-xs text-sm leading-relaxed">{t('footer.tagline')}</p>
           </div>
           {COLUMNS.map((column) => (
@@ -51,7 +51,9 @@ export default function Footer({ kids = false }: { kids?: boolean }) {
               <ul className="space-y-2.5 text-sm">
                 {column.links.filter(shown).map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="transition-colors duration-200 hover:text-white">{t(link.label)}</Link>
+                    <SoftLink href={link.href} className="transition-colors duration-200 hover:text-white">
+                      {t(link.label)}
+                    </SoftLink>
                   </li>
                 ))}
               </ul>
@@ -63,7 +65,13 @@ export default function Footer({ kids = false }: { kids?: boolean }) {
           <div className="max-w-xl space-y-1 md:text-end">
             <p>{t('footer.noHosting')}</p>
             <p>
-              <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">{t('footer.tmdb')}</a>
+              <SoftLink
+                href="https://www.themoviedb.org"
+                external
+                className="transition-colors hover:text-white"
+              >
+                {t('footer.tmdb')}
+              </SoftLink>
             </p>
           </div>
         </div>
