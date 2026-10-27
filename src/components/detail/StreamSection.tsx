@@ -210,6 +210,28 @@ export default function StreamSection({ services: providerServices, media, downl
         return () => document.removeEventListener('fullscreenchange', onChange)
     }, [playerOn])
 
+    // Telegram Mini App: when the player goes full screen, let the screen rotate to landscape.
+    useEffect(() => {
+        const tg = (window as unknown as { Telegram?: { WebApp?: { initData?: string, unlockOrientation?: () => void } } }).Telegram?.WebApp
+        if (!tg?.initData) return // not inside Telegram
+        const onFs = () => {
+            const d = document as Document & { webkitFullscreenElement?: Element | null }
+            const so = screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }
+            if (document.fullscreenElement || d.webkitFullscreenElement) {
+                try { tg.unlockOrientation?.() } catch { /* older Telegram */ }
+                so?.lock?.('landscape')?.catch(() => {})
+            } else {
+                try { so?.unlock?.() } catch { /* not supported */ }
+            }
+        }
+        document.addEventListener('fullscreenchange', onFs)
+        document.addEventListener('webkitfullscreenchange', onFs)
+        return () => {
+            document.removeEventListener('fullscreenchange', onFs)
+            document.removeEventListener('webkitfullscreenchange', onFs)
+        }
+    }, [])
+
     // Arriving to watch: Start takes the focus once the page has scrolled here.
     useEffect(() => {
         if (!tv || !enabled || started || !arrived || !url) return
@@ -358,7 +380,7 @@ export default function StreamSection({ services: providerServices, media, downl
                                     referrerPolicy="origin"
                                     allowFullScreen
                                     // The desktop app's own player too: its full screen, picture in picture and autoplay.
-                                    allow={tv || sourceName === LOCAL_PLAYER_SOURCE ? 'autoplay; fullscreen; encrypted-media; picture-in-picture' : undefined}
+                                    allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
                                     onLoad={() => setIsLoading(false)}
                                 />
                             )}
