@@ -1,7 +1,7 @@
 "use client"
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { m } from 'framer-motion'
-import { Check, Layers, Lightbulb, LightbulbOff, LogOut, Maximize2, Minimize2, Play, SkipForward, TriangleAlert } from 'lucide-react'
+import { Check, Layers, Lightbulb, LightbulbOff, LogOut, Play, SkipForward, TriangleAlert } from 'lucide-react'
 import { toast } from '@/src/hooks/use-toast'
 import type { StreamProvider } from '@/src/lib/stream-providers'
 import { cn } from '@/src/lib/utils'
@@ -80,8 +80,6 @@ export default function StreamSection({ services: providerServices, media, downl
     const pillId = useId()
     const [isLoading, setIsLoading] = useState(true)
     const [lightsOff, setLightsOff] = useState(false)
-    /** Fullscreen + landscape lock for better viewing on phones (many embeds lack their own rotate). */
-    const [betterView, setBetterView] = useState(false)
     const sectionRef = useRef<HTMLElement>(null)
     const services = useWithLocalPlayer(providerServices, media)
     const source = useStreamSource(services, { playing: enabled && !isLoading })
@@ -116,121 +114,6 @@ export default function StreamSection({ services: providerServices, media, downl
         window.addEventListener('keydown', onKey)
         return () => window.removeEventListener('keydown', onKey)
     }, [lightsOff])
-
-    /** Detect Telegram Mini App (Telegram injects window.Telegram.WebApp). */
-    const getTelegramWebApp = () => {
-        try {
-            return (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) || null
-        } catch {
-            return null
-        }
-    }
-
-    /**
-     * Betterview – works in normal browsers AND Telegram Mini Apps.
-     *
-     * Telegram blocks the normal Fullscreen API, so we use:
-     *  1. Telegram.WebApp.expand + requestFullscreen + lockOrientation (when available)
-     *  2. A CSS "immersive" overlay on the player as a reliable fallback
-     *     (fixed full-viewport player – best experience inside Telegram).
-     */
-    const toggleBetterView = useCallback(async () => {
-        const tg = getTelegramWebApp()
-        const el = frameRef.current
-        const entering = !betterView
-
-        if (entering) {
-            // --- Try Telegram native fullscreen first ---
-            if (tg) {
-                try {
-                    tg.ready?.()
-                    tg.expand?.()
-                    // Bot API 8.0+
-                    if (typeof tg.requestFullscreen === 'function') {
-                        tg.requestFullscreen()
-                    }
-                    // Lock whatever orientation the phone is currently in
-                    // (tell the user to rotate to landscape first for best result)
-                    if (typeof tg.lockOrientation === 'function') {
-                        try { tg.lockOrientation() } catch { /* ignore */ }
-                    }
-                } catch (e) {
-                    console.warn('Telegram fullscreen helpers failed', e)
-                }
-            }
-
-            // --- Also try normal browser fullscreen (works outside Telegram) ---
-            if (el && !document.fullscreenElement) {
-                try {
-                    await el.requestFullscreen?.({ navigationUI: 'hide' })
-                    const orient = (screen as any).orientation
-                    if (orient?.lock) await orient.lock('landscape').catch(() => {})
-                    else if ((screen as any).lockOrientation) (screen as any).lockOrientation('landscape')
-                } catch {
-                    // Expected to fail inside Telegram – CSS fallback handles it
-                }
-            }
-
-            setBetterView(true)
-            // Scroll player into view so the CSS overlay looks correct
-            el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-        } else {
-            // Exit
-            if (tg) {
-                try {
-                    if (typeof tg.exitFullscreen === 'function') tg.exitFullscreen()
-                    if (typeof tg.unlockOrientation === 'function') tg.unlockOrientation()
-                } catch { /* ignore */ }
-            }
-            if (document.fullscreenElement) {
-                try { await document.exitFullscreen() } catch { /* ignore */ }
-            }
-            try {
-                const orient = (screen as any).orientation
-                if (orient?.unlock) orient.unlock()
-            } catch { /* ignore */ }
-            setBetterView(false)
-        }
-    }, [betterView])
-
-    // Sync state when user exits fullscreen by other means (back gesture, Esc…)
-    useEffect(() => {
-        const sync = () => {
-            const browserFs = !!document.fullscreenElement
-            const tg = getTelegramWebApp()
-            const tgFs = !!(tg && tg.isFullscreen)
-            // Only force-off if both are false and we thought we were on
-            if (betterView && !browserFs && !tgFs) {
-                // Keep betterView true if we are using the CSS overlay only
-                // (user must press the button again to exit)
-            }
-        }
-        document.addEventListener('fullscreenchange', sync)
-        const tg = getTelegramWebApp()
-        if (tg?.onEvent) {
-            try {
-                tg.onEvent('fullscreenChanged', sync)
-                tg.onEvent('fullscreenFailed', sync)
-            } catch { /* ignore */ }
-        }
-        return () => {
-            document.removeEventListener('fullscreenchange', sync)
-            if (tg?.offEvent) {
-                try {
-                    tg.offEvent('fullscreenChanged', sync)
-                    tg.offEvent('fullscreenFailed', sync)
-                } catch { /* ignore */ }
-            }
-        }
-    }, [betterView])
-
-    // Prevent body scroll while Betterview CSS overlay is active
-    useEffect(() => {
-        if (!betterView) return
-        const prev = document.body.style.overflow
-        document.body.style.overflow = 'hidden'
-        return () => { document.body.style.overflow = prev }
-    }, [betterView])
 
     useEffect(() => {
         if (!tv) return
@@ -401,15 +284,7 @@ export default function StreamSection({ services: providerServices, media, downl
                     style={{ background: `rgb(var(--tf-ambient) / ${lightsOff ? 0.5 : 0.24})` }}
                 />
 
-                <div
-                    ref={frameRef}
-                    className={cn(
-                        'relative mx-auto aspect-video max-h-[80vh] w-full overflow-hidden rounded-[14px] bg-black shadow-[0_40px_100px_-30px_rgb(0_0_0/0.9)] ring-1 ring-white/10 md:rounded-[22px]',
-                        // Betterview CSS fallback – forces the player to cover the whole screen
-                        // (works even when Telegram blocks native fullscreen)
-                        betterView && 'fixed inset-0 z-[9999] !max-h-none !rounded-none !ring-0 aspect-auto h-[100dvh] w-screen',
-                    )}
-                >
+                <div ref={frameRef} className="relative mx-auto aspect-video max-h-[80vh] w-full overflow-hidden rounded-[14px] bg-black shadow-[0_40px_100px_-30px_rgb(0_0_0/0.9)] ring-1 ring-white/10 md:rounded-[22px]">
                     {!enabled ? (
                         <div className="absolute inset-0">
                             {backdrop && <TmdbImage kind="backdrop" path={backdrop} alt="" fill sizes="(min-width: 1400px) 1400px, 100vw" className="object-cover opacity-30 blur-[2px]" />}
@@ -486,17 +361,6 @@ export default function StreamSection({ services: providerServices, media, downl
                                     allow={tv || sourceName === LOCAL_PLAYER_SOURCE ? 'autoplay; fullscreen; encrypted-media; picture-in-picture' : undefined}
                                     onLoad={() => setIsLoading(false)}
                                 />
-                            )}
-                            {/* Floating exit control while Betterview CSS overlay is active */}
-                            {betterView && (
-                                <button
-                                    type="button"
-                                    onClick={toggleBetterView}
-                                    className="absolute end-3 top-3 z-50 inline-flex h-10 items-center gap-2 rounded-full bg-black/70 px-4 text-sm font-semibold text-white shadow-lg backdrop-blur hover:bg-black/90"
-                                >
-                                    <Minimize2 aria-hidden className="h-4 w-4" />
-                                    {t('detail.exitBetterView') || 'Exit Betterview'}
-                                </button>
                             )}
                             {playerOn && slow && isLoading && !menu && (
                                 <div role="status" className="glass-strong absolute inset-x-[4%] top-[5%] z-20 mx-auto flex max-w-[40rem] flex-wrap items-center gap-x-5 gap-y-3 rounded-[20px] p-[1.1em]">
@@ -622,24 +486,6 @@ export default function StreamSection({ services: providerServices, media, downl
                             >
                                 {lightsOff ? <Lightbulb aria-hidden className="h-4 w-4" /> : <LightbulbOff aria-hidden className="h-4 w-4" />}
                                 {lightsOff ? t('detail.exitTheater') : t('detail.theater')}
-                            </Button>
-                        )}
-                        {/* Betterview: force landscape fullscreen for embeds that lack their own rotate control. */}
-                        {!tv && (
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={toggleBetterView}
-                                aria-pressed={betterView}
-                                className="h-9"
-                                title={t('detail.betterViewHint') || 'Fullscreen + landscape for better viewing'}
-                            >
-                                {betterView
-                                    ? <Minimize2 aria-hidden className="h-4 w-4" />
-                                    : <Maximize2 aria-hidden className="h-4 w-4" />}
-                                {betterView
-                                    ? (t('detail.exitBetterView') || 'Exit Betterview')
-                                    : (t('detail.betterView') || 'Betterview')}
                             </Button>
                         )}
                         {downloadSlot}
