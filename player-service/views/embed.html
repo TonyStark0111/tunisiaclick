@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>TunisiaFlicks Player</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <!--
   The TunisiaFlicks player, as an embed: the site (inside the desktop app) puts this page in its player
   frame as one more source. Served from /embed/movie/:tmdb and /embed/tv/:tmdb/:season/:episode.
@@ -708,16 +709,79 @@
     osd(video.muted ? 'mute' : 'vol2', video.muted ? 'Muted' : `${Math.round(video.volume * 100)}%`)
   }
 
-  // Full screen and picture in picture
+  // Full screen and picture in picture (Telegram Mini App aware + landscape lock)
+  function isTelegram() {
+    return !!(window.Telegram && window.Telegram.WebApp)
+  }
+  function lockLandscape() {
+    try {
+      if (isTelegram() && typeof Telegram.WebApp.lockOrientation === 'function') {
+        Telegram.WebApp.lockOrientation('landscape')
+      } else if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(() => {})
+      }
+    } catch (e) {}
+  }
+  function unlockOrientation() {
+    try {
+      if (isTelegram() && typeof Telegram.WebApp.unlockOrientation === 'function') {
+        Telegram.WebApp.unlockOrientation()
+      } else if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock()
+      }
+    } catch (e) {}
+  }
+  function updateFsButton(on) {
+    setIcon($('fsBtn').querySelector('svg'), on ? 'min' : 'max')
+    $('fsBtn').setAttribute('aria-label', on ? 'Exit full screen (f)' : 'Full screen (f)')
+  }
   function toggleFullscreen() {
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
-    else player.requestFullscreen?.().catch(() => {})
+    const tg = isTelegram() ? window.Telegram.WebApp : null
+
+    // Already fullscreen → exit
+    if (document.fullscreenElement || (tg && tg.isFullscreen)) {
+      if (tg && typeof tg.exitFullscreen === 'function') {
+        tg.exitFullscreen()
+      } else {
+        document.exitFullscreen().catch(() => {})
+      }
+      unlockOrientation()
+      return
+    }
+
+    // Enter fullscreen
+    const enter = async () => {
+      try {
+        if (tg && typeof tg.requestFullscreen === 'function') {
+          await tg.requestFullscreen()
+        } else if (video.webkitEnterFullscreen) {
+          // Best for iOS / many mobile WebViews
+          video.webkitEnterFullscreen()
+        } else if (player.requestFullscreen) {
+          await player.requestFullscreen({ navigationUI: 'hide' })
+        }
+      } catch (e) {
+        console.warn('Fullscreen failed', e)
+      }
+      // Force landscape after a short delay (needed for Telegram)
+      setTimeout(lockLandscape, 150)
+    }
+    enter()
   }
   document.addEventListener('fullscreenchange', () => {
     const on = !!document.fullscreenElement
-    setIcon($('fsBtn').querySelector('svg'), on ? 'min' : 'max')
-    $('fsBtn').setAttribute('aria-label', on ? 'Exit full screen (f)' : 'Full screen (f)')
+    updateFsButton(on)
+    if (!on) unlockOrientation()
   })
+  if (isTelegram()) {
+    try {
+      Telegram.WebApp.onEvent('fullscreenChanged', () => {
+        const on = !!Telegram.WebApp.isFullscreen
+        updateFsButton(on)
+        if (!on) unlockOrientation()
+      })
+    } catch (e) {}
+  }
   $('fsBtn').addEventListener('click', toggleFullscreen)
   $('pipBtn').hidden = !document.pictureInPictureEnabled
   async function togglePip() {
