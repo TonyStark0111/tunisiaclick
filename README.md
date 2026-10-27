@@ -1,4 +1,4 @@
-# TunisiaFlickss
+# TunisiaFlicksss
 
 MONGODB_URI
 Yes (app will crash without it)
