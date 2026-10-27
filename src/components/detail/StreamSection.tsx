@@ -210,29 +210,6 @@ export default function StreamSection({ services: providerServices, media, downl
         return () => document.removeEventListener('fullscreenchange', onChange)
     }, [playerOn])
 
-    // Telegram Android hosts the site inside its own WebView. When an embedded provider
-    // successfully enters fullscreen, ask Android's Screen Orientation API for landscape.
-    // This is best-effort: browsers/WebViews may reject orientation locks, so playback remains
-    // unaffected. Unlock on exit so the rest of the site can rotate normally.
-    useEffect(() => {
-        const orientation = screen.orientation as ScreenOrientation & {
-            lock?: (orientation: 'landscape') => Promise<void>
-            unlock?: () => void
-        }
-        const onFullscreenChange = () => {
-            if (document.fullscreenElement) {
-                try { orientation?.lock?.('landscape').catch(() => {}) } catch { /* WebView may reject synchronously */ }
-            } else {
-                try { orientation?.unlock?.() } catch { /* orientation locking is optional */ }
-            }
-        }
-        document.addEventListener('fullscreenchange', onFullscreenChange)
-        return () => {
-            document.removeEventListener('fullscreenchange', onFullscreenChange)
-            try { orientation?.unlock?.() } catch { /* orientation locking is optional */ }
-        }
-    }, [])
-
     // Arriving to watch: Start takes the focus once the page has scrolled here.
     useEffect(() => {
         if (!tv || !enabled || started || !arrived || !url) return
@@ -380,10 +357,8 @@ export default function StreamSection({ services: providerServices, media, downl
                                     className="absolute inset-0 h-full w-full"
                                     referrerPolicy="origin"
                                     allowFullScreen
-                                    // Explicitly grant fullscreen to every third-party provider iframe.
-                                    // Some Telegram Android WebViews do not honor fullscreen reliably
-                                    // when the iframe's Permissions Policy is left implicit.
-                                    allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                                    // The desktop app's own player too: its full screen, picture in picture and autoplay.
+                                    allow={tv || sourceName === LOCAL_PLAYER_SOURCE ? 'autoplay; fullscreen; encrypted-media; picture-in-picture' : undefined}
                                     onLoad={() => setIsLoading(false)}
                                 />
                             )}
