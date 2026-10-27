@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <title>TunisiaFlicks Player</title>
 <!--
   The TunisiaFlicks player, as an embed: the site (inside the desktop app) puts this page in its player
@@ -35,6 +35,18 @@
   .player { position: absolute; inset: 0; overflow: hidden; background: #000; user-select: none; }
   video { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; outline: none; }
   .player.idle { cursor: none; }
+
+  /* Fallback for Telegram Mini App / restricted WebViews where native fullscreen fails */
+  .player.tg-fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 99999 !important;
+    border-radius: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+  }
 
   /* Scrims and chrome: visible while the viewer is around, gone while they watch. */
   .chrome { transition: opacity .35s var(--ease), transform .35s var(--ease); }
@@ -709,14 +721,63 @@
   }
 
   // Full screen and picture in picture
-  function toggleFullscreen() {
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
-    else player.requestFullscreen?.().catch(() => {})
+  // Improved for Telegram Mini App and restricted WebViews:
+  // 1. Tries native Fullscreen API
+  // 2. Tries screen.orientation.lock('landscape') after entering fullscreen
+  // 3. Falls back to a CSS "tg-fullscreen" class that fills the whole screen
+  async function toggleFullscreen() {
+    const isNativeFs = !!document.fullscreenElement
+    const isCssFs = player.classList.contains('tg-fullscreen')
+
+    if (isNativeFs || isCssFs) {
+      // Exit
+      if (isNativeFs) {
+        try { await document.exitFullscreen() } catch {}
+      }
+      player.classList.remove('tg-fullscreen')
+      try {
+        if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock()
+      } catch {}
+      setIcon($('fsBtn').querySelector('svg'), 'max')
+      $('fsBtn').setAttribute('aria-label', 'Full screen (f)')
+      return
+    }
+
+    // Enter
+    let entered = false
+    try {
+      if (player.requestFullscreen) {
+        await player.requestFullscreen({ navigationUI: 'hide' })
+        entered = true
+      }
+    } catch {}
+
+    if (entered) {
+      // Try to force landscape (works only after real fullscreen on supported devices)
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          await screen.orientation.lock('landscape')
+        }
+      } catch {}
+    } else {
+      // Telegram / restricted WebView fallback
+      player.classList.add('tg-fullscreen')
+    }
+
+    setIcon($('fsBtn').querySelector('svg'), 'min')
+    $('fsBtn').setAttribute('aria-label', 'Exit full screen (f)')
   }
+
   document.addEventListener('fullscreenchange', () => {
     const on = !!document.fullscreenElement
-    setIcon($('fsBtn').querySelector('svg'), on ? 'min' : 'max')
-    $('fsBtn').setAttribute('aria-label', on ? 'Exit full screen (f)' : 'Full screen (f)')
+    if (!on) {
+      player.classList.remove('tg-fullscreen')
+      try {
+        if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock()
+      } catch {}
+    }
+    setIcon($('fsBtn').querySelector('svg'), on || player.classList.contains('tg-fullscreen') ? 'min' : 'max')
+    $('fsBtn').setAttribute('aria-label', (on || player.classList.contains('tg-fullscreen')) ? 'Exit full screen (f)' : 'Full screen (f)')
   })
   $('fsBtn').addEventListener('click', toggleFullscreen)
   $('pipBtn').hidden = !document.pictureInPictureEnabled
