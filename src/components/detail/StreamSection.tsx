@@ -357,8 +357,10 @@ export default function StreamSection({ services: providerServices, media, downl
                                     className="absolute inset-0 h-full w-full"
                                     referrerPolicy="origin"
                                     allowFullScreen
-                                    // The desktop app's own player too: its full screen, picture in picture and autoplay.
-                                    allow={tv || sourceName === LOCAL_PLAYER_SOURCE ? 'autoplay; fullscreen; encrypted-media; picture-in-picture' : undefined}
+                                    // Always allow fullscreen so the landscape / fullscreen button works
+                                    // inside Telegram Mini App and on normal mobile browsers.
+                                    // (Previously it was only enabled for TV mode and the local desktop player.)
+                                    allow="autoplay; fullscreen; encrypted-media; picture-in-picture; web-share"
                                     onLoad={() => setIsLoading(false)}
                                 />
                             )}
