@@ -15,7 +15,6 @@ import KeyGlyph from '@/src/components/tv/KeyGlyph'
 import TmdbImage from '@/src/components/TmdbImage'
 import { Button } from '@/src/components/ui/button'
 import { BrandLoader } from '@/src/components/brand/BrandMark'
-import DirectPlayer, { isDirectMediaUrl } from '@/src/components/detail/DirectPlayer'
 
 /** Provider logo from website URL (favicon or explicit logo field). Hides on load error. */
 function ProviderLogo({ src, name, active }: { src?: string; name: string; active?: boolean }) {
@@ -85,9 +84,6 @@ export default function StreamSection({ services: providerServices, media, downl
     const services = useWithLocalPlayer(providerServices, media)
     const source = useStreamSource(services, { playing: enabled && !isLoading })
     const url = source.ready ? source.current?.url : undefined
-    // A direct video file (MP4 / WebM / HLS) plays in our own player; anything else is an embed page.
-    const direct = isDirectMediaUrl(url)
-    const resumeKey = media ? (media.type === 'tv' ? `tv:${media.id}:${media.season}:${media.episode}` : `movie:${media.id}`) : undefined
 
     // --- TV mode: the briefing, the start, the Back menu ---
     const [started, setStarted] = useState(false)
@@ -97,7 +93,6 @@ export default function StreamSection({ services: providerServices, media, downl
     const [compact, setCompact] = useState(false)
     const frameRef = useRef<HTMLDivElement>(null)
     const iframeRef = useRef<HTMLIFrameElement>(null)
-    const directRef = useRef<HTMLDivElement>(null)
     const startRef = useRef<HTMLButtonElement>(null)
     const tabsRef = useRef<HTMLDivElement>(null)
     const menuRef = useRef<HTMLDivElement>(null)
@@ -136,7 +131,7 @@ export default function StreamSection({ services: providerServices, media, downl
     }, [tv, enabled])
 
     const focusPlayer = useCallback(() => {
-        window.setTimeout(() => (directRef.current ?? iframeRef.current)?.focus(), 50)
+        window.setTimeout(() => iframeRef.current?.focus(), 50)
     }, [])
 
     const releaseScreen = () => {
@@ -214,6 +209,29 @@ export default function StreamSection({ services: providerServices, media, downl
         document.addEventListener('fullscreenchange', onChange)
         return () => document.removeEventListener('fullscreenchange', onChange)
     }, [playerOn])
+
+    // Telegram Android hosts the site inside its own WebView. When an embedded provider
+    // successfully enters fullscreen, ask Android's Screen Orientation API for landscape.
+    // This is best-effort: browsers/WebViews may reject orientation locks, so playback remains
+    // unaffected. Unlock on exit so the rest of the site can rotate normally.
+    useEffect(() => {
+        const orientation = screen.orientation as ScreenOrientation & {
+            lock?: (orientation: 'landscape') => Promise<void>
+            unlock?: () => void
+        }
+        const onFullscreenChange = () => {
+            if (document.fullscreenElement) {
+                try { orientation?.lock?.('landscape').catch(() => {}) } catch { /* WebView may reject synchronously */ }
+            } else {
+                try { orientation?.unlock?.() } catch { /* orientation locking is optional */ }
+            }
+        }
+        document.addEventListener('fullscreenchange', onFullscreenChange)
+        return () => {
+            document.removeEventListener('fullscreenchange', onFullscreenChange)
+            try { orientation?.unlock?.() } catch { /* orientation locking is optional */ }
+        }
+    }, [])
 
     // Arriving to watch: Start takes the focus once the page has scrolled here.
     useEffect(() => {
@@ -348,24 +366,12 @@ export default function StreamSection({ services: providerServices, media, downl
                         </div>
                     ) : (
                         <>
-                            {isLoading && !direct && (
+                            {isLoading && (
                                 <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center bg-black">
                                     <BrandLoader tone="brand" className="h-11 w-11" />
                                 </div>
                             )}
-                            {url && direct && (
-                                <DirectPlayer
-                                    ref={directRef}
-                                    key={url}
-                                    src={url}
-                                    title={t('stream.player')}
-                                    resumeKey={resumeKey}
-                                    onReady={() => setIsLoading(false)}
-                                    onError={() => setIsLoading(false)}
-                                    onEnded={onNext}
-                                />
-                            )}
-                            {url && !direct && (
+                            {url && (
                                 <iframe
                                     ref={iframeRef}
                                     key={url}
@@ -374,8 +380,10 @@ export default function StreamSection({ services: providerServices, media, downl
                                     className="absolute inset-0 h-full w-full"
                                     referrerPolicy="origin"
                                     allowFullScreen
-                                    // The desktop app's own player too: its full screen, picture in picture and autoplay.
-                                    allow={tv || sourceName === LOCAL_PLAYER_SOURCE ? 'autoplay; fullscreen; encrypted-media; picture-in-picture' : undefined}
+                                    // Explicitly grant fullscreen to every third-party provider iframe.
+                                    // Some Telegram Android WebViews do not honor fullscreen reliably
+                                    // when the iframe's Permissions Policy is left implicit.
+                                    allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
                                     onLoad={() => setIsLoading(false)}
                                 />
                             )}
