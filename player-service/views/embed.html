@@ -37,6 +37,21 @@
   video { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; outline: none; }
   .player.idle { cursor: none; }
 
+  /* Fake landscape for Telegram Mini App (when phone is still in portrait) */
+  .player.tg-landscape {
+    position: fixed !important;
+    top: 0 !important;
+    left: 100% !important;
+    width: 100vh !important;
+    height: 100vw !important;
+    transform: rotate(90deg) !important;
+    transform-origin: top left !important;
+    z-index: 99999 !important;
+  }
+  .player.tg-landscape video {
+    object-fit: contain;
+  }
+
   /* Scrims and chrome: visible while the viewer is around, gone while they watch. */
   .chrome { transition: opacity .35s var(--ease), transform .35s var(--ease); }
   .player.idle .chrome, .player.loading .chrome-video { opacity: 0; pointer-events: none; }
@@ -709,53 +724,69 @@
     osd(video.muted ? 'mute' : 'vol2', video.muted ? 'Muted' : `${Math.round(video.volume * 100)}%`)
   }
 
-  // Full screen and picture in picture (Telegram Mini App aware + landscape lock)
+  // Full screen and picture in picture
+  // Special handling for Telegram Mini App (fake landscape when phone is portrait)
   function isTelegram() {
     return !!(window.Telegram && window.Telegram.WebApp)
   }
-  function lockLandscape() {
-    try {
-      if (isTelegram() && typeof Telegram.WebApp.lockOrientation === 'function') {
-        Telegram.WebApp.lockOrientation('landscape')
-      } else if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(() => {})
-      }
-    } catch (e) {}
-  }
-  function unlockOrientation() {
-    try {
-      if (isTelegram() && typeof Telegram.WebApp.unlockOrientation === 'function') {
-        Telegram.WebApp.unlockOrientation()
-      } else if (screen.orientation && screen.orientation.unlock) {
-        screen.orientation.unlock()
-      }
-    } catch (e) {}
+  function isPortrait() {
+    return window.innerHeight > window.innerWidth
   }
   function updateFsButton(on) {
     setIcon($('fsBtn').querySelector('svg'), on ? 'min' : 'max')
     $('fsBtn').setAttribute('aria-label', on ? 'Exit full screen (f)' : 'Full screen (f)')
   }
+  function exitFakeLandscape() {
+    player.classList.remove('tg-landscape')
+    try {
+      if (isTelegram() && Telegram.WebApp.unlockOrientation) Telegram.WebApp.unlockOrientation()
+      else if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock()
+    } catch (e) {}
+  }
+  function enterFakeLandscape() {
+    // This is the only reliable way inside Telegram when phone is portrait
+    player.classList.add('tg-landscape')
+    try {
+      if (isTelegram() && Telegram.WebApp.lockOrientation) Telegram.WebApp.lockOrientation()
+    } catch (e) {}
+  }
+  function isFakeLandscape() {
+    return player.classList.contains('tg-landscape')
+  }
   function toggleFullscreen() {
     const tg = isTelegram() ? window.Telegram.WebApp : null
 
-    // Already fullscreen → exit
-    if (document.fullscreenElement || (tg && tg.isFullscreen)) {
+    // EXIT
+    if (isFakeLandscape() || document.fullscreenElement || (tg && tg.isFullscreen)) {
+      exitFakeLandscape()
       if (tg && typeof tg.exitFullscreen === 'function') {
-        tg.exitFullscreen()
-      } else {
+        try { tg.exitFullscreen() } catch (e) {}
+      }
+      if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {})
       }
-      unlockOrientation()
+      updateFsButton(false)
       return
     }
 
-    // Enter fullscreen
+    // ENTER
     const enter = async () => {
+      // Inside Telegram + phone is portrait → use CSS fake landscape (works 100%)
+      if (isTelegram() && isPortrait()) {
+        enterFakeLandscape()
+        updateFsButton(true)
+        // Also try real Telegram fullscreen
+        try {
+          if (tg.requestFullscreen) await tg.requestFullscreen()
+        } catch (e) {}
+        return
+      }
+
+      // Normal browsers or already landscape
       try {
         if (tg && typeof tg.requestFullscreen === 'function') {
           await tg.requestFullscreen()
         } else if (video.webkitEnterFullscreen) {
-          // Best for iOS / many mobile WebViews
           video.webkitEnterFullscreen()
         } else if (player.requestFullscreen) {
           await player.requestFullscreen({ navigationUI: 'hide' })
@@ -763,25 +794,44 @@
       } catch (e) {
         console.warn('Fullscreen failed', e)
       }
-      // Force landscape after a short delay (needed for Telegram)
-      setTimeout(lockLandscape, 150)
+
+      // Try lock orientation
+      try {
+        if (tg && tg.lockOrientation) tg.lockOrientation()
+        else if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {})
+        }
+      } catch (e) {}
+
+      updateFsButton(true)
     }
     enter()
   }
   document.addEventListener('fullscreenchange', () => {
     const on = !!document.fullscreenElement
-    updateFsButton(on)
-    if (!on) unlockOrientation()
+    if (!on) exitFakeLandscape()
+    updateFsButton(on || isFakeLandscape())
   })
   if (isTelegram()) {
     try {
+      Telegram.WebApp.ready()
+      Telegram.WebApp.expand()
       Telegram.WebApp.onEvent('fullscreenChanged', () => {
         const on = !!Telegram.WebApp.isFullscreen
-        updateFsButton(on)
-        if (!on) unlockOrientation()
+        if (!on) exitFakeLandscape()
+        updateFsButton(on || isFakeLandscape())
       })
     } catch (e) {}
   }
+  // If user physically rotates the phone while in fake landscape, clean up
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+      if (isFakeLandscape() && !isPortrait()) {
+        // User rotated to real landscape → remove fake class
+        player.classList.remove('tg-landscape')
+      }
+    }, 300)
+  })
   $('fsBtn').addEventListener('click', toggleFullscreen)
   $('pipBtn').hidden = !document.pictureInPictureEnabled
   async function togglePip() {
