@@ -34,6 +34,7 @@ import { INSTALL_PROMPT_SCRIPT } from "@/src/lib/install-prompt-script";
 import { LAUNCH_SCRIPT } from "@/src/lib/launch-script";
 import AppLaunch from "@/src/components/brand/AppLaunch";
 import ProviderIntro from "@/src/components/brand/ProviderIntro";
+import TelegramWebAppInit from "@/src/components/TelegramWebAppInit";
 import { withTimeout } from "@/src/lib/with-timeout";
 import { clientMessages, dirOf, htmlLang } from "@/src/lib/i18n";
 import { getLocale, getT } from "@/src/lib/i18n/server";
@@ -199,6 +200,8 @@ export default async function RootLayout({
       <body>
         {/* Before anything else: keep the browser's one-time "install this site" offer for later. */}
         <script dangerouslySetInnerHTML={{ __html: INSTALL_PROMPT_SCRIPT }} />
+        {/* Telegram Mini App: expand WebView so fullscreen / landscape works properly */}
+        <TelegramWebAppInit />
         <AppLaunch />
         {/* Web: OTT provider logos intro (Netflix, Amazon, Zee5…) then XEONFLIX brand. Skip / Don't show again. */}
         <ProviderIntro />
