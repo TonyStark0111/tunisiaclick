@@ -139,13 +139,51 @@ export default function StreamSection({ services: providerServices, media, downl
         wakeLock.current = null
     }
 
+    // Telegram Mini App helpers (fullscreen + landscape lock)
+    const isTelegram = () => !!(typeof window !== 'undefined' && (window as any).Telegram?.WebApp)
+    const lockLandscape = () => {
+        try {
+            const tg = (window as any).Telegram?.WebApp
+            if (tg?.lockOrientation) tg.lockOrientation('landscape')
+            else if (screen.orientation?.lock) screen.orientation.lock('landscape').catch(() => {})
+        } catch { /* ignore */ }
+    }
+    const unlockOrientation = () => {
+        try {
+            const tg = (window as any).Telegram?.WebApp
+            if (tg?.unlockOrientation) tg.unlockOrientation()
+            else if (screen.orientation?.unlock) screen.orientation.unlock()
+        } catch { /* ignore */ }
+    }
+    const enterFullscreen = async () => {
+        try {
+            const tg = (window as any).Telegram?.WebApp
+            if (isTelegram() && tg?.requestFullscreen) {
+                await tg.requestFullscreen()
+            } else if (!document.fullscreenElement) {
+                await frameRef.current?.requestFullscreen?.({ navigationUI: 'hide' })
+            }
+            // Force landscape (especially needed inside Telegram Mini App)
+            setTimeout(lockLandscape, 150)
+        } catch { /* not allowed here: the player still plays in the page */ }
+    }
+    const exitFullscreen = () => {
+        try {
+            const tg = (window as any).Telegram?.WebApp
+            if (isTelegram() && tg?.isFullscreen && tg?.exitFullscreen) {
+                tg.exitFullscreen()
+            } else if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {})
+            }
+        } catch { /* ignore */ }
+        unlockOrientation()
+    }
+
     const start = async () => {
         setStarted(true)
         setMenu(null)
         if (compact) setHint(true)
-        try {
-            if (!document.fullscreenElement) await frameRef.current?.requestFullscreen?.({ navigationUI: 'hide' })
-        } catch { /* not allowed here: the player still plays in the page */ }
+        await enterFullscreen()
         try {
             const lock = (navigator as { wakeLock?: { request: (type: 'screen') => Promise<{ release: () => Promise<void> }> } }).wakeLock
             if (lock && !wakeLock.current) wakeLock.current = await lock.request('screen')
@@ -163,7 +201,7 @@ export default function StreamSection({ services: providerServices, media, downl
         setStarted(false)
         setSlow(false)
         setHint(false)
-        if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
+        exitFullscreen()
         releaseScreen()
         if (guarded.current) {
             guarded.current = false
@@ -174,7 +212,7 @@ export default function StreamSection({ services: providerServices, media, downl
 
     const resume = () => {
         setMenu(null)
-        if (!document.fullscreenElement) frameRef.current?.requestFullscreen?.({ navigationUI: 'hide' }).catch(() => {})
+        enterFullscreen()
         focusPlayer()
     }
 
@@ -205,32 +243,15 @@ export default function StreamSection({ services: providerServices, media, downl
     // Leaving full screen (Esc on a keyboard) is a Back too.
     useEffect(() => {
         if (!playerOn) return
-        const onChange = () => { if (!document.fullscreenElement) setMenu((current) => current ?? 'main') }
+        const onChange = () => {
+            if (!document.fullscreenElement) {
+                unlockOrientation()
+                setMenu((current) => current ?? 'main')
+            }
+        }
         document.addEventListener('fullscreenchange', onChange)
         return () => document.removeEventListener('fullscreenchange', onChange)
     }, [playerOn])
-
-    // Telegram Mini App: when the player goes full screen, let the screen rotate to landscape.
-    useEffect(() => {
-        const tg = (window as unknown as { Telegram?: { WebApp?: { initData?: string, unlockOrientation?: () => void } } }).Telegram?.WebApp
-        if (!tg?.initData) return // not inside Telegram
-        const onFs = () => {
-            const d = document as Document & { webkitFullscreenElement?: Element | null }
-            const so = screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }
-            if (document.fullscreenElement || d.webkitFullscreenElement) {
-                try { tg.unlockOrientation?.() } catch { /* older Telegram */ }
-                so?.lock?.('landscape')?.catch(() => {})
-            } else {
-                try { so?.unlock?.() } catch { /* not supported */ }
-            }
-        }
-        document.addEventListener('fullscreenchange', onFs)
-        document.addEventListener('webkitfullscreenchange', onFs)
-        return () => {
-            document.removeEventListener('fullscreenchange', onFs)
-            document.removeEventListener('webkitfullscreenchange', onFs)
-        }
-    }, [])
 
     // Arriving to watch: Start takes the focus once the page has scrolled here.
     useEffect(() => {
@@ -380,7 +401,7 @@ export default function StreamSection({ services: providerServices, media, downl
                                     referrerPolicy="origin"
                                     allowFullScreen
                                     // The desktop app's own player too: its full screen, picture in picture and autoplay.
-                                    allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                                    allow={tv || sourceName === LOCAL_PLAYER_SOURCE ? 'autoplay; fullscreen; encrypted-media; picture-in-picture' : undefined}
                                     onLoad={() => setIsLoading(false)}
                                 />
                             )}
