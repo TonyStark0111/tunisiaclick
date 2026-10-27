@@ -1,7 +1,7 @@
 "use client"
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { m } from 'framer-motion'
-import { Check, Layers, Lightbulb, LightbulbOff, LogOut, Play, SkipForward, TriangleAlert } from 'lucide-react'
+import { Check, Layers, Lightbulb, LightbulbOff, LogOut, Maximize2, Minimize2, Play, SkipForward, TriangleAlert } from 'lucide-react'
 import { toast } from '@/src/hooks/use-toast'
 import type { StreamProvider } from '@/src/lib/stream-providers'
 import { cn } from '@/src/lib/utils'
@@ -80,6 +80,8 @@ export default function StreamSection({ services: providerServices, media, downl
     const pillId = useId()
     const [isLoading, setIsLoading] = useState(true)
     const [lightsOff, setLightsOff] = useState(false)
+    /** Fullscreen + landscape lock for better viewing on phones (many embeds lack their own rotate). */
+    const [betterView, setBetterView] = useState(false)
     const sectionRef = useRef<HTMLElement>(null)
     const services = useWithLocalPlayer(providerServices, media)
     const source = useStreamSource(services, { playing: enabled && !isLoading })
@@ -114,6 +116,56 @@ export default function StreamSection({ services: providerServices, media, downl
         window.addEventListener('keydown', onKey)
         return () => window.removeEventListener('keydown', onKey)
     }, [lightsOff])
+
+    /** Betterview: fullscreen the player frame and prefer landscape orientation (phones). */
+    const toggleBetterView = useCallback(async () => {
+        const el = frameRef.current
+        if (!el) return
+        try {
+            if (!document.fullscreenElement) {
+                await el.requestFullscreen?.({ navigationUI: 'hide' })
+                // Best-effort landscape lock (Android Chrome, some desktop; limited on iOS Safari).
+                try {
+                    const orient = (screen as any).orientation
+                    if (orient?.lock) await orient.lock('landscape').catch(() => {})
+                    else if ((screen as any).lockOrientation) (screen as any).lockOrientation('landscape')
+                    else if ((screen as any).mozLockOrientation) (screen as any).mozLockOrientation('landscape')
+                } catch { /* orientation lock not supported or denied */ }
+                setBetterView(true)
+            } else {
+                await document.exitFullscreen().catch(() => {})
+                try {
+                    const orient = (screen as any).orientation
+                    if (orient?.unlock) orient.unlock()
+                } catch { /* ignore */ }
+                setBetterView(false)
+            }
+        } catch (err) {
+            console.warn('Betterview fullscreen failed', err)
+            toast({
+                title: t('detail.betterViewUnavailable') || 'Fullscreen not available',
+                description: t('detail.betterViewUnavailableHint') || 'Your browser blocked fullscreen or landscape lock.',
+                variant: 'destructive',
+                duration: 3500,
+            })
+        }
+    }, [t])
+
+    // Keep Betterview state in sync when the user exits fullscreen via Esc / gesture.
+    useEffect(() => {
+        const onChange = () => {
+            const on = !!document.fullscreenElement
+            setBetterView(on)
+            if (!on) {
+                try {
+                    const orient = (screen as any).orientation
+                    if (orient?.unlock) orient.unlock()
+                } catch { /* ignore */ }
+            }
+        }
+        document.addEventListener('fullscreenchange', onChange)
+        return () => document.removeEventListener('fullscreenchange', onChange)
+    }, [])
 
     useEffect(() => {
         if (!tv) return
@@ -486,6 +538,24 @@ export default function StreamSection({ services: providerServices, media, downl
                             >
                                 {lightsOff ? <Lightbulb aria-hidden className="h-4 w-4" /> : <LightbulbOff aria-hidden className="h-4 w-4" />}
                                 {lightsOff ? t('detail.exitTheater') : t('detail.theater')}
+                            </Button>
+                        )}
+                        {/* Betterview: force landscape fullscreen for embeds that lack their own rotate control. */}
+                        {!tv && (
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={toggleBetterView}
+                                aria-pressed={betterView}
+                                className="h-9"
+                                title={t('detail.betterViewHint') || 'Fullscreen + landscape for better viewing'}
+                            >
+                                {betterView
+                                    ? <Minimize2 aria-hidden className="h-4 w-4" />
+                                    : <Maximize2 aria-hidden className="h-4 w-4" />}
+                                {betterView
+                                    ? (t('detail.exitBetterView') || 'Exit Betterview')
+                                    : (t('detail.betterView') || 'Betterview')}
                             </Button>
                         )}
                         {downloadSlot}
