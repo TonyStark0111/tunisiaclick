@@ -15,6 +15,7 @@ import KeyGlyph from '@/src/components/tv/KeyGlyph'
 import TmdbImage from '@/src/components/TmdbImage'
 import { Button } from '@/src/components/ui/button'
 import { BrandLoader } from '@/src/components/brand/BrandMark'
+import DirectPlayer, { isDirectMediaUrl } from '@/src/components/detail/DirectPlayer'
 
 /** Provider logo from website URL (favicon or explicit logo field). Hides on load error. */
 function ProviderLogo({ src, name, active }: { src?: string; name: string; active?: boolean }) {
@@ -84,6 +85,9 @@ export default function StreamSection({ services: providerServices, media, downl
     const services = useWithLocalPlayer(providerServices, media)
     const source = useStreamSource(services, { playing: enabled && !isLoading })
     const url = source.ready ? source.current?.url : undefined
+    // A direct video file (MP4 / WebM / HLS) plays in our own player; anything else is an embed page.
+    const direct = isDirectMediaUrl(url)
+    const resumeKey = media ? (media.type === 'tv' ? `tv:${media.id}:${media.season}:${media.episode}` : `movie:${media.id}`) : undefined
 
     // --- TV mode: the briefing, the start, the Back menu ---
     const [started, setStarted] = useState(false)
@@ -93,6 +97,7 @@ export default function StreamSection({ services: providerServices, media, downl
     const [compact, setCompact] = useState(false)
     const frameRef = useRef<HTMLDivElement>(null)
     const iframeRef = useRef<HTMLIFrameElement>(null)
+    const directRef = useRef<HTMLDivElement>(null)
     const startRef = useRef<HTMLButtonElement>(null)
     const tabsRef = useRef<HTMLDivElement>(null)
     const menuRef = useRef<HTMLDivElement>(null)
@@ -131,7 +136,7 @@ export default function StreamSection({ services: providerServices, media, downl
     }, [tv, enabled])
 
     const focusPlayer = useCallback(() => {
-        window.setTimeout(() => iframeRef.current?.focus(), 50)
+        window.setTimeout(() => (directRef.current ?? iframeRef.current)?.focus(), 50)
     }, [])
 
     const releaseScreen = () => {
@@ -343,12 +348,24 @@ export default function StreamSection({ services: providerServices, media, downl
                         </div>
                     ) : (
                         <>
-                            {isLoading && (
+                            {isLoading && !direct && (
                                 <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center bg-black">
                                     <BrandLoader tone="brand" className="h-11 w-11" />
                                 </div>
                             )}
-                            {url && (
+                            {url && direct && (
+                                <DirectPlayer
+                                    ref={directRef}
+                                    key={url}
+                                    src={url}
+                                    title={t('stream.player')}
+                                    resumeKey={resumeKey}
+                                    onReady={() => setIsLoading(false)}
+                                    onError={() => setIsLoading(false)}
+                                    onEnded={onNext}
+                                />
+                            )}
+                            {url && !direct && (
                                 <iframe
                                     ref={iframeRef}
                                     key={url}
