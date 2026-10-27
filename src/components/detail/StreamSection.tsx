@@ -117,14 +117,65 @@ export default function StreamSection({ services: providerServices, media, downl
         return () => window.removeEventListener('keydown', onKey)
     }, [lightsOff])
 
-    /** Betterview: fullscreen the player frame and prefer landscape orientation (phones). */
+    /** Detect Telegram Mini App (WebApp script is injected by Telegram). */
+    const getTelegramWebApp = () => {
+        try {
+            return (window as any).Telegram?.WebApp ?? null
+        } catch {
+            return null
+        }
+    }
+
+    /**
+     * Betterview: fullscreen + prefer landscape.
+     * Inside Telegram Mini App we must use Telegram.WebApp APIs
+     * (normal browser requestFullscreen is blocked there).
+     */
     const toggleBetterView = useCallback(async () => {
+        const tg = getTelegramWebApp()
         const el = frameRef.current
+
+        // ---------- Telegram Mini App path ----------
+        if (tg) {
+            try {
+                if (!betterView) {
+                    // Expand first, then request true fullscreen (Bot API 8.0+)
+                    try { tg.expand?.() } catch { /* older clients */ }
+                    if (typeof tg.requestFullscreen === 'function') {
+                        tg.requestFullscreen()
+                    }
+                    // Lock current orientation (user should rotate to landscape first if possible)
+                    try {
+                        if (typeof tg.lockOrientation === 'function') tg.lockOrientation()
+                    } catch { /* optional */ }
+                    setBetterView(true)
+                } else {
+                    if (typeof tg.exitFullscreen === 'function') {
+                        tg.exitFullscreen()
+                    }
+                    try {
+                        if (typeof tg.unlockOrientation === 'function') tg.unlockOrientation()
+                    } catch { /* optional */ }
+                    setBetterView(false)
+                }
+            } catch (err) {
+                console.warn('Telegram Betterview failed', err)
+                toast({
+                    title: t('detail.betterViewUnavailable') || 'Fullscreen not available',
+                    description: t('detail.betterViewUnavailableHint') || 'Telegram could not enter fullscreen. Try rotating your phone to landscape.',
+                    variant: 'destructive',
+                    duration: 4000,
+                })
+            }
+            return
+        }
+
+        // ---------- Normal browser path ----------
         if (!el) return
         try {
             if (!document.fullscreenElement) {
                 await el.requestFullscreen?.({ navigationUI: 'hide' })
-                // Best-effort landscape lock (Android Chrome, some desktop; limited on iOS Safari).
+                // Best-effort landscape lock (Android Chrome, some desktop)
                 try {
                     const orient = (screen as any).orientation
                     if (orient?.lock) await orient.lock('landscape').catch(() => {})
@@ -149,11 +200,11 @@ export default function StreamSection({ services: providerServices, media, downl
                 duration: 3500,
             })
         }
-    }, [t])
+    }, [t, betterView])
 
-    // Keep Betterview state in sync when the user exits fullscreen via Esc / gesture.
+    // Keep Betterview state in sync (browser Esc / Telegram exit)
     useEffect(() => {
-        const onChange = () => {
+        const onBrowserChange = () => {
             const on = !!document.fullscreenElement
             setBetterView(on)
             if (!on) {
@@ -163,8 +214,31 @@ export default function StreamSection({ services: providerServices, media, downl
                 } catch { /* ignore */ }
             }
         }
-        document.addEventListener('fullscreenchange', onChange)
-        return () => document.removeEventListener('fullscreenchange', onChange)
+        document.addEventListener('fullscreenchange', onBrowserChange)
+
+        // Telegram fullscreen events (Bot API 8.0+)
+        const tg = getTelegramWebApp()
+        const onTgFullscreen = () => {
+            try {
+                setBetterView(!!tg?.isFullscreen)
+            } catch { /* ignore */ }
+        }
+        if (tg?.onEvent) {
+            try {
+                tg.onEvent('fullscreenChanged', onTgFullscreen)
+                tg.onEvent('fullscreenFailed', onTgFullscreen)
+            } catch { /* older clients */ }
+        }
+
+        return () => {
+            document.removeEventListener('fullscreenchange', onBrowserChange)
+            if (tg?.offEvent) {
+                try {
+                    tg.offEvent('fullscreenChanged', onTgFullscreen)
+                    tg.offEvent('fullscreenFailed', onTgFullscreen)
+                } catch { /* ignore */ }
+            }
+        }
     }, [])
 
     useEffect(() => {
