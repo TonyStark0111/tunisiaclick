@@ -195,6 +195,8 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://image.tmdb.org" />
         {/* Before the first paint: is this the start of an app? Then the launch screen shows (AppLaunch). */}
         <script dangerouslySetInnerHTML={{ __html: LAUNCH_SCRIPT }} />
+        {/* Telegram Mini App SDK: lets the player rotate to landscape inside Telegram (does nothing elsewhere). */}
+        <script src="https://telegram.org/js/telegram-web-app.js" />
       </head>
       <body>
         {/* Before anything else: keep the browser's one-time "install this site" offer for later. */}
