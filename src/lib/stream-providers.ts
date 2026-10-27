@@ -18,6 +18,10 @@
 // Both are read on the server only (a client bundle never sees them, which is why the pages pass
 // the templates down as props instead of the player importing this file).
 //
+// A template can also be a direct video file (MP4 / WebM / HLS .m3u8, e.g. on your own CDN):
+// the player then opens it in the site's own player (components/detail/DirectPlayer) instead of
+// an iframe. Anything else is treated as an embed page.
+//
 // The order also fixes itself: sources viewers report as broken move to the end of the player's
 // list (lib/stream-health).
 import 'server-only'
