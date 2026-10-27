@@ -139,51 +139,13 @@ export default function StreamSection({ services: providerServices, media, downl
         wakeLock.current = null
     }
 
-    // Telegram Mini App helpers (fullscreen + landscape lock)
-    const isTelegram = () => !!(typeof window !== 'undefined' && (window as any).Telegram?.WebApp)
-    const lockLandscape = () => {
-        try {
-            const tg = (window as any).Telegram?.WebApp
-            if (tg?.lockOrientation) tg.lockOrientation('landscape')
-            else if (screen.orientation?.lock) screen.orientation.lock('landscape').catch(() => {})
-        } catch { /* ignore */ }
-    }
-    const unlockOrientation = () => {
-        try {
-            const tg = (window as any).Telegram?.WebApp
-            if (tg?.unlockOrientation) tg.unlockOrientation()
-            else if (screen.orientation?.unlock) screen.orientation.unlock()
-        } catch { /* ignore */ }
-    }
-    const enterFullscreen = async () => {
-        try {
-            const tg = (window as any).Telegram?.WebApp
-            if (isTelegram() && tg?.requestFullscreen) {
-                await tg.requestFullscreen()
-            } else if (!document.fullscreenElement) {
-                await frameRef.current?.requestFullscreen?.({ navigationUI: 'hide' })
-            }
-            // Force landscape (especially needed inside Telegram Mini App)
-            setTimeout(lockLandscape, 150)
-        } catch { /* not allowed here: the player still plays in the page */ }
-    }
-    const exitFullscreen = () => {
-        try {
-            const tg = (window as any).Telegram?.WebApp
-            if (isTelegram() && tg?.isFullscreen && tg?.exitFullscreen) {
-                tg.exitFullscreen()
-            } else if (document.fullscreenElement) {
-                document.exitFullscreen().catch(() => {})
-            }
-        } catch { /* ignore */ }
-        unlockOrientation()
-    }
-
     const start = async () => {
         setStarted(true)
         setMenu(null)
         if (compact) setHint(true)
-        await enterFullscreen()
+        try {
+            if (!document.fullscreenElement) await frameRef.current?.requestFullscreen?.({ navigationUI: 'hide' })
+        } catch { /* not allowed here: the player still plays in the page */ }
         try {
             const lock = (navigator as { wakeLock?: { request: (type: 'screen') => Promise<{ release: () => Promise<void> }> } }).wakeLock
             if (lock && !wakeLock.current) wakeLock.current = await lock.request('screen')
@@ -201,7 +163,7 @@ export default function StreamSection({ services: providerServices, media, downl
         setStarted(false)
         setSlow(false)
         setHint(false)
-        exitFullscreen()
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
         releaseScreen()
         if (guarded.current) {
             guarded.current = false
@@ -212,7 +174,7 @@ export default function StreamSection({ services: providerServices, media, downl
 
     const resume = () => {
         setMenu(null)
-        enterFullscreen()
+        if (!document.fullscreenElement) frameRef.current?.requestFullscreen?.({ navigationUI: 'hide' }).catch(() => {})
         focusPlayer()
     }
 
@@ -243,12 +205,7 @@ export default function StreamSection({ services: providerServices, media, downl
     // Leaving full screen (Esc on a keyboard) is a Back too.
     useEffect(() => {
         if (!playerOn) return
-        const onChange = () => {
-            if (!document.fullscreenElement) {
-                unlockOrientation()
-                setMenu((current) => current ?? 'main')
-            }
-        }
+        const onChange = () => { if (!document.fullscreenElement) setMenu((current) => current ?? 'main') }
         document.addEventListener('fullscreenchange', onChange)
         return () => document.removeEventListener('fullscreenchange', onChange)
     }, [playerOn])
