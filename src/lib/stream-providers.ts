@@ -61,7 +61,7 @@ function withLogo(template: ProviderTemplate): ProviderTemplate {
 //
 // Logos: optional explicit `logo` URLs; otherwise derived from the movie host at runtime.
 const BUILT_IN: ProviderTemplate[] = [
-  { name: 'ZXC Roxy', movie: 'https://zxcstream.com/player/movie/{id}?dubLang=hi&server=0', tv: 'https://player.zxcprime.xyz/player/tv/{id}/{season}/{episode}?dubLang=hi&server=0' },
+  { name: 'ZXC Roxy', movie: 'https://zxcstream.com/player/movie/{id}?dubLang=hi&server=0', tv: 'https://player.zxcprime.com/player/tv/{id}/{season}/{episode}?dubLang=hi&server=0' },
   { name: 'ZXC Stream', movie: 'https://player.zxcprime.xyz/player/movie/{id}?dubLang=hi&server=0', tv: 'https://player.zxcprime.xyz/player/tv/{id}/{season}/{episode}?dubLang=hi&server=0' },
   { name: 'Vidy', movie: 'https://www.vidy.st/movie/{id}?color=DC2626', tv: 'https://www.vidy.st/tv/{id}/{season}/{episode}?color=DC2626&nextEpisode=true&episodeSelector=true' },
   { name: 'Filmu', movie: 'https://embed.filmu.in/movie/{id}', tv: 'https://embed.filmu.in/tv/{id}/{season}/{episode}' },
