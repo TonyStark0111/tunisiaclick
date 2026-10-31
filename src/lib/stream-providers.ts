@@ -87,6 +87,7 @@ const BUILT_IN: ProviderTemplate[] = [
   { name: '2Embed', movie: 'https://www.2embed.skin/embed/{id}', tv: 'https://www.2embed.skin/embedtv/{id}&s={season}&e={episode}' },
   { name: 'AutoEmbed', movie: 'https://autoembed.co/movie/tmdb/{id}', tv: 'https://autoembed.co/tv/tmdb/{id}-{season}-{episode}' },
   { name: 'Modi-Play', movie: 'https://rozgarlelo.modiplay.xyz/embed/tmdb/movie?id={id}', tv: 'https://rozgarlelo.modiplay.xyz/embed/tmdb/tv?id={id}&season={season}&episode={episode}' },
+  { name: 'PlayApi', movie: 'https://playapi.co/movie/{id}', tv: 'https://playapi.co/tv/{id}/{season}/{episode}' },
   { name: 'Bingr', movie: 'https://bingr.one/watch/movie/{id}', tv: 'https://bingr.one/watch/tv/{id}/{season}/{episode}' },
   
   // --- Ported from friend's streaming.js (Hindi default) ---
