@@ -20,9 +20,9 @@ const SLIDE_MS = 9000
 const TRAILER_DELAY_MS = 2500
 const TRAILER_MAX_MS = 50000
 
-const detailHref = (item: BillboardItem) => `/\( {item.kind}/ \){item.id}`
+const detailHref = (item: BillboardItem) => `/${item.kind}/${item.id}`
 // "Play" goes straight to the player: the first episode for a show.
-const playHref = (item: BillboardItem) => item.kind === 'tv' ? `/tv/\( {item.id}?s=1&e=1` : `/movie/ \){item.id}#streamSection`
+const playHref = (item: BillboardItem) => item.kind === 'tv' ? `/tv/${item.id}?s=1&e=1` : `/movie/${item.id}#streamSection`
 
 /** The poster colour of every slide, for the room light. */
 function useSlideColors(items: BillboardItem[]) {
@@ -116,9 +116,7 @@ function Stage({ items, colors, enabled }: { items: BillboardItem[], colors: (st
     const [tabVisible, setTabVisible] = useState(true)
     // The viewer's own pause (moving content must be pausable): stops the timer and the trailer.
     const [userPaused, setUserPaused] = useState(false)
-    const [isScrolling, setIsScrolling] = useState(false)
     const autoplay = useCanAutoplay()
-    const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
     const ref = useRef<HTMLDivElement>(null)
     const timing = useRef({ index: -1, remaining: SLIDE_MS })
     const active = items[index]
@@ -143,21 +141,6 @@ function Stage({ items, colors, enabled }: { items: BillboardItem[], colors: (st
         return () => {
             observer.disconnect()
             document.removeEventListener('visibilitychange', onVisibility)
-        }
-    }, [])
-
-    // Pause the Ken Burns zoom while the user is scrolling the page (prevents lag).
-    useEffect(() => {
-        let timeout: ReturnType<typeof setTimeout>
-        const onScroll = () => {
-            setIsScrolling(true)
-            clearTimeout(timeout)
-            timeout = setTimeout(() => setIsScrolling(false), 160)
-        }
-        window.addEventListener('scroll', onScroll, { passive: true })
-        return () => {
-            window.removeEventListener('scroll', onScroll)
-            clearTimeout(timeout)
         }
     }, [])
 
@@ -201,16 +184,7 @@ function Stage({ items, colors, enabled }: { items: BillboardItem[], colors: (st
                     aria-hidden={i !== index}
                     className={cn('absolute inset-0 transition-opacity duration-1000 ease-out', i === index ? 'opacity-100' : 'opacity-0')}
                 >
-                    <div
-                        key={i === index ? `active-${index}` : 'idle'}
-                        className={cn(
-                            'absolute inset-0',
-                            // Ken Burns only when allowed (not playing, not reduced-motion)
-                            i === index && !playing && !reducedMotion && 'animate-ken-burns',
-                            // Pause the animation while the page is being scrolled → smooth vertical scroll
-                            isScrolling && i === index && !playing && !reducedMotion && '[animation-play-state:paused]',
-                        )}
-                    >
+                    <div key={i === index ? `active-${index}` : 'idle'} className={cn('absolute inset-0', i === index && !playing && 'animate-ken-burns')}>
                         <TmdbImage
                             kind="backdrop"
                             path={item.backdrop}
@@ -278,26 +252,27 @@ function Stage({ items, colors, enabled }: { items: BillboardItem[], colors: (st
                     {playing && (
                         <button
                             type="button"
-                            onClick={() => setMuted((m) => !m)}
-                            className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20"
-                            aria-label={muted ? t('billboard.unmute') : t('billboard.mute')}
+                            onClick={() => setMuted((value) => !value)}
+                            aria-label={muted ? t('billboard.soundOn') : t('billboard.soundOff')}
+                            className="pressable glass grid h-11 w-11 place-items-center rounded-full text-white/90 animate-in fade-in duration-500 hover:text-white"
                         >
-                            {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                            {muted ? <VolumeX aria-hidden className="h-5 w-5" /> : <Volume2 aria-hidden className="h-5 w-5" />}
                         </button>
                     )}
-                    <button
-                        type="button"
-                        onClick={() => setUserPaused((p) => !p)}
-                        className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20"
-                        aria-label={userPaused ? t('billboard.play') : t('billboard.pause')}
-                    >
-                        {userPaused ? <Play className="h-5 w-5 fill-current" /> : <Pause className="h-5 w-5" />}
-                    </button>
                 </div>
             </div>
 
             {items.length > 1 && (
-                <div className="page-x absolute inset-x-0 bottom-8">
+                <div className="page-x absolute inset-x-0 bottom-[clamp(84px,11vh,128px)] flex items-center justify-end gap-3">
+                    <button
+                        type="button"
+                        onClick={() => setUserPaused((value) => !value)}
+                        aria-pressed={userPaused}
+                        aria-label={userPaused ? t('clips.play') : t('clips.pause')}
+                        className="pressable grid h-8 w-8 place-items-center rounded-full text-white/70 outline-none transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-red-500"
+                    >
+                        {userPaused ? <Play aria-hidden className="ms-0.5 h-3.5 w-3.5 fill-current" /> : <Pause aria-hidden className="h-3.5 w-3.5 fill-current" />}
+                    </button>
                     <div role="tablist" aria-label={t('billboard.aria')} className="flex items-center gap-1.5">
                         {items.map((item, i) => (
                             <button
@@ -338,7 +313,7 @@ function Stage({ items, colors, enabled }: { items: BillboardItem[], colors: (st
 function Deck({ items, colors, enabled }: { items: BillboardItem[], colors: (string | null)[], enabled: boolean }) {
     const { t, dir } = useI18n()
     const [index, setIndex] = useState(0)
-    const [touched, setTouched] = useState(false)
+    const touched = useRef(false)
     const scroller = useRef<HTMLDivElement>(null)
 
     useRoomLight(colors[index], enabled)
@@ -365,17 +340,19 @@ function Deck({ items, colors, enabled }: { items: BillboardItem[], colors: (str
     }, [dir])
 
     useEffect(() => {
-        if (!enabled || touched || items.length < 2) return
-        const timer = setTimeout(() => scrollToCard((index + 1) % items.length), 6500)
+        if (!enabled || items.length < 2) return
+        const timer = setTimeout(() => {
+            if (!touched.current) scrollToCard((index + 1) % items.length)
+        }, 6500)
         return () => clearTimeout(timer)
-    }, [enabled, touched, index, items.length, scrollToCard])
+    }, [enabled, index, items.length, scrollToCard])
 
     return (
         <div className="pt-[calc(var(--topbar)+env(safe-area-inset-top,0px)+6px)]">
             <div
                 ref={scroller}
                 onScroll={onScroll}
-                onPointerDown={() => setTouched(true)}
+                onPointerDown={() => { touched.current = true }}
                 className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain px-[calc((100vw-min(80vw,380px))/2)] pb-6 pt-2"
             >
                 {items.map((item, i) => (
@@ -384,8 +361,8 @@ function Deck({ items, colors, enabled }: { items: BillboardItem[], colors: (str
                         aria-roledescription="slide"
                         aria-label={t('billboard.slideOf', { current: i + 1, total: items.length })}
                         className={cn(
-                            'relative aspect-[2/3] w-[min(80vw,380px)] shrink-0 snap-center snap-always overflow-hidden rounded-[26px] bg-white/5 ring-1 ring-white/10 transition-[transform,opacity] duration-500 ease-out',
-                            i === index ? 'shadow-[0_30px_70px_-20px_rgb(0_0_0/0.95)]' : 'scale-[0.93] opacity-60',
+                            'relative aspect-[2/3] w-[min(80vw,380px)] shrink-0 snap-center snap-always overflow-hidden rounded-[26px] bg-white/5 ring-1 ring-white/10 transition-transform duration-500 ease-out',
+                            i === index ? 'shadow-[0_14px_28px_-14px_rgb(0_0_0/0.9)]' : 'scale-[0.93]',
                         )}
                     >
                         <TmdbImage
@@ -393,10 +370,13 @@ function Deck({ items, colors, enabled }: { items: BillboardItem[], colors: (str
                             path={item.poster}
                             alt=""
                             fill
-                            priority={i === 0}
-                            sizes="(min-width: 768px) 1px, 80vw"
+                            priority={i < 2}
+                            decoding="async"
+                            sizes="(min-width: 768px) 1px, 45vw"
                             className="object-cover"
                         />
+                        {/* Dims the side cards (cheaper than fading the whole card). */}
+                        <div aria-hidden className={cn('pointer-events-none absolute inset-0 bg-black/40 transition-opacity duration-500', i === index ? 'opacity-0' : 'opacity-100')} />
                         <div aria-hidden className="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-black via-black/70 to-transparent" />
                         <Link href={detailHref(item)} aria-label={item.title} className="absolute inset-0" tabIndex={i === index ? 0 : -1} />
                         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 p-5 text-center">
