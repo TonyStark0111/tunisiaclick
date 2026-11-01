@@ -186,6 +186,16 @@
       backdrop-filter: blur(32px) saturate(160%);
     }
   }
+  /* Phones and tablets: a lighter blur on the floating bars, so scrolling over big pictures stays smooth. */
+  @media (max-width: 1023px) {
+    @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      .glass-strong {
+        background: rgb(12 12 14 / 0.92);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+      }
+    }
+  }
   @media (prefers-reduced-transparency: reduce) {
     .glass,
     .glass-strong {
@@ -299,6 +309,13 @@
   z-index: 90;
   opacity: 0.04;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* The grain is too heavy for phone GPUs: off on small screens. */
+@media (max-width: 767px) {
+  .tf-grain {
+    display: none;
+  }
 }
 
 /* Ambient mode: glows tinted with the poster's colour (--tf-ambient, set on the detail page). */
