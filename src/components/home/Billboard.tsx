@@ -20,9 +20,9 @@ const SLIDE_MS = 9000
 const TRAILER_DELAY_MS = 2500
 const TRAILER_MAX_MS = 50000
 
-const detailHref = (item: BillboardItem) => `/${item.kind}/${item.id}`
+const detailHref = (item: BillboardItem) => `/\( {item.kind}/ \){item.id}`
 // "Play" goes straight to the player: the first episode for a show.
-const playHref = (item: BillboardItem) => item.kind === 'tv' ? `/tv/${item.id}?s=1&e=1` : `/movie/${item.id}#streamSection`
+const playHref = (item: BillboardItem) => item.kind === 'tv' ? `/tv/\( {item.id}?s=1&e=1` : `/movie/ \){item.id}#streamSection`
 
 /** The poster colour of every slide, for the room light. */
 function useSlideColors(items: BillboardItem[]) {
@@ -116,7 +116,9 @@ function Stage({ items, colors, enabled }: { items: BillboardItem[], colors: (st
     const [tabVisible, setTabVisible] = useState(true)
     // The viewer's own pause (moving content must be pausable): stops the timer and the trailer.
     const [userPaused, setUserPaused] = useState(false)
+    const [isScrolling, setIsScrolling] = useState(false)
     const autoplay = useCanAutoplay()
+    const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
     const ref = useRef<HTMLDivElement>(null)
     const timing = useRef({ index: -1, remaining: SLIDE_MS })
     const active = items[index]
@@ -141,6 +143,21 @@ function Stage({ items, colors, enabled }: { items: BillboardItem[], colors: (st
         return () => {
             observer.disconnect()
             document.removeEventListener('visibilitychange', onVisibility)
+        }
+    }, [])
+
+    // Pause the Ken Burns zoom while the user is scrolling the page (prevents lag).
+    useEffect(() => {
+        let timeout: ReturnType<typeof setTimeout>
+        const onScroll = () => {
+            setIsScrolling(true)
+            clearTimeout(timeout)
+            timeout = setTimeout(() => setIsScrolling(false), 160)
+        }
+        window.addEventListener('scroll', onScroll, { passive: true })
+        return () => {
+            window.removeEventListener('scroll', onScroll)
+            clearTimeout(timeout)
         }
     }, [])
 
@@ -184,7 +201,16 @@ function Stage({ items, colors, enabled }: { items: BillboardItem[], colors: (st
                     aria-hidden={i !== index}
                     className={cn('absolute inset-0 transition-opacity duration-1000 ease-out', i === index ? 'opacity-100' : 'opacity-0')}
                 >
-                    <div key={i === index ? `active-${index}` : 'idle'} className={cn('absolute inset-0', i === index && !playing && 'animate-ken-burns')}>
+                    <div
+                        key={i === index ? `active-${index}` : 'idle'}
+                        className={cn(
+                            'absolute inset-0',
+                            // Ken Burns only when allowed (not playing, not reduced-motion)
+                            i === index && !playing && !reducedMotion && 'animate-ken-burns',
+                            // Pause the animation while the page is being scrolled → smooth vertical scroll
+                            isScrolling && i === index && !playing && !reducedMotion && '[animation-play-state:paused]',
+                        )}
+                    >
                         <TmdbImage
                             kind="backdrop"
                             path={item.backdrop}
@@ -252,27 +278,26 @@ function Stage({ items, colors, enabled }: { items: BillboardItem[], colors: (st
                     {playing && (
                         <button
                             type="button"
-                            onClick={() => setMuted((value) => !value)}
-                            aria-label={muted ? t('billboard.soundOn') : t('billboard.soundOff')}
-                            className="pressable glass grid h-11 w-11 place-items-center rounded-full text-white/90 animate-in fade-in duration-500 hover:text-white"
+                            onClick={() => setMuted((m) => !m)}
+                            className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20"
+                            aria-label={muted ? t('billboard.unmute') : t('billboard.mute')}
                         >
-                            {muted ? <VolumeX aria-hidden className="h-5 w-5" /> : <Volume2 aria-hidden className="h-5 w-5" />}
+                            {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
                         </button>
                     )}
+                    <button
+                        type="button"
+                        onClick={() => setUserPaused((p) => !p)}
+                        className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20"
+                        aria-label={userPaused ? t('billboard.play') : t('billboard.pause')}
+                    >
+                        {userPaused ? <Play className="h-5 w-5 fill-current" /> : <Pause className="h-5 w-5" />}
+                    </button>
                 </div>
             </div>
 
             {items.length > 1 && (
-                <div className="page-x absolute inset-x-0 bottom-[clamp(84px,11vh,128px)] flex items-center justify-end gap-3">
-                    <button
-                        type="button"
-                        onClick={() => setUserPaused((value) => !value)}
-                        aria-pressed={userPaused}
-                        aria-label={userPaused ? t('clips.play') : t('clips.pause')}
-                        className="pressable grid h-8 w-8 place-items-center rounded-full text-white/70 outline-none transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-red-500"
-                    >
-                        {userPaused ? <Play aria-hidden className="ms-0.5 h-3.5 w-3.5 fill-current" /> : <Pause aria-hidden className="h-3.5 w-3.5 fill-current" />}
-                    </button>
+                <div className="page-x absolute inset-x-0 bottom-8">
                     <div role="tablist" aria-label={t('billboard.aria')} className="flex items-center gap-1.5">
                         {items.map((item, i) => (
                             <button
