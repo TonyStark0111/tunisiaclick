@@ -313,7 +313,7 @@ function Stage({ items, colors, enabled }: { items: BillboardItem[], colors: (st
 function Deck({ items, colors, enabled }: { items: BillboardItem[], colors: (string | null)[], enabled: boolean }) {
     const { t, dir } = useI18n()
     const [index, setIndex] = useState(0)
-    const touched = useRef(false)
+    const [touched, setTouched] = useState(false)
     const scroller = useRef<HTMLDivElement>(null)
 
     useRoomLight(colors[index], enabled)
@@ -340,19 +340,17 @@ function Deck({ items, colors, enabled }: { items: BillboardItem[], colors: (str
     }, [dir])
 
     useEffect(() => {
-        if (!enabled || items.length < 2) return
-        const timer = setTimeout(() => {
-            if (!touched.current) scrollToCard((index + 1) % items.length)
-        }, 6500)
+        if (!enabled || touched || items.length < 2) return
+        const timer = setTimeout(() => scrollToCard((index + 1) % items.length), 6500)
         return () => clearTimeout(timer)
-    }, [enabled, index, items.length, scrollToCard])
+    }, [enabled, touched, index, items.length, scrollToCard])
 
     return (
         <div className="pt-[calc(var(--topbar)+env(safe-area-inset-top,0px)+6px)]">
             <div
                 ref={scroller}
                 onScroll={onScroll}
-                onPointerDown={() => { touched.current = true }}
+                onPointerDown={() => setTouched(true)}
                 className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain px-[calc((100vw-min(80vw,380px))/2)] pb-6 pt-2"
             >
                 {items.map((item, i) => (
@@ -361,8 +359,8 @@ function Deck({ items, colors, enabled }: { items: BillboardItem[], colors: (str
                         aria-roledescription="slide"
                         aria-label={t('billboard.slideOf', { current: i + 1, total: items.length })}
                         className={cn(
-                            'relative aspect-[2/3] w-[min(80vw,380px)] shrink-0 snap-center snap-always overflow-hidden rounded-[26px] bg-white/5 ring-1 ring-white/10 transition-transform duration-500 ease-out',
-                            i === index ? 'shadow-[0_14px_28px_-14px_rgb(0_0_0/0.9)]' : 'scale-[0.93]',
+                            'relative aspect-[2/3] w-[min(80vw,380px)] shrink-0 snap-center snap-always overflow-hidden rounded-[26px] bg-white/5 ring-1 ring-white/10 transition-[transform,opacity] duration-500 ease-out',
+                            i === index ? 'shadow-[0_30px_70px_-20px_rgb(0_0_0/0.95)]' : 'scale-[0.93] opacity-60',
                         )}
                     >
                         <TmdbImage
@@ -370,13 +368,10 @@ function Deck({ items, colors, enabled }: { items: BillboardItem[], colors: (str
                             path={item.poster}
                             alt=""
                             fill
-                            priority={i < 2}
-                            decoding="async"
-                            sizes="(min-width: 768px) 1px, 45vw"
+                            priority={i === 0}
+                            sizes="(min-width: 768px) 1px, 80vw"
                             className="object-cover"
                         />
-                        {/* Dims the side cards (cheaper than fading the whole card). */}
-                        <div aria-hidden className={cn('pointer-events-none absolute inset-0 bg-black/40 transition-opacity duration-500', i === index ? 'opacity-0' : 'opacity-100')} />
                         <div aria-hidden className="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-black via-black/70 to-transparent" />
                         <Link href={detailHref(item)} aria-label={item.title} className="absolute inset-0" tabIndex={i === index ? 0 : -1} />
                         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 p-5 text-center">
