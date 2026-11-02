@@ -110,7 +110,7 @@ export async function HubTop10({ hub }: { hub: HubId }) {
           <div key={item.id} className="group/rank flex items-end">
             <span
               aria-label={t('home.rank', { rank: index + 1 })}
-              className="numeral-outline relative -me-[3%] w-[48%] shrink-0 select-none text-end font-display text-[clamp(150px,15.5vw,236px)] font-extrabold leading-[0.72] tracking-[-0.09em] transition-[-webkit-text-stroke-color] duration-300 group-hover/rank:[-webkit-text-stroke-color:rgb(255_36_20/0.85)]"
+              className="numeral-outline relative -me-[3%] w-[48%] shrink-0 select-none text-end font-display text-[clamp(150px,15.5vw,236px)] font-extrabold leading-[0.72] tracking-[-0.09em] transition-transform duration-300 group-hover/rank:-translate-y-1"
             >
               {index + 1}
             </span>
