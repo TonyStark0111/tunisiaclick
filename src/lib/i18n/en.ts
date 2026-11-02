@@ -124,6 +124,11 @@ export const en = {
   'home.topRatedMovies': 'Top Rated Movies',
   'home.nowPlaying': 'Now Playing',
   'home.comingSoon': 'Coming Soon',
+  'home.cinematicUniverses': 'Cinematic Universes',
+  'home.cinematicUniversesNote': 'Every major franchise, in order',
+  'universes.inOrder': 'In release order',
+  'universes.inOrderNote': 'Every film and series in the official chronological / release order',
+  'universes.all': 'All cinematic universes',
 
   // TV page
   'tvPage.title': 'TV Shows',

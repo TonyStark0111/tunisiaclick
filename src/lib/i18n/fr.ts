@@ -137,6 +137,11 @@ export const fr: Record<CoreKey, string> = {
   'home.topRatedMovies': 'Films les mieux notés',
   'home.nowPlaying': 'En salle',
   'home.comingSoon': 'Prochainement',
+  'home.cinematicUniverses': 'Univers cinématographiques',
+  'home.cinematicUniversesNote': 'Chaque grande franchise, dans l’ordre',
+  'universes.inOrder': 'Dans l’ordre de sortie',
+  'universes.inOrderNote': 'Tous les films et séries dans l’ordre officiel de sortie',
+  'universes.all': 'Tous les univers cinématographiques',
 
   // TV page
   'tvPage.title': 'Séries',

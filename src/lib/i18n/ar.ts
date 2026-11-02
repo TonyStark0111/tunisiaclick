@@ -126,6 +126,11 @@ export const ar: Record<CoreKey, string> = {
   'home.topRatedMovies': 'الأفلام الأعلى تقييماً',
   'home.nowPlaying': 'يُعرض الآن',
   'home.comingSoon': 'قريباً',
+  'home.cinematicUniverses': 'العوالم السينمائية',
+  'home.cinematicUniversesNote': 'كل امتياز كبير، بالترتيب',
+  'universes.inOrder': 'بترتيب الإصدار',
+  'universes.inOrderNote': 'كل الأفلام والمسلسلات بالترتيب الرسمي للإصدار',
+  'universes.all': 'كل العوالم السينمائية',
 
   // TV page
   'tvPage.title': 'المسلسلات',
