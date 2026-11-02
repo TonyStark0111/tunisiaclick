@@ -176,7 +176,9 @@ function Stage({ items, colors, enabled }: { items: BillboardItem[], colors: (st
     }
 
     return (
-        <div ref={ref} className="relative h-[min(88svh,980px)] min-h-[600px] w-full overflow-hidden bg-black">
+        // Height matches Moviezonne hero (~95vh) for a big cinematic first image.
+        // sizes asks for the large TMDB size (w1280 / original), not the small w780.
+        <div ref={ref} className="relative h-[95svh] min-h-[560px] max-h-[1100px] w-full overflow-hidden bg-black">
             {/* Backdrops: only the current slide and its neighbours are loaded. */}
             {items.map((item, i) => near(i) && (
                 <div
@@ -191,8 +193,7 @@ function Stage({ items, colors, enabled }: { items: BillboardItem[], colors: (st
                             alt=""
                             fill
                             priority={i === 0}
-                            // The phone layout shows posters instead: there this costs a thumbnail.
-                            sizes="(min-width: 768px) 100vw, 1px"
+                            sizes="(min-width: 768px) 100vw, 100vw"
                             shimmer={false}
                             className="object-cover object-top"
                         />
