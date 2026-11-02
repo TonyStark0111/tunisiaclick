@@ -4,7 +4,7 @@ import { cardProps } from '@/src/lib/card-props'
 import { getT } from '@/src/lib/i18n/server'
 import type { Top10 } from '@/src/lib/top10'
 
-/** Ten posters, each standing on its rank in huge outlined numerals. */
+/** Ten posters, each standing on its rank in huge golden numerals. */
 export default function Top10Row({ top10 }: { top10: Top10 }) {
   const t = getT()
   if (top10.items.length < 5) return null
@@ -19,7 +19,7 @@ export default function Top10Row({ top10 }: { top10: Top10 }) {
             <div key={`${kind}-${item.id}`} className="group/rank flex items-end">
               <span
                 aria-label={t('home.rank', { rank: index + 1 })}
-                className="numeral-outline relative -me-[3%] w-[48%] shrink-0 select-none text-end font-display text-[clamp(150px,15.5vw,236px)] font-extrabold leading-[0.72] tracking-[-0.09em] transition-[-webkit-text-stroke-color] duration-300 group-hover/rank:[-webkit-text-stroke-color:rgb(255_36_20/0.85)]"
+                className="numeral-outline relative -me-[3%] w-[48%] shrink-0 select-none text-end font-display text-[clamp(150px,15.5vw,236px)] font-extrabold leading-[0.72] tracking-[-0.09em] transition-transform duration-300 group-hover/rank:-translate-y-1"
               >
                 {index + 1}
               </span>
