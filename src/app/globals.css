@@ -206,24 +206,29 @@
     letter-spacing: 0;
   }
 
-  /* Big golden numerals (Top 10) — metallic gold ramp + crisp zero-blur bevel, ported from Moviezone. */
+  /* Big outlined numerals (Top 10) — metallic gold from Moviezonne. */
   .numeral-outline {
-    color: #ffc107;
-    background: linear-gradient(177deg, #fffbe8 0%, #ffeeae 10%, #ffd85e 26%, #ffc61f 40%, #f5c518 48%, #e0ac14 56%, #c08d0d 72%, #9c7008 88%, #7d5a04 100%);
+    /* Polished-metal gold ramp (Moviezonne --t10-gold) */
+    background: linear-gradient(177deg,
+        #fffbe8 0%,
+        #ffeeae 10%,
+        #ffd85e 26%,
+        #ffc61f 40%,
+        #f5c518 48%,
+        #e0ac14 56%,
+        #c08d0d 72%,
+        #9c7008 88%,
+        #7d5a04 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 2px 0 rgb(0 0 0 / 0.55)) drop-shadow(2px 0 0 rgb(0 0 0 / 0.3)) drop-shadow(0 -1px 0 rgb(255 255 255 / 0.16));
-    /* The tight line-height would clip the gradient to a short box, so pad the paint area and cancel it out. */
-    padding: 0.14em 0.09em 0.1em 0;
-    margin-top: -0.14em;
-    margin-bottom: -0.1em;
-    text-rendering: geometricPrecision;
-    -webkit-font-smoothing: antialiased;
-  }
-  /* Rail numerals only (they carry `relative`): nudge back so the overlap with the poster is unchanged. */
-  .numeral-outline.relative {
-    inset-inline-start: 0.09em;
+    color: #f5c518; /* fallback */
+    /* Crisp bevel (zero-blur drop-shadows) */
+    filter:
+      drop-shadow(0 2px 0 rgba(0, 0, 0, 0.55))
+      drop-shadow(2px 0 0 rgba(0, 0, 0, 0.3))
+      drop-shadow(0 -1px 0 rgba(255, 255, 255, 0.16));
+    paint-order: stroke fill;
   }
 
   .no-scrollbar {
