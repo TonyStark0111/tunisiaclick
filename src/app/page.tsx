@@ -14,6 +14,7 @@ import ChipRail from '@/src/components/home/ChipRail'
 import Top10Row from '@/src/components/home/Top10Row'
 import { AnniversaryRow, SeasonRows, SequelRow } from '@/src/components/home/MomentRows'
 import OurFavRow from '@/src/components/home/OurFavRow'
+import CinematicUniversesRail from '@/src/components/home/CinematicUniversesRail'
 import getMovies from './(movies)/actions'
 import getTVShows from './tv/actions'
 import { getLocale, getT } from '@/src/lib/i18n/server'
@@ -89,6 +90,8 @@ export default async function MainPage() {
           <PickOfTheDay pick={pick} />
           {/* 12. Beyond Hollywood: one door per hub. */}
           {!kids && <Suspense fallback={null}><HubShelf kids={kids} /></Suspense>}
+          {/* 12b. Cinematic Universes (MCU, DC, Star Wars, YRF Spy, Cop Universe…) */}
+          {!kids && <Suspense fallback={null}><CinematicUniversesRail kids={kids} /></Suspense>}
           {/* 13 */}
           <Suspense fallback={null}><SequelRow kids={kids} /></Suspense>
           {/* 14 */}
