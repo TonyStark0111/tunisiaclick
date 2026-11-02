@@ -206,28 +206,10 @@
     letter-spacing: 0;
   }
 
-  /* Big outlined numerals (Top 10) — metallic gold from Moviezonne. */
+  /* Big outlined numerals (Top 10). */
   .numeral-outline {
-    /* Polished-metal gold ramp (Moviezonne --t10-gold) */
-    background: linear-gradient(177deg,
-        #fffbe8 0%,
-        #ffeeae 10%,
-        #ffd85e 26%,
-        #ffc61f 40%,
-        #f5c518 48%,
-        #e0ac14 56%,
-        #c08d0d 72%,
-        #9c7008 88%,
-        #7d5a04 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: #f5c518; /* fallback */
-    /* Crisp bevel (zero-blur drop-shadows) */
-    filter:
-      drop-shadow(0 2px 0 rgba(0, 0, 0, 0.55))
-      drop-shadow(2px 0 0 rgba(0, 0, 0, 0.3))
-      drop-shadow(0 -1px 0 rgba(255, 255, 255, 0.16));
+    color: #000;
+    -webkit-text-stroke: 2px rgb(255 255 255 / 0.5);
     paint-order: stroke fill;
   }
 
