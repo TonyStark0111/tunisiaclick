@@ -7,7 +7,8 @@ export type TmdbImageKind = 'poster' | 'backdrop' | 'profile' | 'logo' | 'still'
 /** The sizes TMDB actually serves for each image type, smallest first, with their pixel widths. */
 const SIZES: Record<TmdbImageKind, [size: string, width: number][]> = {
   poster: [['w92', 92], ['w154', 154], ['w185', 185], ['w342', 342], ['w500', 500], ['w780', 780]],
-  backdrop: [['w300', 300], ['w780', 780], ['w1280', 1280]],
+  // original ≈ full resolution (often 1920+ wide) — same big size Moviezonne uses for hero
+  backdrop: [['w300', 300], ['w780', 780], ['w1280', 1280], ['original', 1920]],
   // h632 is height-based: ~421px wide for a 2:3 headshot.
   profile: [['w45', 45], ['w185', 185], ['h632', 421]],
   logo: [['w92', 92], ['w154', 154], ['w185', 185], ['w300', 300], ['w500', 500]],
