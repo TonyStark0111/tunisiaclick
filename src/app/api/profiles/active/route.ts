@@ -2,7 +2,7 @@
 // Only the session user's own profiles can be picked, and leaving Kids needs the account password.
 import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
-import { compare } from 'bcrypt'
+import { compare } from 'bcryptjs'
 import clientPromise from '@/src/lib/mongodb'
 import { canSwitchFreely, getActiveProfile, profileCookieOptions } from '@/src/lib/profiles'
 import { PROFILE_COOKIE, isProfileId } from '@/src/lib/models/Profile'
