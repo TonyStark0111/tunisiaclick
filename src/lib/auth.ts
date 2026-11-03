@@ -5,7 +5,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import { ObjectId } from 'mongodb';
 import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import clientPromise from '@/src/lib/mongodb';
-import { compare } from 'bcryptjs';
+import { compare } from 'bcrypt';
 import { clientIp, normalizeEmail, rateLimitAll } from '@/src/lib/rate-limit';
 import { findUserByEmail } from '@/src/lib/users';
 import { consumePairing, isDeviceCode } from '@/src/lib/tv-pairing';
