@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { ObjectId } from 'mongodb'
-import { compare } from 'bcrypt'
+import { compare } from 'bcryptjs'
 import { authOptions } from '@/src/lib/auth'
 import clientPromise from '@/src/lib/mongodb'
 import { deleteUserData } from '@/src/lib/account'
