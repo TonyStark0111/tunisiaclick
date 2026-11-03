@@ -285,23 +285,43 @@
   font-weight: 800;
 }
 
-/* ── Movie grid & cards ───────────────────────────────── */
+/* ── Movie grid & cards (exact Moviezone sizing) ─────── */
+/* Desktop / tablet: ~170–190px posters */
 .universe-detail .ch-movie-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-  gap: 1.15rem .9rem;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 1.6rem 1.25rem;
   padding: .5rem max(1.25rem, 4%) 3rem;
+  perspective: 1200px;
 }
-@media (min-width: 640px) {
+@media (min-width: 1200px) {
   .universe-detail .ch-movie-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 1.35rem 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   }
 }
-@media (min-width: 1024px) {
+/* Phone landscape / small tablet: still roomy */
+@media (max-width: 768px) {
   .universe-detail .ch-movie-grid {
-    grid-template-columns: repeat(auto-fill, minmax(172px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+    gap: 1.15rem .8rem;
+    perspective: none;
   }
+  .universe-detail .ch-movie-hover-overlay,
+  .universe-detail .ch-movie-shine {
+    display: none;
+  }
+}
+/* Phone portrait: force ~3 posters per row (Moviezone uses 104px) */
+@media (max-width: 480px) {
+  .universe-detail .ch-movie-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem .6rem;
+  }
+  .universe-detail .ch-movie-info h4 { font-size: .76rem; }
+  .universe-detail .ch-movie-order { min-width: 26px; height: 22px; font-size: .82rem; }
+  .universe-detail .ch-movie-type-badge { font-size: .5rem; padding: .15rem .4rem; }
+  .universe-detail .ch-movie-rating,
+  .universe-detail .ch-movie-soon-chip { font-size: .58rem; padding: .18rem .4rem; }
 }
 
 .universe-detail .ch-movie-card {
