@@ -1,7 +1,7 @@
 // app/api/auth/signup/route.ts
 import { NextResponse } from 'next/server';
 import clientPromise from '@/src/lib/mongodb';
-import { hash } from 'bcryptjs';
+import { hash } from 'bcrypt';
 import { clientIp, rateLimit, tooManyRequests } from '@/src/lib/rate-limit';
 import { startEmailVerification } from '@/src/lib/verification';
 import { findUserByEmail } from '@/src/lib/users';
