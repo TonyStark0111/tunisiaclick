@@ -1,71 +1,87 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import DownloadHub from '@/src/components/detail/DownloadHub'
 import { getManualMovieDownloads } from '@/src/data/manual-movies-downloads'
 import { getManualSeriesDownloads } from '@/src/data/manual-series-downloads'
-import ManualMoviesDownloadLinks from '@/src/components/detail/ManualMoviesDownloadLinks'
-import ManualSeriesDownloadLinks from '@/src/components/detail/ManualSeriesDownloadLinks'
+import { tmdbFetchSafe } from '@/src/lib/tmdb'
 
 type Props = {
   params: Promise<{ tmdbId: string }>
-  searchParams: Promise<{ type?: string }>
+  searchParams: Promise<{
+    type?: string
+    s?: string
+    e?: string
+    season?: string
+    episode?: string
+  }>
 }
 
 /**
- * Standalone manual download page.
- * Route: /download2/<tmdbId>?type=movie|tv
+ * Unified download hub.
+ * Route: /download2/<tmdbId>?type=movie|tv&s=&e=
  *
- * - type=movie → ManualMoviesDownloadLinks
- * - type=tv    → ManualSeriesDownloadLinks
- * - no type    → tries movie first, then series
+ * Three options:
+ *   1. Moviezone direct servers (02Downloader, NxSha, VidSync, VidVault)
+ *   2. Manual curated links
+ *   3. Torrent magnets (YTS, EZTV, Torrentio…)
  */
 export default async function Download2Page({ params, searchParams }: Props) {
   const { tmdbId } = await params
-  const { type } = await searchParams
+  const sp = await searchParams
 
-  const movieEntry = type === 'tv' ? null : getManualMovieDownloads(tmdbId)
-  const seriesEntry = type === 'movie' ? null : getManualSeriesDownloads(tmdbId)
+  if (!/^\d+$/.test(tmdbId)) notFound()
 
-  const isMovie = !!movieEntry
-  const isSeries = !isMovie && !!seriesEntry
-  const entry = movieEntry ?? seriesEntry
+  const kind: 'movie' | 'tv' = sp.type === 'tv' ? 'tv' : 'movie'
+  const season = Math.max(1, parseInt(sp.s || sp.season || '1', 10) || 1)
+  const episode = Math.max(1, parseInt(sp.e || sp.episode || '1', 10) || 1)
 
-  if (!entry) {
-    notFound()
-  }
+  const path = kind === 'tv' ? `tv/${tmdbId}` : `movie/${tmdbId}`
+  const detail = await tmdbFetchSafe(path, {
+    append_to_response: 'external_ids',
+  })
 
-  const backHref = isSeries ? `/tv/${tmdbId}` : `/movie/${tmdbId}`
+  const title =
+    (kind === 'tv' ? detail?.name : detail?.title) ||
+    `Title ${tmdbId}`
+  const year = (
+    kind === 'tv' ? detail?.first_air_date : detail?.release_date
+  )?.substring(0, 4)
+  const imdbId: string | undefined =
+    detail?.external_ids?.imdb_id || detail?.imdb_id || undefined
+
+  const movieManual = kind === 'movie' ? getManualMovieDownloads(tmdbId) : null
+  const seriesManual = kind === 'tv' ? getManualSeriesDownloads(tmdbId) : null
+
+  const backHref =
+    kind === 'tv'
+      ? `/watch/tv/${tmdbId}?s=${season}&e=${episode}`
+      : `/watch/movie/${tmdbId}`
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <Link
-          href={backHref}
-          className="mb-8 inline-flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to title
-        </Link>
-
-        {isMovie && <ManualMoviesDownloadLinks entry={entry} />}
-        {isSeries && <ManualSeriesDownloadLinks entry={entry} />}
-
-        <p className="mt-12 text-center text-xs text-white/30">
-          Links are provided by the site administrators. Use at your own risk.
-        </p>
-      </div>
-    </div>
+    <DownloadHub
+      tmdbId={tmdbId}
+      kind={kind}
+      title={title}
+      year={year}
+      season={season}
+      episode={episode}
+      imdbId={imdbId}
+      backHref={backHref}
+      movieManual={movieManual}
+      seriesManual={seriesManual}
+    />
   )
 }
 
-export async function generateMetadata({ params, searchParams }: Props) {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { tmdbId } = await params
-  const { type } = await searchParams
-  const movieEntry = type === 'tv' ? null : getManualMovieDownloads(tmdbId)
-  const seriesEntry = type === 'movie' ? null : getManualSeriesDownloads(tmdbId)
-  const entry = movieEntry ?? seriesEntry
+  const sp = await searchParams
+  const kind = sp.type === 'tv' ? 'tv' : 'movie'
+  const path = kind === 'tv' ? `tv/${tmdbId}` : `movie/${tmdbId}`
+  const detail = await tmdbFetchSafe(path)
+  const title = (kind === 'tv' ? detail?.name : detail?.title) || 'Download'
   return {
-    title: entry ? `${entry.mainTitle} · Download` : 'Download',
+    title: `${title} · Download`,
     robots: { index: false, follow: false },
   }
 }
