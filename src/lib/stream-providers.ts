@@ -65,6 +65,10 @@ const BUILT_IN: ProviderTemplate[] = [
   // query params on this host (/player/tv/{id}?season=&episode=), unlike the path style used below.
   { name: 'SRV-Zxc-Orion', movie: 'https://zxcstream.cc/player/movie/{id}?dubLang=hi&server=0', tv: 'https://zxcstream.cc/player/tv/{id}?season={season}&episode={episode}&dubLang=hi&server=0' },
   { name: 'SRV-Zxc-Atlas', movie: 'https://zxcstream.cc/player/movie/{id}?dubLang=hi&server=2', tv: 'https://zxcstream.cc/player/tv/{id}?season={season}&episode={episode}&dubLang=hi&server=2' },
+  // Added from Moviezone's measured-working list (TMDB ids, path-style season/episode).
+  { name: 'SRV-Viduki', movie: 'https://www.viduki.net/2/movie/{id}', tv: 'https://www.viduki.net/2/tv/{id}/{season}/{episode}' },
+  { name: 'SRV-Nexus', movie: 'https://www.moviesnexus.fun/movie/{id}?sv=vidara', tv: 'https://www.moviesnexus.fun/tv/{id}/{season}/{episode}?sv=vidara' },
+  { name: 'SRV-MoviesApi', movie: 'https://moviesapi.vip/movie/{id}', tv: 'https://moviesapi.vip/tv/{id}/{season}/{episode}' },
   { name: 'SRV-Vidy', movie: 'https://www.vidy.st/movie/{id}?color=DC2626', tv: 'https://www.vidy.st/tv/{id}/{season}/{episode}?color=DC2626&nextEpisode=true&episodeSelector=true' },
   { name: 'SRV-Vid-Ly', movie: 'https://vidly.pro/movie/{id}', tv: 'https://vidly.pro/tv/{id}/{season}/{episode}' },
   { name: 'SRV-Vid-Rock', movie: 'https://vidrock.net/embed/movie/{id}', tv: 'https://vidrock.net/embed/tv/{id}/{season}/{episode}' },
@@ -77,7 +81,7 @@ const BUILT_IN: ProviderTemplate[] = [
   { name: 'SRV-Vid-Bolt', movie: 'https://vidbolt.xyz/movie/{id}', tv: 'https://vidbolt.xyz/tv/{id}/{season}/{episode}' },
   { name: 'SRV-Vid-Nest', movie: 'https://vidnest.fun/movie/{id}', tv: 'https://vidnest.fun/tv/{id}/{season}/{episode}' },
   { name: 'SRV-Vid-Rift', movie: 'https://embed.vidrift.in/embed/movie/{id}?brand=Meowly', tv: 'https://embed.vidrift.in/embed/tv/{id}/{season}/{episode}?brand=Meowly' },
-  { name: 'SRV-Vid-Fast', movie: 'https://vidfast.vc/movie/{id}', tv: 'https://vidfast.vc/tv/{id}/{season}/{episode}' },
+  { name: 'SRV-Vid-Fast', movie: 'https://vidfast.net/movie/{id}', tv: 'https://vidfast.net/tv/{id}/{season}/{episode}' },
   { name: 'SRV-VidSrc-pm', movie: 'https://vidsrc.pm/embed/movie/{id}', tv: 'https://vidsrc.pm/embed/tv/{id}/{season}/{episode}' },
   { name: 'SRV-VidSrc-Su', movie: 'https://vidsrcme.su/embed/movie?tmdb={id}', tv: 'https://vidsrcme.su/embed/tv?tmdb={id}&season={season}&episode={episode}' },
   { name: 'SRV-Cine-Src', movie: 'https://cinesrc.st/embed/movie/{id}', tv: 'https://cinesrc.st/embed/tv/{id}/{season}/{episode}' },
