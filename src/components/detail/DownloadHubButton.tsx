@@ -8,7 +8,7 @@ import { cn } from '@/src/lib/utils'
 type Props = {
   tmdbId: number | string
   kind: 'movie' | 'tv'
-  /** For TV episodes — forwarded to the hub so Moviezone + torrent sections can target the right ep */
+  /** For TV episodes — forwarded so Moviezone + torrent sections can target the right ep */
   season?: number
   episode?: number
   className?: string
@@ -18,7 +18,7 @@ type Props = {
 
 /**
  * Single Download button on the player / detail page.
- * Navigates to /download/<tmdbId>?type=movie|tv&s=&e= where the user
+ * Navigates to /download2/<tmdbId>?type=movie|tv&s=&e= where the user
  * picks Download 1 (Moviezone servers), Download 2 (manual), or Download 3 (torrent).
  */
 export default function DownloadHubButton({
@@ -35,7 +35,7 @@ export default function DownloadHubButton({
     if (season != null) params.set('s', String(season))
     if (episode != null) params.set('e', String(episode))
   }
-  const href = `/download/${tmdbId}?${params.toString()}`
+  const href = `/download2/${tmdbId}?${params.toString()}`
 
   return (
     <Link
