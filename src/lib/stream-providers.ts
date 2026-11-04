@@ -77,7 +77,7 @@ const BUILT_IN: ProviderTemplate[] = [
   { name: 'SRV-Vid-Bolt', movie: 'https://vidbolt.xyz/movie/{id}', tv: 'https://vidbolt.xyz/tv/{id}/{season}/{episode}' },
   { name: 'SRV-Vid-Nest', movie: 'https://vidnest.fun/movie/{id}', tv: 'https://vidnest.fun/tv/{id}/{season}/{episode}' },
   { name: 'SRV-Vid-Rift', movie: 'https://embed.vidrift.in/embed/movie/{id}?brand=Meowly', tv: 'https://embed.vidrift.in/embed/tv/{id}/{season}/{episode}?brand=Meowly' },
-  { name: 'SRV-Vid-Fast', movie: 'https://vidfast.net/movie/{id}', tv: 'https://vidfast.net/tv/{id}/{season}/{episode}' },
+  { name: 'SRV-Vid-Fast', movie: 'https://vidfast.vc/movie/{id}', tv: 'https://vidfast.vc/tv/{id}/{season}/{episode}' },
   { name: 'SRV-VidSrc-pm', movie: 'https://vidsrc.pm/embed/movie/{id}', tv: 'https://vidsrc.pm/embed/tv/{id}/{season}/{episode}' },
   { name: 'SRV-VidSrc-Su', movie: 'https://vidsrcme.su/embed/movie?tmdb={id}', tv: 'https://vidsrcme.su/embed/tv?tmdb={id}&season={season}&episode={episode}' },
   { name: 'SRV-Cine-Src', movie: 'https://cinesrc.st/embed/movie/{id}', tv: 'https://cinesrc.st/embed/tv/{id}/{season}/{episode}' },
