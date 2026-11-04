@@ -4,8 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import StreamSection from '@/src/components/detail/StreamSection'
-import DownloadDialog from '@/src/components/detail/DownloadDialog'
-import Download2Button from '@/src/components/detail/Download2Button'
+import DownloadHubButton from '@/src/components/detail/DownloadHubButton'
 import EpisodeBrowser, { type Episode, type Season } from '@/src/components/detail/EpisodeBrowser'
 import SectionNav, { type Section } from '@/src/components/detail/SectionNav'
 import { CastRow, DetailsGrid } from '@/src/components/detail/DetailSections'
@@ -192,10 +191,6 @@ export default function WatchPlayer(props: WatchPlayerProps) {
     [t, isTv, seasons.length, ratings, tabs.length, extras.length, initialSoundtrack.state, cast.length],
   )
 
-  const downloadTitle = isTv
-    ? t('tv.downloadTitle', { name: title, season, episode })
-    : title
-
   return (
     <div className="mx-auto w-full max-w-6xl px-3 pb-10 pt-3 sm:px-4">
       <div className="mb-4 flex items-start gap-3">
@@ -221,23 +216,12 @@ export default function WatchPlayer(props: WatchPlayerProps) {
           onNext={next ? playNext : undefined}
           nextLabel={next ? `${t('detail.nextEpisode')} ${code(next.season, next.episode)}` : undefined}
           downloadSlot={
-            <>
-              {imdbId ? (
-                props.kind === 'movie' ? (
-                  <DownloadDialog type="movie" imdbId={imdbId} title={downloadTitle} />
-                ) : (
-                  <DownloadDialog
-                    type="tv"
-                    imdbId={imdbId}
-                    title={downloadTitle}
-                    season={season}
-                    episode={episode}
-                  />
-                )
-              ) : null}
-
-              <Download2Button tmdbId={id} kind={props.kind} />
-            </>
+            <DownloadHubButton
+              tmdbId={id}
+              kind={props.kind}
+              season={isTv ? season : undefined}
+              episode={isTv ? episode : undefined}
+            />
           }
         />
 
