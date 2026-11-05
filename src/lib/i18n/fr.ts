@@ -58,7 +58,7 @@ export const fr: Record<CoreKey, string> = {
   'nav.discovery': 'Découverte',
   'nav.search': 'Rechercher',
   'nav.tunisian': 'Tunisie',
-  'nav.comingSoon': 'Prochainement',
+  'nav.comingSoon': 'Sorties à venir',
   'nav.topRated': 'Les mieux notés',
   'nav.recent': 'Récents',
   'nav.favorites': 'Favoris',
@@ -136,7 +136,9 @@ export const fr: Record<CoreKey, string> = {
   'home.popularMovies': 'Films populaires',
   'home.topRatedMovies': 'Films les mieux notés',
   'home.nowPlaying': 'En salle',
-  'home.comingSoon': 'Prochainement',
+  'home.comingSoon': 'Sorties à venir',
+  'home.upcomingReleases': 'Sorties à venir',
+  'home.trendingAnimes': 'Animes tendance',
   'home.cinematicUniverses': 'Univers cinématographiques',
   'home.cinematicUniversesNote': 'Chaque grande franchise, dans l’ordre',
   'universes.inOrder': 'Dans l’ordre de sortie',
@@ -152,7 +154,7 @@ export const fr: Record<CoreKey, string> = {
   'tvPage.airingToday': 'Séries diffusées aujourd’hui',
 
   // List pages
-  'upcoming.title': 'Prochainement',
+  'upcoming.title': 'Sorties à venir',
   'upcoming.failed': 'Impossible de charger les films pour le moment. Réessayez dans un instant.',
   'topRated.title': 'Les mieux notés',
   'genre.fallback': 'Genre',
