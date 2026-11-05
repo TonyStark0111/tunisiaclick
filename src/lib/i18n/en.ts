@@ -45,7 +45,7 @@ export const en = {
   'nav.discovery': 'Discovery',
   'nav.search': 'Search',
   'nav.tunisian': 'Tunisian',
-  'nav.comingSoon': 'Upcoming Releases',
+  'nav.comingSoon': 'Coming Soon',
   'nav.topRated': 'Top Rated',
   'nav.recent': 'Recent',
   'nav.favorites': 'Favorites',
@@ -123,9 +123,7 @@ export const en = {
   'home.popularMovies': 'Popular Movies',
   'home.topRatedMovies': 'Top Rated Movies',
   'home.nowPlaying': 'Now Playing',
-  'home.comingSoon': 'Upcoming Releases',
-  'home.upcomingReleases': 'Upcoming Releases',
-  'home.trendingAnimes': 'Trending Animes',
+  'home.comingSoon': 'Coming Soon',
   'home.cinematicUniverses': 'Cinematic Universes',
   'home.cinematicUniversesNote': 'Every major franchise, in order',
   'universes.inOrder': 'In release order',
@@ -141,7 +139,7 @@ export const en = {
   'tvPage.airingToday': 'TV Shows Airing Today',
 
   // List pages
-  'upcoming.title': 'Upcoming Releases',
+  'upcoming.title': 'Coming Soon',
   'upcoming.failed': "Couldn't load movies right now. Please try again in a moment.",
   'topRated.title': 'Top Rated',
   'genre.fallback': 'Genre',
