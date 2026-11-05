@@ -47,7 +47,7 @@ export const ar: Record<CoreKey, string> = {
   'nav.discovery': 'استكشاف',
   'nav.search': 'بحث',
   'nav.tunisian': 'تونسي',
-  'nav.comingSoon': 'الإصدارات القادمة',
+  'nav.comingSoon': 'قريباً',
   'nav.topRated': 'الأعلى تقييماً',
   'nav.recent': 'شوهد مؤخراً',
   'nav.favorites': 'المفضلة',
@@ -125,9 +125,7 @@ export const ar: Record<CoreKey, string> = {
   'home.popularMovies': 'الأفلام الشائعة',
   'home.topRatedMovies': 'الأفلام الأعلى تقييماً',
   'home.nowPlaying': 'يُعرض الآن',
-  'home.comingSoon': 'الإصدارات القادمة',
-  'home.upcomingReleases': 'الإصدارات القادمة',
-  'home.trendingAnimes': 'أنمي رائج',
+  'home.comingSoon': 'قريباً',
   'home.cinematicUniverses': 'العوالم السينمائية',
   'home.cinematicUniversesNote': 'كل امتياز كبير، بالترتيب',
   'universes.inOrder': 'بترتيب الإصدار',
@@ -143,7 +141,7 @@ export const ar: Record<CoreKey, string> = {
   'tvPage.airingToday': 'مسلسلات تُعرض اليوم',
 
   // List pages
-  'upcoming.title': 'الإصدارات القادمة',
+  'upcoming.title': 'قريباً',
   'upcoming.failed': 'تعذّر تحميل الأفلام حالياً. يرجى المحاولة بعد قليل.',
   'topRated.title': 'الأعلى تقييماً',
   'genre.fallback': 'نوع',
