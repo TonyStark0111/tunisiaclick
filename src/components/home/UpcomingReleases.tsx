@@ -26,18 +26,12 @@ type Props = {
 }
 
 function todayISO() {
-  // Tunis is UTC+1; use local calendar day in a stable way for release comparison.
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
+  return new Date().toISOString().slice(0, 10)
 }
 
 /**
- * UPCOMING RELEASES — MovieZone-style grid on the home page.
- * Exact card geometry: 185px 16:9 still + fixed info block (~370px total),
- * gold release badge, countdown, lang + genre chips, Notify Me, same info.
+ * UPCOMING RELEASES — MovieZone-style grid.
+ * Only titles with release_date >= today (already filtered server-side).
  */
 export default function UpcomingReleases({ items }: Props) {
   if (!items?.length) return null
@@ -45,22 +39,17 @@ export default function UpcomingReleases({ items }: Props) {
   const { locale } = useI18n()
   const today = todayISO()
 
-  // Prefer future releases; if none, still show the raw list so the section never disappears.
-  const withImage = (m: UpcomingItem) => !!(m && (m.backdrop_path || m.poster_path))
-  const future = [...items]
-    .filter((m) => withImage(m) && (!m.release_date || m.release_date >= today))
-    .sort((a, b) => (a.release_date ?? '9999').localeCompare(b.release_date ?? '9999'))
-  const fallback = [...items]
-    .filter(withImage)
-    .sort((a, b) => (a.release_date ?? '9999').localeCompare(b.release_date ?? '9999'))
-  const movies = (future.length > 0 ? future : fallback).slice(0, 12)
+  // Strict: never show already-released titles (safety net on top of server filter)
+  const movies = [...items]
+    .filter((m) => m && m.id && m.release_date && m.release_date >= today && (m.poster_path || m.backdrop_path))
+    .sort((a, b) => (a.release_date || '').localeCompare(b.release_date || ''))
+    .slice(0, 12)
 
   if (movies.length === 0) return null
 
   const relative = (date: string) => {
     const days = Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / DAY)
-    if (Number.isNaN(days)) return ''
-    if (days < 0) return 'Out now'
+    if (Number.isNaN(days) || days < 0) return ''
     if (days === 0) return 'Releasing TODAY!'
     if (days === 1) return 'Tomorrow!'
     if (days <= 7) return `${days} days left`
