@@ -16,6 +16,7 @@ import { AnniversaryRow, SeasonRows, SequelRow } from '@/src/components/home/Mom
 import OurFavRow from '@/src/components/home/OurFavRow'
 import CinematicUniversesRail from '@/src/components/home/CinematicUniversesRail'
 import UpcomingReleases from '@/src/components/home/UpcomingReleases'
+import { getUpcomingReleases } from '@/src/lib/upcoming-releases'
 import getMovies from './(movies)/actions'
 import getTVShows from './tv/actions'
 import { getLocale, getT } from '@/src/lib/i18n/server'
@@ -56,6 +57,7 @@ export default async function MainPage() {
     getBillboard(kids, locale),
   ])
   const top10 = await getTop10(kids, community, catalogueLanguage(locale))
+  const upcomingReleases = await getUpcomingReleases(catalogueLanguage(locale), 12)
   const t = getT()
 
   return (
@@ -105,7 +107,7 @@ export default async function MainPage() {
           <PosterSlider title={t('home.topRatedMovies')} href="/top-rated" items={data.topRatedMovies?.results} />
           <Suspense fallback={null}><AnniversaryRow kids={kids} /></Suspense>
           {/* UPCOMING RELEASES — MovieZone-style grid (exact card size, theme & info) */}
-          <UpcomingReleases items={data.upcomingMovies?.results} />
+          <UpcomingReleases items={upcomingReleases} />
           {/* Our Fav — last place after Upcoming Releases (manual download titles only) */}
           <Suspense fallback={null}><OurFavRow /></Suspense>
         </div>
