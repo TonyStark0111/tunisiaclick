@@ -145,7 +145,7 @@ function interleaveByIndustry(list: UpcomingMovie[], maxRun = 3): UpcomingMovie[
  * Fetch upcoming movies the MovieZone way.
  * Returns only titles with a poster/backdrop and release_date >= today.
  */
-export async function getUpcomingReleases(language?: string, limit = 12): Promise<UpcomingMovie[]> {
+export async function getUpcomingReleases(language?: string, limit = 36): Promise<UpcomingMovie[]> {
   const today = todayISO()
   const requests: Promise<{ results?: UpcomingMovie[] } | null>[] = []
 
