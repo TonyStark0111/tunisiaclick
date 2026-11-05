@@ -57,7 +57,7 @@ export default async function MainPage() {
     getBillboard(kids, locale),
   ])
   const top10 = await getTop10(kids, community, catalogueLanguage(locale))
-  const upcomingReleases = await getUpcomingReleases(catalogueLanguage(locale), 12)
+  const upcomingReleases = await getUpcomingReleases(catalogueLanguage(locale), 6)
   const t = getT()
 
   return (
@@ -107,7 +107,7 @@ export default async function MainPage() {
           <PosterSlider title={t('home.topRatedMovies')} href="/top-rated" items={data.topRatedMovies?.results} />
           <Suspense fallback={null}><AnniversaryRow kids={kids} /></Suspense>
           {/* UPCOMING RELEASES — MovieZone-style grid (exact card size, theme & info) */}
-          <UpcomingReleases items={upcomingReleases} />
+          <UpcomingReleases items={upcomingReleases} limit={1} showSeeAll />
           {/* Our Fav — last place after Upcoming Releases (manual download titles only) */}
           <Suspense fallback={null}><OurFavRow /></Suspense>
         </div>
