@@ -15,6 +15,7 @@ import Top10Row from '@/src/components/home/Top10Row'
 import { AnniversaryRow, SeasonRows, SequelRow } from '@/src/components/home/MomentRows'
 import OurFavRow from '@/src/components/home/OurFavRow'
 import CinematicUniversesRail from '@/src/components/home/CinematicUniversesRail'
+import UpcomingReleases from '@/src/components/home/UpcomingReleases'
 import getMovies from './(movies)/actions'
 import getTVShows from './tv/actions'
 import { getLocale, getT } from '@/src/lib/i18n/server'
@@ -41,7 +42,7 @@ export const metadata: Metadata = { alternates: { canonical: '/' } }
  * The home page, top to bottom in 20 slots (see docs/features-plan, "homeOrder"). New blocks render
  * nothing when they have nothing to show, never a placeholder, and stream in on their own.
  * Kids skip slots 5, 7 and 12; TV mode skips 5, 7 and 9.
- * Our Fav sits last, after Coming Soon.
+ * Our Fav sits last, after Upcoming Releases.
  */
 export default async function MainPage() {
   const kids = await getKidsMode()
@@ -103,8 +104,9 @@ export default async function MainPage() {
           <PosterSlider title={t('home.popularMovies')} items={data.popularMovies?.results} />
           <PosterSlider title={t('home.topRatedMovies')} href="/top-rated" items={data.topRatedMovies?.results} />
           <Suspense fallback={null}><AnniversaryRow kids={kids} /></Suspense>
-          <PosterSlider title={t('home.comingSoon')} href="/upcoming" items={data.upcomingMovies?.results} />
-          {/* Our Fav — last place after Coming Soon (manual download titles only) */}
+          {/* UPCOMING RELEASES — MovieZone-style grid (exact card size, theme & info) */}
+          <UpcomingReleases items={data.upcomingMovies?.results} />
+          {/* Our Fav — last place after Upcoming Releases (manual download titles only) */}
           <Suspense fallback={null}><OurFavRow /></Suspense>
         </div>
       </div>
