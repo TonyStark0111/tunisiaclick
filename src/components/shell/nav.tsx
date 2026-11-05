@@ -3,7 +3,7 @@
 // group the IA gives them; Kids filtering and "which item is lit" are decided here too.
 import {
   Drama,
-  Bookmark, CalendarClock, CalendarHeart, Clapperboard, Compass, Dices, Flag, Heart, HeartHandshake, History, House,
+  Bookmark, CalendarHeart, Clapperboard, Compass, Dices, Flag, Heart, HeartHandshake, History, House,
   Library, ListVideo, Map as MapIcon, MoonStar, Popcorn, Search, Swords, Trophy, Tv, UsersRound, type LucideIcon,
 } from 'lucide-react'
 import type { TKey } from '@/src/lib/i18n'
@@ -32,7 +32,6 @@ export const BROWSE: NavItem[] = [
   { href: '/tv', label: 'nav.tvShows', icon: Tv },
   { href: '/exploreworld', label: 'nav.explor', icon: Compass },
   { href: '/clips', label: 'nav.clips', icon: Clapperboard },
-  { href: '/upcoming', label: 'nav.comingSoon', icon: CalendarClock },
   { href: '/top-rated', label: 'nav.topRated', icon: Trophy },
   { href: '/surprise', label: 'nav.surprise', icon: Dices, plain: true },
 ]
