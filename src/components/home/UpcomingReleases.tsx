@@ -222,12 +222,12 @@ export default function UpcomingReleases({ items }: Props) {
         })}
       </div>
 
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes countdownPulse {
           0%, 100% { border-color: rgba(245, 197, 24, 0.3); }
           50% { border-color: rgba(245, 197, 24, 0.7); box-shadow: 0 0 12px rgba(245, 197, 24, 0.2); }
         }
-      `}</style>
+      `}} />
     </section>
   )
 }
