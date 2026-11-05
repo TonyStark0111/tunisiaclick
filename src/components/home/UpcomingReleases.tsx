@@ -23,6 +23,12 @@ type UpcomingItem = {
 
 type Props = {
   items?: UpcomingItem[] | null
+  /** How many cards to show (home teaser = 1, full page = 36). */
+  limit?: number
+  /** Show the UPCOMING RELEASES heading (default true on home). */
+  showHeading?: boolean
+  /** Show “See all” link to /upcoming (default true when limit is small). */
+  showSeeAll?: boolean
 }
 
 function todayISO() {
@@ -30,20 +36,25 @@ function todayISO() {
 }
 
 /**
- * UPCOMING RELEASES — MovieZone-style grid.
- * Only titles with release_date >= today (already filtered server-side).
+ * UPCOMING RELEASES — MovieZone-style cards.
+ * Home: one card + See all. Full page: full grid, no heading (page has its own).
  */
-export default function UpcomingReleases({ items }: Props) {
+export default function UpcomingReleases({
+  items,
+  limit = 1,
+  showHeading = true,
+  showSeeAll,
+}: Props) {
   if (!items?.length) return null
 
   const { locale } = useI18n()
   const today = todayISO()
+  const seeAll = showSeeAll ?? limit <= 3
 
-  // Strict: never show already-released titles (safety net on top of server filter)
   const movies = [...items]
     .filter((m) => m && m.id && m.release_date && m.release_date >= today && (m.poster_path || m.backdrop_path))
     .sort((a, b) => (a.release_date || '').localeCompare(b.release_date || ''))
-    .slice(0, 12)
+    .slice(0, limit)
 
   if (movies.length === 0) return null
 
@@ -66,35 +77,51 @@ export default function UpcomingReleases({ items }: Props) {
   }
 
   return (
-    <section id="upcoming" className="px-[4%] pb-10 pt-2" aria-labelledby="upcoming-heading">
-      <div className="mb-5 flex items-center gap-3">
-        <div
-          className="h-[clamp(26px,5.6vw,40px)] w-1.5 shrink-0 rounded-full"
-          style={{
-            background: 'linear-gradient(to bottom, #ffd750, #f5c518, #e63946 62%, #7c3aed)',
-            boxShadow: '0 0 22px rgba(245, 197, 24, 0.45), 0 0 10px rgba(230, 57, 70, 0.28)',
-          }}
-        />
-        <h2
-          id="upcoming-heading"
-          className="font-display text-[clamp(1.35rem,3.2vw,1.85rem)] font-extrabold tracking-wide"
-          style={{
-            background: 'linear-gradient(177deg, #fffdf6 0%, #ffffff 24%, #f4f0ff 52%, #d2cae9 76%, #a79dc7 92%, #8b81ac 100%)',
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            WebkitTextStroke: '0.4px rgba(255, 255, 255, 0.22)',
-            filter: 'drop-shadow(0 4px 14px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 20px rgba(245, 197, 24, 0.12))',
-          }}
-        >
-          UPCOMING RELEASES
-        </h2>
-      </div>
+    <section id="upcoming" className="px-[4%] pb-10 pt-2" aria-labelledby={showHeading ? 'upcoming-heading' : undefined}>
+      {(showHeading || seeAll) && (
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            {showHeading && (
+              <>
+                <div
+                  className="h-[clamp(26px,5.6vw,40px)] w-1.5 shrink-0 rounded-full"
+                  style={{
+                    background: 'linear-gradient(to bottom, #ffd750, #f5c518, #e63946 62%, #7c3aed)',
+                    boxShadow: '0 0 22px rgba(245, 197, 24, 0.45), 0 0 10px rgba(230, 57, 70, 0.28)',
+                  }}
+                />
+                <h2
+                  id="upcoming-heading"
+                  className="font-display text-[clamp(1.35rem,3.2vw,1.85rem)] font-extrabold tracking-wide"
+                  style={{
+                    background: 'linear-gradient(177deg, #fffdf6 0%, #ffffff 24%, #f4f0ff 52%, #d2cae9 76%, #a79dc7 92%, #8b81ac 100%)',
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    WebkitTextStroke: '0.4px rgba(255, 255, 255, 0.22)',
+                    filter: 'drop-shadow(0 4px 14px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 20px rgba(245, 197, 24, 0.12))',
+                  }}
+                >
+                  UPCOMING RELEASES
+                </h2>
+              </>
+            )}
+          </div>
+          {seeAll && (
+            <Link
+              href="/upcoming"
+              className="shrink-0 text-[13px] font-semibold text-white/55 transition-colors hover:text-[#f5c518]"
+            >
+              See all →
+            </Link>
+          )}
+        </div>
+      )}
 
       <div
         className="grid gap-5"
         style={{
-          gridTemplateColumns: 'repeat(auto-fill, minmax(285px, 1fr))',
+          gridTemplateColumns: limit === 1 ? 'minmax(0, 420px)' : 'repeat(auto-fill, minmax(285px, 1fr))',
           gridAutoRows: 'minmax(370px, auto)',
         }}
       >
