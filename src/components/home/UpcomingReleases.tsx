@@ -1,10 +1,12 @@
+'use client'
+
 import Link from 'next/link'
 import TmdbImage from '@/src/components/TmdbImage'
 import FollowButton from '@/src/components/FollowButton'
 import { genreNames } from '@/src/lib/genres'
-import { getLocale, getT } from '@/src/lib/i18n/server'
+import { useI18n } from '@/src/components/I18nProvider'
 import { formatDate } from '@/src/lib/i18n/format'
-import { tunisToday } from '@/src/lib/pick-of-the-day'
+
 const DAY = 86400000
 
 type UpcomingItem = {
@@ -23,6 +25,15 @@ type Props = {
   items?: UpcomingItem[] | null
 }
 
+function todayISO() {
+  // Tunis is UTC+1; use local calendar day in a stable way for release comparison.
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 /**
  * UPCOMING RELEASES — MovieZone-style grid on the home page.
  * Exact card geometry: 185px 16:9 still + fixed info block (~370px total),
@@ -31,20 +42,25 @@ type Props = {
 export default function UpcomingReleases({ items }: Props) {
   if (!items?.length) return null
 
-  const locale = getLocale()
-  const t = getT()
-  const today = tunisToday()
+  const { locale } = useI18n()
+  const today = todayISO()
 
-  // Soonest first, drop anything already out (or keep if no date)
-  const movies = [...items]
-    .filter((m) => m && (m.backdrop_path || m.poster_path) && (!m.release_date || m.release_date >= today))
-    .sort((a, b) => (a.release_date ?? '').localeCompare(b.release_date ?? ''))
-    .slice(0, 12)
+  // Prefer future releases; if none, still show the raw list so the section never disappears.
+  const withImage = (m: UpcomingItem) => !!(m && (m.backdrop_path || m.poster_path))
+  const future = [...items]
+    .filter((m) => withImage(m) && (!m.release_date || m.release_date >= today))
+    .sort((a, b) => (a.release_date ?? '9999').localeCompare(b.release_date ?? '9999'))
+  const fallback = [...items]
+    .filter(withImage)
+    .sort((a, b) => (a.release_date ?? '9999').localeCompare(b.release_date ?? '9999'))
+  const movies = (future.length > 0 ? future : fallback).slice(0, 12)
 
   if (movies.length === 0) return null
 
   const relative = (date: string) => {
     const days = Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / DAY)
+    if (Number.isNaN(days)) return ''
+    if (days < 0) return 'Out now'
     if (days === 0) return 'Releasing TODAY!'
     if (days === 1) return 'Tomorrow!'
     if (days <= 7) return `${days} days left`
@@ -99,7 +115,7 @@ export default function UpcomingReleases({ items }: Props) {
           const countdown = m.release_date ? relative(m.release_date) : ''
           const overview = (m.overview || '').slice(0, 120)
           const lang = (m.original_language || 'en').toUpperCase()
-          const title = m.title || m.name || ''
+          const title = m.title || m.name || 'Untitled'
 
           return (
             <Link
@@ -112,8 +128,7 @@ export default function UpcomingReleases({ items }: Props) {
                 boxShadow: '0 14px 42px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.035)',
               }}
             >
-              {/* Poster / still — exact 185px 16:9 */}
-              <div className="relative h-[185px] overflow-hidden">
+              <div className="relative h-[185px] overflow-hidden bg-white/5">
                 <TmdbImage
                   kind={m.backdrop_path ? 'backdrop' : 'poster'}
                   path={m.backdrop_path || m.poster_path}
@@ -121,14 +136,12 @@ export default function UpcomingReleases({ items }: Props) {
                   fill
                   sizes="(min-width: 1280px) 22vw, (min-width: 640px) 40vw, 100vw"
                   className="object-cover"
-                  style={{ aspectRatio: '16/9', filter: 'saturate(1.05)' }}
                 />
                 <div
                   className="pointer-events-none absolute inset-0"
                   style={{ background: 'linear-gradient(to top, rgba(3, 3, 10, 0.95), transparent 62%)' }}
                 />
 
-                {/* Release date badge (gold) */}
                 <div
                   className="absolute bottom-2.5 left-3 flex items-center gap-1 rounded-[9px] px-[0.78rem] py-[0.3rem] text-[0.71rem] font-extrabold uppercase tracking-[0.4px] text-[#111]"
                   style={{
@@ -142,7 +155,6 @@ export default function UpcomingReleases({ items }: Props) {
                   {dateStr}
                 </div>
 
-                {/* Countdown badge */}
                 {countdown && (
                   <div
                     className="absolute right-2.5 top-2.5 rounded-lg border px-2.5 py-1 text-[0.65rem] font-bold tracking-[0.3px] text-[#f5c518]"
@@ -157,7 +169,6 @@ export default function UpcomingReleases({ items }: Props) {
                   </div>
                 )}
 
-                {/* Hover play hint */}
                 <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-[rgba(3,3,10,0.7)] opacity-0 transition-opacity duration-300 group-hover/upcoming:opacity-100">
                   <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#f5c518" strokeWidth="1.5" aria-hidden>
                     <circle cx="12" cy="12" r="10" />
@@ -167,11 +178,8 @@ export default function UpcomingReleases({ items }: Props) {
                 </div>
               </div>
 
-              {/* Info block — min 185px to match MovieZone row height */}
               <div className="flex min-h-[185px] flex-1 flex-col px-[1.1rem] pb-[0.9rem] pt-[1.05rem]">
-                <h3
-                  className="mb-2 min-h-[2.7em] text-[0.93rem] font-bold leading-[1.35] tracking-[0.1px] text-white line-clamp-2"
-                >
+                <h3 className="mb-2 min-h-[2.7em] text-[0.93rem] font-bold leading-[1.35] tracking-[0.1px] text-white line-clamp-2">
                   {title}
                 </h3>
 
@@ -222,12 +230,16 @@ export default function UpcomingReleases({ items }: Props) {
         })}
       </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @keyframes countdownPulse {
           0%, 100% { border-color: rgba(245, 197, 24, 0.3); }
           50% { border-color: rgba(245, 197, 24, 0.7); box-shadow: 0 0 12px rgba(245, 197, 24, 0.2); }
         }
-      `}} />
+      `,
+        }}
+      />
     </section>
   )
 }
