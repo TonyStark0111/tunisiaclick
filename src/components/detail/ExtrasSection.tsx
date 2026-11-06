@@ -1,10 +1,9 @@
 "use client"
-// Extras: the title's other videos (featurettes, behind the scenes, clips, bloopers, recaps; the
-// main trailer stays in the hero) as a row of tiles that open in the YouTube dialog, the
-// soundtrack, plus Photos (TMDB gallery) and Reviews (Moctale / local summary). The section is
-// left out when everything is empty. A soundtrack the server didn't know about yet is fetched as
-// the section comes near and renders in place (the page's section nav only lists what the server knew).
-import { useState } from 'react'
+// Extras: one chip selector for video groups (trailers, behind the scenes, clips, bloopers,
+// recaps), Photos, and Reviews. Soundtrack stays below when matched. The section is left out
+// when everything is empty. A soundtrack the server didn't know about yet is fetched as the
+// section comes near and renders in place (the page's section nav only lists what the server knew).
+import { useMemo, useState } from 'react'
 import { Row, ROW_WIDTH, SectionHeader } from '@/src/components/rows/Row'
 import { Chip, ChipGroup } from '@/src/components/ui/chip'
 import VideoTile from '@/src/components/media/VideoTile'
@@ -17,7 +16,9 @@ import SoundtrackSection from './SoundtrackSection'
 import PhotosGallery, { type GalleryImage } from './PhotosGallery'
 import ReviewsSection from './ReviewsSection'
 
-const PANEL = 'extras-videos'
+const PANEL = 'extras-panel'
+
+type TabId = ExtrasGroupId | 'photos' | 'reviews'
 
 export default function ExtrasSection({
   type,
@@ -45,17 +46,40 @@ export default function ExtrasSection({
   genres?: string[]
 }) {
   const { t } = useI18n()
-  const [groupId, setGroupId] = useState<ExtrasGroupId | null>(groups[0]?.id ?? null)
-  const [dialog, setDialog] = useState<{ open: boolean, index: number }>({ open: false, index: 0 })
-  const group = groups.find((entry) => entry.id === groupId) ?? groups[0]
-  const videos = group?.videos ?? []
-  const album = soundtrack.status === 'found' ? soundtrack.album : null
   const hasPhotos = backdrops.length > 0 || posters.length > 0
-  // Reviews always render when we have a title (fallback summary is local).
-  const hasReviews = Boolean(title?.trim())
+  const hasReviews = Boolean(title?.trim()) && !kids
+  const photoCount = backdrops.length + Math.min(posters.length, 18)
+
+  const tabs = useMemo(() => {
+    const list: { id: TabId; label: string; count?: number }[] = []
+    for (const entry of groups) {
+      list.push({
+        id: entry.id,
+        label: t(`extras.group.${entry.id}` as TKey),
+        count: entry.videos.length,
+      })
+    }
+    if (hasPhotos) {
+      list.push({ id: 'photos', label: t('extras.photos' as TKey), count: photoCount })
+    }
+    if (hasReviews) {
+      list.push({ id: 'reviews', label: t('extras.reviews' as TKey) })
+    }
+    return list
+  }, [groups, hasPhotos, hasReviews, photoCount, t])
+
+  const [tabId, setTabId] = useState<TabId | null>(() => tabs[0]?.id ?? null)
+  // Keep selection valid if tabs change (e.g. kids profile).
+  const activeTab: TabId | null = tabs.some((tab) => tab.id === tabId) ? tabId : (tabs[0]?.id ?? null)
+
+  const [dialog, setDialog] = useState<{ open: boolean, index: number }>({ open: false, index: 0 })
+  const videoGroup = groups.find((entry) => entry.id === activeTab)
+  const videos = videoGroup?.videos ?? []
+  const album = soundtrack.status === 'found' ? soundtrack.album : null
+  const isVideoTab = activeTab !== null && activeTab !== 'photos' && activeTab !== 'reviews'
 
   // Nothing to show (yet): only the soundtrack's sentinel, while it may still turn up.
-  if (!videos.length && !album && !hasPhotos && !hasReviews) {
+  if (tabs.length === 0 && !album) {
     return soundtrack.status === 'unknown' ? <div ref={soundtrack.sentinel} aria-hidden className="h-px" /> : null
   }
 
@@ -65,32 +89,39 @@ export default function ExtrasSection({
     subtitle: t(`extras.type.${video.type}` as TKey),
   }))
 
-  const showVideosBlock = videos.length > 0 || album || soundtrack.status === 'unknown'
-
   return (
-    <section id="extras" aria-labelledby="extras-title" className="scroll-mt-[calc(var(--topbar)+72px)] space-y-10">
-      {/* Always announce the Extras chapter when any sub-block is present. */}
-      {(showVideosBlock || hasPhotos || (hasReviews && !kids)) && (
+    <section id="extras" aria-labelledby="extras-title" className="scroll-mt-[calc(var(--topbar)+72px)] space-y-8">
+      <div>
         <SectionHeader title={<span id="extras-title">{t('extras.title')}</span>} />
-      )}
 
-      {showVideosBlock && (
-        <div className="space-y-8">
-          {videos.length > 0 && (
-            <>
-              {groups.length > 1 && (
-                <div className="page-x mb-4">
-                  <ChipGroup label={t('extras.groups')} mode="tabs" scroll>
-                    {groups.map((entry) => (
-                      <Chip key={entry.id} active={entry.id === group?.id} controls={PANEL} count={entry.videos.length} onClick={() => setGroupId(entry.id)}>
-                        {t(`extras.group.${entry.id}` as TKey)}
-                      </Chip>
-                    ))}
-                  </ChipGroup>
-                </div>
-              )}
-              <div id={PANEL} role={groups.length > 1 ? 'tabpanel' : undefined} aria-label={group ? t(`extras.group.${group.id}` as TKey) : undefined}>
-                <Row key={group?.id} itemClassName={ROW_WIDTH.landscape} label={t('extras.videos')}>
+        {tabs.length > 0 && (
+          <>
+            {/* Always show the selector when Photos/Reviews exist or there is more than one video group. */}
+            {(tabs.length > 1 || hasPhotos || hasReviews) && (
+              <div className="page-x mb-4">
+                <ChipGroup label={t('extras.groups')} mode="tabs" scroll>
+                  {tabs.map((tab) => (
+                    <Chip
+                      key={tab.id}
+                      active={tab.id === activeTab}
+                      controls={PANEL}
+                      count={tab.count}
+                      onClick={() => setTabId(tab.id)}
+                    >
+                      {tab.label}
+                    </Chip>
+                  ))}
+                </ChipGroup>
+              </div>
+            )}
+
+            <div
+              id={PANEL}
+              role="tabpanel"
+              aria-label={tabs.find((tab) => tab.id === activeTab)?.label}
+            >
+              {isVideoTab && videos.length > 0 && (
+                <Row key={activeTab} itemClassName={ROW_WIDTH.landscape} label={t('extras.videos')}>
                   {videos.map((video, index) => (
                     <VideoTile
                       key={video.key}
@@ -101,41 +132,42 @@ export default function ExtrasSection({
                     />
                   ))}
                 </Row>
-              </div>
-            </>
-          )}
+              )}
 
-          {album ? (
-            <SoundtrackSection type={type} id={id} kids={kids} album={album} tracks={soundtrack.tracks} failed={soundtrack.failed} />
-          ) : soundtrack.status === 'unknown' ? (
-            <div ref={soundtrack.sentinel} aria-hidden className="h-px" />
-          ) : null}
+              {activeTab === 'photos' && hasPhotos && (
+                <PhotosGallery backdrops={backdrops} posters={posters} title={title} embedded />
+              )}
 
-          {videos.length > 0 && (
-            <YouTubeDialog
-              open={dialog.open}
-              onOpenChange={(open) => setDialog((current) => ({ ...current, open }))}
-              videos={dialogVideos}
-              index={dialog.index}
-              onIndexChange={(index) => setDialog((current) => ({ ...current, index }))}
-              label={t('extras.dialog', { title })}
-              external={!kids}
-            />
-          )}
-        </div>
-      )}
+              {activeTab === 'reviews' && hasReviews && (
+                <ReviewsSection
+                  title={title}
+                  date={releaseDate}
+                  type={type}
+                  tmdbRating={voteAverage}
+                  genres={genres}
+                  embedded
+                />
+              )}
+            </div>
+          </>
+        )}
+      </div>
 
-      {hasPhotos && (
-        <PhotosGallery backdrops={backdrops} posters={posters} title={title} />
-      )}
+      {album ? (
+        <SoundtrackSection type={type} id={id} kids={kids} album={album} tracks={soundtrack.tracks} failed={soundtrack.failed} />
+      ) : soundtrack.status === 'unknown' ? (
+        <div ref={soundtrack.sentinel} aria-hidden className="h-px" />
+      ) : null}
 
-      {hasReviews && !kids && (
-        <ReviewsSection
-          title={title}
-          date={releaseDate}
-          type={type}
-          tmdbRating={voteAverage}
-          genres={genres}
+      {isVideoTab && videos.length > 0 && (
+        <YouTubeDialog
+          open={dialog.open}
+          onOpenChange={(open) => setDialog((current) => ({ ...current, open }))}
+          videos={dialogVideos}
+          index={dialog.index}
+          onIndexChange={(index) => setDialog((current) => ({ ...current, index }))}
+          label={t('extras.dialog', { title })}
+          external={!kids}
         />
       )}
     </section>
