@@ -63,15 +63,18 @@ export default function MovieDetail({ id, data, similar, kids, signedIn, ratings
 
   const cast: any[] = data.credits?.cast ?? []
   const crew: any[] = data.credits?.crew ?? []
+  const backdrops: { file_path: string }[] = data.images?.backdrops ?? []
+  const posters: { file_path: string }[] = data.images?.posters ?? []
+  const genres: string[] = (data.genres ?? []).map((g: { name?: string }) => g.name).filter(Boolean)
   const media = useMemo(() => ({ media_type: 'movie' as const, id, title: data.title ?? '', poster_path: data.poster_path ?? null }), [id, data.title, data.poster_path])
 
   const sections = useMemo(() => detailSections(t, {
     ratings,
     similar: tabs.length > 0,
-    extras: extras.length > 0 || initialSoundtrack.state === 'found',
+    extras: extras.length > 0 || initialSoundtrack.state === 'found' || backdrops.length > 0 || posters.length > 0 || Boolean(data.title),
     // One nav item "Cast" scrolls to #cast; crew sits under it (no separate Crew tab).
     cast: cast.length > 0 || crew.length > 0,
-  }), [t, ratings, tabs.length, extras.length, initialSoundtrack.state, cast.length, crew.length])
+  }), [t, ratings, tabs.length, extras.length, initialSoundtrack.state, cast.length, crew.length, backdrops.length, posters.length, data.title])
 
   const router = useRouter()
 
@@ -87,7 +90,19 @@ export default function MovieDetail({ id, data, similar, kids, signedIn, ratings
       <div className="space-y-16 pt-10">
         {ratings && <RatingsBand id="ratings" media={media} />}
         {tabs.length > 0 && <MoreLikeThis kind="movie" id={id} kids={kids} closest={similar} tabs={tabs} />}
-        <ExtrasSection type="movie" id={id} title={data.title ?? ''} kids={kids} groups={extras} soundtrack={soundtrack} />
+        <ExtrasSection
+          type="movie"
+          id={id}
+          title={data.title ?? ''}
+          kids={kids}
+          groups={extras}
+          soundtrack={soundtrack}
+          backdrops={backdrops}
+          posters={posters}
+          releaseDate={data.release_date}
+          voteAverage={typeof data.vote_average === 'number' ? data.vote_average : undefined}
+          genres={genres}
+        />
         <CastRow id="cast" cast={cast} mediaType="movie" mediaId={id} signedIn={signedIn} />
         <CrewRow crew={crew} />
         <DetailsGrid id="details" kind="movie" data={data} soundtrack={soundtrack.status} kids={kids} />

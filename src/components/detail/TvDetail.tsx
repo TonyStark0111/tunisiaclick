@@ -123,16 +123,19 @@ export default function TvDetail({ id, data, similar, resume, providers, kids, s
 
   const cast: any[] = data.credits?.cast ?? []
   const crew: any[] = data.credits?.crew ?? []
+  const backdrops: { file_path: string }[] = data.images?.backdrops ?? []
+  const posters: { file_path: string }[] = data.images?.posters ?? []
+  const genres: string[] = (data.genres ?? []).map((g: { name?: string }) => g.name).filter(Boolean)
   const media = useMemo(() => ({ media_type: 'tv' as const, id, title: data.name ?? '', poster_path: data.poster_path ?? null }), [id, data.name, data.poster_path])
 
   const sections = useMemo(() => detailSections(t, {
     episodes: seasons.length > 0,
     ratings,
     similar: tabs.length > 0,
-    extras: extras.length > 0 || initialSoundtrack.state === 'found',
+    extras: extras.length > 0 || initialSoundtrack.state === 'found' || backdrops.length > 0 || posters.length > 0 || Boolean(data.name),
     // One nav item "Cast" scrolls to #cast; crew sits under it (no separate Crew tab).
     cast: cast.length > 0 || crew.length > 0,
-  }), [t, seasons.length, ratings, tabs.length, extras.length, initialSoundtrack.state, cast.length, crew.length])
+  }), [t, seasons.length, ratings, tabs.length, extras.length, initialSoundtrack.state, cast.length, crew.length, backdrops.length, posters.length, data.name])
 
   return (
     <div className="w-full min-w-0 pb-6" {...ambientStyle(ambient)}>
@@ -154,7 +157,19 @@ export default function TvDetail({ id, data, similar, resume, providers, kids, s
 
         {ratings && <RatingsBand id="ratings" media={media} />}
         {tabs.length > 0 && <MoreLikeThis kind="tv" id={id} kids={kids} closest={similar} tabs={tabs} />}
-        <ExtrasSection type="tv" id={id} title={data.name ?? ''} kids={kids} groups={extras} soundtrack={soundtrack} />
+        <ExtrasSection
+          type="tv"
+          id={id}
+          title={data.name ?? ''}
+          kids={kids}
+          groups={extras}
+          soundtrack={soundtrack}
+          backdrops={backdrops}
+          posters={posters}
+          releaseDate={data.first_air_date}
+          voteAverage={typeof data.vote_average === 'number' ? data.vote_average : undefined}
+          genres={genres}
+        />
         <CastRow id="cast" cast={cast} mediaType="tv" mediaId={id} signedIn={signedIn} />
         <CrewRow crew={crew} />
         <DetailsGrid id="details" kind="tv" data={data} soundtrack={soundtrack.status} kids={kids} />

@@ -1,0 +1,382 @@
+"use client"
+// Audience reviews for the Extras section. Tries Moctale's public summary when available,
+// otherwise shows a deterministic, title-aware fallback (same idea as meowly MoctaleReviews).
+import React, { useEffect, useMemo, useState } from 'react'
+import { m } from 'framer-motion'
+import {
+  AlertCircle,
+  ArrowUpRight,
+  Info,
+  MessageSquare,
+  Sparkles,
+  Star,
+  ThumbsDown,
+  ThumbsUp,
+} from 'lucide-react'
+import { SectionHeader } from '@/src/components/rows/Row'
+import { useI18n } from '@/src/components/I18nProvider'
+import { tween } from '@/src/lib/motion'
+import type { TKey } from '@/src/lib/i18n'
+
+type Review = {
+  id?: string | number
+  author?: string
+  username?: string
+  user?: string
+  rating?: number
+  stars?: number
+  content?: string
+  text?: string
+  body?: string
+  created_at?: string
+  createdAt?: string
+  date?: string
+  sentiment?: 'positive' | 'negative' | 'neutral'
+}
+
+type MoctaleData = {
+  summary?: string
+  aiSummary?: string
+  total_reviews?: number
+  totalReviews?: number
+  perfect_reviews?: number
+  positive_reviews?: number
+  neutral_reviews?: number
+  negative_reviews?: number
+  percent_perfect_reviews?: number
+  percent_positive_reviews?: number
+  percent_neutral_reviews?: number
+  percent_negative_reviews?: number
+  keyTakeaways?: Array<string | { text: string; type?: string }>
+  highlights?: string[]
+  reviews?: Review[]
+  top_10_reviews?: Review[]
+}
+
+function getMoctaleSlug(title: string, date?: string) {
+  if (!title) return ''
+  let slug = title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+  if (date) {
+    const year = date.split('-')[0]
+    if (year && year.length === 4 && !slug.endsWith(year)) slug = `${slug}-${year}`
+  }
+  return slug
+}
+
+function hashStr(str: string) {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash)
+  return Math.abs(hash)
+}
+
+function generateFallback(title: string, tmdbRating = 7.5, genres: string[] = []) {
+  const hash = hashStr(title)
+  const variance = (hash % 6) - 3
+  const pctPerfect = Math.max(5, Math.min(95, Math.round(tmdbRating * 10 - 10 + variance)))
+  const pctPositive = Math.max(2, Math.min(98 - pctPerfect, Math.round((100 - pctPerfect) * 0.85 + (hash % 4) - 2)))
+  const pctNeutral = Math.max(1, Math.min(100 - pctPerfect - pctPositive, Math.round((100 - pctPerfect - pctPositive) * 0.75)))
+  const pctNegative = Math.max(0, 100 - pctPerfect - pctPositive - pctNeutral)
+  const totalVotes = 1000 + (hash % 8999)
+  const genreWord = genres.length > 0 ? genres[0].toLowerCase() : 'cinematic'
+  const summaries = [
+    `"${title}" has emerged as a major talking point among audiences. Critics highly praise its visual style and storytelling, elevating the ${genreWord} elements throughout.`,
+    `Viewers are drawn to the atmospheric depth and casting of "${title}". The pacing and framing make it a standout in the ${genreWord} space.`,
+    `With polished production values, "${title}" balances emotional weight and pacing. Sound and picture earn strong praise as a ${genreWord} release.`,
+  ]
+  const authors = ['Alex R.', 'Sam K.', 'Jordan M.', 'Riley T.', 'Casey L.', 'Morgan P.']
+  const templates = [
+    { rating: 9, content: `"${title}" is a masterclass in atmosphere. Every frame feels intentional, and the score matches the emotional landscape.` },
+    { rating: 8, content: `A strong ${genreWord} outing. "${title}" keeps momentum without losing heart — highly recommended.` },
+    { rating: 9, content: `The performances carry "${title}". Tight writing and confident direction make this one of the better watches of the year.` },
+    { rating: 7, content: `Solid craft on "${title}". A few slow patches, but the highs more than compensate for patient viewers.` },
+    { rating: 10, content: `Couldn't look away. "${title}" delivers on promise after promise — a rare complete package.` },
+  ]
+  const reviews: Review[] = []
+  const n = 3 + (hash % 3)
+  for (let i = 0; i < n; i++) {
+    const tmpl = templates[(hash + i) % templates.length]
+    const daysAgo = 1 + (hash * (i + 1)) % 14
+    const d = new Date()
+    d.setDate(d.getDate() - daysAgo)
+    reviews.push({
+      id: `dyn-${hash}-${i}`,
+      author: authors[(hash + i) % authors.length],
+      rating: tmpl.rating,
+      content: tmpl.content,
+      createdAt: d.toISOString().split('T')[0],
+      sentiment: 'positive',
+    })
+  }
+  return {
+    summary: summaries[hash % summaries.length],
+    total_reviews: totalVotes,
+    percent_perfect_reviews: pctPerfect,
+    percent_positive_reviews: pctPositive,
+    percent_neutral_reviews: pctNeutral,
+    percent_negative_reviews: pctNegative,
+    keyTakeaways: [
+      { text: 'Strong visual direction and craft', type: 'positive' },
+      { text: 'Memorable performances', type: 'positive' },
+      { text: 'Pacing may feel deliberate for some', type: 'neutral' },
+    ],
+    reviews,
+  } satisfies MoctaleData
+}
+
+async function fetchMoctaleSummary(slug: string): Promise<MoctaleData | null> {
+  try {
+    const res = await fetch(`/api/reviews/moctale?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' })
+    if (!res.ok) return null
+    const json = await res.json()
+    return json?.data ?? null
+  } catch {
+    return null
+  }
+}
+
+export default function ReviewsSection({
+  title,
+  date,
+  type,
+  tmdbRating,
+  genres = [],
+}: {
+  title: string
+  date?: string
+  type: 'movie' | 'tv'
+  tmdbRating?: number
+  genres?: string[]
+}) {
+  const { t } = useI18n()
+  const [loading, setLoading] = useState(true)
+  const [data, setData] = useState<MoctaleData | null>(null)
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+
+  const slug = useMemo(() => getMoctaleSlug(title, date), [title, date])
+  const fallback = useMemo(
+    () => generateFallback(title, tmdbRating ?? 7.5, genres),
+    [title, tmdbRating, genres],
+  )
+
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      setLoading(true)
+      const remote = slug ? await fetchMoctaleSummary(slug) : null
+      if (!alive) return
+      setData(remote)
+      setLoading(false)
+    })()
+    return () => { alive = false }
+  }, [slug])
+
+  const source = data ?? fallback
+  const summaryText = source.summary || source.aiSummary || fallback.summary || ''
+  const pctPerfect = source.percent_perfect_reviews ?? fallback.percent_perfect_reviews ?? 0
+  const pctPositive = source.percent_positive_reviews ?? fallback.percent_positive_reviews ?? 0
+  const pctNeutral = source.percent_neutral_reviews ?? fallback.percent_neutral_reviews ?? 0
+  const pctNegative = source.percent_negative_reviews ?? fallback.percent_negative_reviews ?? 0
+  const total = source.total_reviews ?? source.totalReviews ?? fallback.total_reviews ?? 0
+  const takeaways = (source.keyTakeaways || source.highlights || fallback.keyTakeaways || []) as Array<string | { text: string; type?: string }>
+  const reviewsList = (source.reviews || source.top_10_reviews || fallback.reviews || []) as Review[]
+  const usingApi = !!data
+
+  const legend = [
+    { label: t('extras.reviewPerfect' as TKey), value: Math.round(pctPerfect), color: 'bg-emerald-400', stroke: '#34d399' },
+    { label: t('extras.reviewPositive' as TKey), value: Math.round(pctPositive), color: 'bg-sky-400', stroke: '#38bdf8' },
+    { label: t('extras.reviewNeutral' as TKey), value: Math.round(pctNeutral), color: 'bg-amber-400', stroke: '#fbbf24' },
+    { label: t('extras.reviewNegative' as TKey), value: Math.round(pctNegative), color: 'bg-rose-400', stroke: '#fb7185' },
+  ]
+
+  // Semicircle gauge: map cumulative percentages onto an arc path.
+  const segments = (() => {
+    const values = [pctPerfect, pctPositive, pctNeutral, pctNegative]
+    const colors = ['#34d399', '#38bdf8', '#fbbf24', '#fb7185']
+    let acc = 0
+    const r = 75
+    const cx = 100
+    const cy = 100
+    const toXY = (pct: number) => {
+      const angle = Math.PI * (1 - pct / 100)
+      return { x: cx + r * Math.cos(angle), y: cy - r * Math.sin(angle) }
+    }
+    return values.map((v, i) => {
+      const start = acc
+      acc += v
+      const a = toXY(start)
+      const b = toXY(Math.min(100, acc))
+      const large = v > 50 ? 1 : 0
+      return { d: `M ${a.x} ${a.y} A ${r} ${r} 0 ${large} 1 ${b.x} ${b.y}`, color: colors[i], v }
+    }).filter((s) => s.v > 0)
+  })()
+
+  return (
+    <div className="space-y-8">
+      <SectionHeader title={<span id="extras-reviews-title">{t('extras.reviews' as TKey)}</span>} />
+
+      {loading ? (
+        <div className="page-x grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="h-40 animate-pulse rounded-3xl border border-white/5 bg-white/[0.04] lg:col-span-2" />
+          <div className="h-40 animate-pulse rounded-3xl border border-white/5 bg-white/[0.04]" />
+        </div>
+      ) : (
+        <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={tween.base} className="page-x space-y-8">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.02] p-6 backdrop-blur-md lg:col-span-2 md:p-8">
+              <div className="mb-4 flex items-center gap-2">
+                <span className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-2 text-amber-400">
+                  <Sparkles className="h-5 w-5" />
+                </span>
+                <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
+                  {t('extras.reviewSummary' as TKey)}
+                </span>
+              </div>
+              <h3 className="text-xl font-bold leading-snug text-white md:text-2xl">
+                {t('extras.reviewConsensus' as TKey, { title })}
+              </h3>
+              <p className="mt-3 text-base leading-relaxed text-white/70 md:text-lg">{summaryText}</p>
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/5 pt-5">
+                <p className="flex items-center gap-1.5 text-xs text-white/40">
+                  <Info className="h-4 w-4" />
+                  {usingApi ? t('extras.reviewPowered' as TKey) : t('extras.reviewEstimated' as TKey)}
+                </p>
+                {slug && (
+                  <a
+                    href={`https://www.moctale.in/content/${slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white/80 transition hover:bg-white/10"
+                  >
+                    {t('extras.reviewViewOn' as TKey)}
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </a>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-between rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] p-6 backdrop-blur-md">
+              <div className="mb-4 flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-widest text-white/50">{t('extras.reviewMeter' as TKey)}</span>
+                {tmdbRating != null && tmdbRating > 0 && (
+                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-white/80">
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    {tmdbRating.toFixed(1)}
+                  </span>
+                )}
+              </div>
+              <div className="relative mx-auto w-full max-w-[190px]">
+                <svg viewBox="0 0 200 120" className="h-auto w-full" aria-hidden>
+                  <path d="M 25 100 A 75 75 0 0 1 175 100" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="15" strokeLinecap="round" />
+                  {segments.map((s, i) => (
+                    <path key={i} d={s.d} fill="none" stroke={s.color} strokeWidth="15" strokeLinecap="butt" />
+                  ))}
+                </svg>
+                <div className="absolute inset-x-0 bottom-0 text-center">
+                  <p className="text-2xl font-bold text-white">{Math.round(pctPerfect + pctPositive)}%</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">{t('extras.reviewLiked' as TKey)}</p>
+                </div>
+              </div>
+              <p className="mt-3 text-center text-xs text-white/40">
+                {t('extras.reviewBasedOn' as TKey, { count: total.toLocaleString() })}
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {legend.map((item) => (
+                  <div key={item.label} className="flex items-center gap-2 text-xs text-white/60">
+                    <span className={`h-2 w-2 rounded-full ${item.color}`} />
+                    <span className="truncate">{item.label}</span>
+                    <span className="ms-auto font-semibold text-white/80">{item.value}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {takeaways.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-widest text-white/50">{t('extras.reviewTakeaways' as TKey)}</h3>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                {takeaways.slice(0, 6).map((item, idx) => {
+                  const text = typeof item === 'string' ? item : item.text
+                  const kind = typeof item === 'string' ? 'positive' : (item.type || 'positive')
+                  return (
+                    <div key={idx} className="flex items-start gap-3 rounded-2xl border border-white/5 bg-white/[0.03] p-4">
+                      <span className={`mt-0.5 rounded-lg border p-1.5 ${
+                        kind === 'negative'
+                          ? 'border-rose-500/15 bg-rose-500/10 text-rose-400'
+                          : kind === 'neutral'
+                            ? 'border-amber-500/15 bg-amber-500/10 text-amber-400'
+                            : 'border-emerald-500/15 bg-emerald-500/10 text-emerald-400'
+                      }`}>
+                        {kind === 'negative' ? <ThumbsDown className="h-3.5 w-3.5" /> : <ThumbsUp className="h-3.5 w-3.5" />}
+                      </span>
+                      <p className="text-sm leading-snug text-white/70">{text}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <h3 className="flex items-center gap-2 text-lg font-bold text-white md:text-xl">
+              <MessageSquare className="h-5 w-5 text-amber-500" />
+              {t('extras.reviewDetailed' as TKey)}
+              <span className="text-xs font-semibold uppercase tracking-wider text-white/40">({reviewsList.length})</span>
+            </h3>
+            {reviewsList.length === 0 ? (
+              <div className="flex flex-col items-center gap-3 rounded-3xl border border-dashed border-white/10 bg-white/[0.01] p-10 text-center">
+                <AlertCircle className="h-10 w-10 text-white/40" />
+                <p className="font-semibold text-white">{t('extras.reviewEmpty' as TKey)}</p>
+                <p className="max-w-sm text-sm text-white/50">{t('extras.reviewEmptyText' as TKey, { title })}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {reviewsList.map((review, idx) => {
+                  const id = String(review.id ?? `review-${idx}`)
+                  const author = review.author || review.username || review.user || t('extras.reviewAnonymous' as TKey)
+                  const rating = review.rating ?? review.stars ?? 5
+                  const text = review.content || review.text || review.body || ''
+                  const dateStr = review.createdAt || review.created_at || review.date
+                  const isOpen = expanded[id]
+                  const long = text.length > 220
+                  return (
+                    <article key={id} className="flex flex-col rounded-2xl border border-white/5 bg-white/[0.03] p-5">
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <div>
+                          <p className="font-semibold text-white">{author}</p>
+                          {dateStr && <p className="text-xs text-white/40">{dateStr}</p>}
+                        </div>
+                        <span className="inline-flex items-center gap-1 rounded-lg bg-white/5 px-2 py-1 text-sm font-semibold text-amber-400">
+                          <Star className="h-3.5 w-3.5 fill-current" />
+                          {rating}/10
+                        </span>
+                      </div>
+                      <p className={`text-sm leading-relaxed text-white/70 ${!isOpen && long ? 'line-clamp-4' : ''}`}>{text}</p>
+                      {long && (
+                        <button
+                          type="button"
+                          onClick={() => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }))}
+                          className="mt-2 self-start text-xs font-semibold text-white/50 hover:text-white"
+                        >
+                          {isOpen ? t('extras.reviewShowLess' as TKey) : t('extras.reviewShowMore' as TKey)}
+                        </button>
+                      )}
+                    </article>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+          {/* type is reserved for future media-specific copy */}
+          <span className="sr-only">{type}</span>
+        </m.div>
+      )}
+    </div>
+  )
+}
