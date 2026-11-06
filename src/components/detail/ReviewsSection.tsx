@@ -47,6 +47,14 @@ type MoctaleData = {
   percent_positive_reviews?: number
   percent_neutral_reviews?: number
   percent_negative_reviews?: number
+  percentPerfectReviews?: number
+  percentPositiveReviews?: number
+  percentNeutralReviews?: number
+  percentNegativeReviews?: number
+  perfectReviews?: number
+  positiveReviews?: number
+  neutralReviews?: number
+  negativeReviews?: number
   keyTakeaways?: Array<string | { text: string; type?: string }>
   highlights?: string[]
   reviews?: Review[]
@@ -146,12 +154,15 @@ export default function ReviewsSection({
   type,
   tmdbRating,
   genres = [],
+  embedded = false,
 }: {
   title: string
   date?: string
   type: 'movie' | 'tv'
   tmdbRating?: number
   genres?: string[]
+  /** When true, skip the section header (used inside the Extras chip panel). */
+  embedded?: boolean
 }) {
   const { t } = useI18n()
   const [loading, setLoading] = useState(true)
@@ -176,49 +187,60 @@ export default function ReviewsSection({
     return () => { alive = false }
   }, [slug])
 
-  const source = data ?? fallback
-  const summaryText = source.summary || source.aiSummary || fallback.summary || ''
-  const pctPerfect = source.percent_perfect_reviews ?? fallback.percent_perfect_reviews ?? 0
-  const pctPositive = source.percent_positive_reviews ?? fallback.percent_positive_reviews ?? 0
-  const pctNeutral = source.percent_neutral_reviews ?? fallback.percent_neutral_reviews ?? 0
-  const pctNegative = source.percent_negative_reviews ?? fallback.percent_negative_reviews ?? 0
-  const total = source.total_reviews ?? source.totalReviews ?? fallback.total_reviews ?? 0
-  const takeaways = (source.keyTakeaways || source.highlights || fallback.keyTakeaways || []) as Array<string | { text: string; type?: string }>
-  const reviewsList = (source.reviews || source.top_10_reviews || fallback.reviews || []) as Review[]
   const usingApi = !!data
+  // Match meow: when live data is present use its fields (snake + camel); otherwise the deterministic fallback.
+  const pctPerfect = usingApi
+    ? (data?.percent_perfect_reviews ?? data?.percentPerfectReviews ?? 0)
+    : (fallback.percent_perfect_reviews ?? 0)
+  const pctPositive = usingApi
+    ? (data?.percent_positive_reviews ?? data?.percentPositiveReviews ?? 0)
+    : (fallback.percent_positive_reviews ?? 0)
+  const pctNeutral = usingApi
+    ? (data?.percent_neutral_reviews ?? data?.percentNeutralReviews ?? 0)
+    : (fallback.percent_neutral_reviews ?? 0)
+  const pctNegative = usingApi
+    ? (data?.percent_negative_reviews ?? data?.percentNegativeReviews ?? 0)
+    : (fallback.percent_negative_reviews ?? 0)
+  const total = usingApi
+    ? (data?.total_reviews ?? data?.totalReviews ?? 0)
+    : (fallback.total_reviews ?? 0)
+  const summaryText = (usingApi ? (data?.summary || data?.aiSummary) : null) || fallback.summary || ''
+  const takeaways = (
+    ((usingApi && (data?.keyTakeaways || data?.highlights))
+      ? (data?.keyTakeaways || data?.highlights)
+      : fallback.keyTakeaways) || []
+  ) as Array<string | { text: string; type?: string }>
+  const reviewsList = (
+    ((usingApi && (data?.reviews || data?.top_10_reviews))
+      ? (data?.reviews || data?.top_10_reviews)
+      : fallback.reviews) || []
+  ) as Review[]
+
+  // Same arc geometry as meow: one semicircle path, segments via stroke-dasharray.
+  // Order left → right: Skip (negative) → Timepass (neutral) → Go for it (positive) → Perfection.
+  const L = 235.62 // π * 75
+  const lenSkip = (pctNegative / 100) * L
+  const lenTimepass = (pctNeutral / 100) * L
+  const lenGoforit = (pctPositive / 100) * L
+  const lenPerfection = (pctPerfect / 100) * L
+  const offsetSkip = 0
+  const offsetTimepass = lenSkip
+  const offsetGoforit = lenSkip + lenTimepass
+  const offsetPerfection = lenSkip + lenTimepass + lenGoforit
 
   const legend = [
-    { label: t('extras.reviewPerfect' as TKey), value: Math.round(pctPerfect), color: 'bg-emerald-400', stroke: '#34d399' },
-    { label: t('extras.reviewPositive' as TKey), value: Math.round(pctPositive), color: 'bg-sky-400', stroke: '#38bdf8' },
-    { label: t('extras.reviewNeutral' as TKey), value: Math.round(pctNeutral), color: 'bg-amber-400', stroke: '#fbbf24' },
-    { label: t('extras.reviewNegative' as TKey), value: Math.round(pctNegative), color: 'bg-rose-400', stroke: '#fb7185' },
+    { label: t('extras.reviewPerfect' as TKey), value: Math.round(pctPerfect), color: 'bg-[#a855f7]', stroke: '#a855f7', gradient: 'from-purple-300 to-purple-500' },
+    { label: t('extras.reviewPositive' as TKey), value: Math.round(pctPositive), color: 'bg-[#05d594]', stroke: '#05d594', gradient: 'from-emerald-300 to-emerald-500' },
+    { label: t('extras.reviewNeutral' as TKey), value: Math.round(pctNeutral), color: 'bg-[#fbbf24]', stroke: '#fbbf24', gradient: 'from-amber-300 to-amber-500' },
+    { label: t('extras.reviewNegative' as TKey), value: Math.round(pctNegative), color: 'bg-[#f43f5e]', stroke: '#f43f5e', gradient: 'from-rose-300 to-rose-500' },
   ]
-
-  // Semicircle gauge: map cumulative percentages onto an arc path.
-  const segments = (() => {
-    const values = [pctPerfect, pctPositive, pctNeutral, pctNegative]
-    const colors = ['#34d399', '#38bdf8', '#fbbf24', '#fb7185']
-    let acc = 0
-    const r = 75
-    const cx = 100
-    const cy = 100
-    const toXY = (pct: number) => {
-      const angle = Math.PI * (1 - pct / 100)
-      return { x: cx + r * Math.cos(angle), y: cy - r * Math.sin(angle) }
-    }
-    return values.map((v, i) => {
-      const start = acc
-      acc += v
-      const a = toXY(start)
-      const b = toXY(Math.min(100, acc))
-      const large = v > 50 ? 1 : 0
-      return { d: `M ${a.x} ${a.y} A ${r} ${r} 0 ${large} 1 ${b.x} ${b.y}`, color: colors[i], v }
-    }).filter((s) => s.v > 0)
-  })()
+  const dominant = legend.reduce((prev, curr) => (curr.value > prev.value ? curr : prev), legend[0])
 
   return (
     <div className="space-y-8">
-      <SectionHeader title={<span id="extras-reviews-title">{t('extras.reviews' as TKey)}</span>} />
+      {!embedded && (
+        <SectionHeader title={<span id="extras-reviews-title">{t('extras.reviews' as TKey)}</span>} />
+      )}
 
       {loading ? (
         <div className="page-x grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -270,20 +292,82 @@ export default function ReviewsSection({
                   </span>
                 )}
               </div>
-              <div className="relative mx-auto w-full max-w-[190px]">
+              <div className="relative mx-auto w-full max-w-[190px] pt-2">
                 <svg viewBox="0 0 200 120" className="h-auto w-full" aria-hidden>
-                  <path d="M 25 100 A 75 75 0 0 1 175 100" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="15" strokeLinecap="round" />
-                  {segments.map((s, i) => (
-                    <path key={i} d={s.d} fill="none" stroke={s.color} strokeWidth="15" strokeLinecap="butt" />
-                  ))}
+                  {/* Base track */}
+                  <path
+                    d="M 25 100 A 75 75 0 0 1 175 100"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.05)"
+                    strokeWidth="15"
+                    strokeLinecap="round"
+                  />
+                  {/* Left → right: Skip → Timepass → Go for it → Perfection (meow order) */}
+                  {lenSkip > 0 && (
+                    <m.path
+                      d="M 25 100 A 75 75 0 0 1 175 100"
+                      fill="none"
+                      stroke="#f43f5e"
+                      strokeWidth="15"
+                      strokeLinecap="round"
+                      strokeDasharray={`${lenSkip} ${L}`}
+                      initial={{ strokeDashoffset: L }}
+                      animate={{ strokeDashoffset: -offsetSkip }}
+                      transition={{ duration: 1.2, ease: 'easeOut', delay: 0 }}
+                    />
+                  )}
+                  {lenTimepass > 0 && (
+                    <m.path
+                      d="M 25 100 A 75 75 0 0 1 175 100"
+                      fill="none"
+                      stroke="#fbbf24"
+                      strokeWidth="15"
+                      strokeLinecap="round"
+                      strokeDasharray={`${lenTimepass} ${L}`}
+                      initial={{ strokeDashoffset: L }}
+                      animate={{ strokeDashoffset: -offsetTimepass }}
+                      transition={{ duration: 1.2, ease: 'easeOut', delay: 0.1 }}
+                    />
+                  )}
+                  {lenGoforit > 0 && (
+                    <m.path
+                      d="M 25 100 A 75 75 0 0 1 175 100"
+                      fill="none"
+                      stroke="#05d594"
+                      strokeWidth="15"
+                      strokeLinecap="round"
+                      strokeDasharray={`${lenGoforit} ${L}`}
+                      initial={{ strokeDashoffset: L }}
+                      animate={{ strokeDashoffset: -offsetGoforit }}
+                      transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
+                    />
+                  )}
+                  {lenPerfection > 0 && (
+                    <m.path
+                      d="M 25 100 A 75 75 0 0 1 175 100"
+                      fill="none"
+                      stroke="#a855f7"
+                      strokeWidth="15"
+                      strokeLinecap="round"
+                      strokeDasharray={`${lenPerfection} ${L}`}
+                      initial={{ strokeDashoffset: L }}
+                      animate={{ strokeDashoffset: -offsetPerfection }}
+                      transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
+                    />
+                  )}
                 </svg>
-                <div className="absolute inset-x-0 bottom-0 text-center">
-                  <p className="text-2xl font-bold text-white">{Math.round(pctPerfect + pctPositive)}%</p>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">{t('extras.reviewLiked' as TKey)}</p>
+                {/* Dominant category in the center of the semicircle (meow) */}
+                <div className="absolute left-1/2 top-[65%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center">
+                  <span className={`bg-gradient-to-b ${dominant.gradient} bg-clip-text text-3xl font-black text-transparent`}>
+                    {dominant.value}%
+                  </span>
+                  <span className="mt-0.5 whitespace-nowrap text-[10px] font-extrabold uppercase tracking-tight text-white/50">
+                    {dominant.label}
+                  </span>
                 </div>
               </div>
               <p className="mt-3 text-center text-xs text-white/40">
-                {t('extras.reviewBasedOn' as TKey, { count: total.toLocaleString() })}
+                {t('extras.reviewBasedOn' as TKey, { count: Number(total || 0).toLocaleString() })}
               </p>
               <div className="mt-4 grid grid-cols-2 gap-2">
                 {legend.map((item) => (
