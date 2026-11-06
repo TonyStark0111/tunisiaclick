@@ -15,7 +15,7 @@ export const languages = defineStrings({
     'languages.offline': 'You’re offline. The language will change as soon as you’re back online.',
     // The site's own title and description (the root layout's metadata, see siteMetadata in lib/seo).
     'languages.meta.title': 'XeonFlix: movies, TV shows and Animes',
-    'languages.meta.description': 'Movies, TV shows and Tunisian series in one place: what’s trending today, trailers, a daily Top 10, Ramadan series and release alerts, in English, French and Arabic.',
+    'languages.meta.description': 'Movies, TV shows, Anime, Manga, Manhwa & Live Tv. All in one place. Trending titles, Top 10 release, trailers, dramas and release alerts — in English, Korean Chinese Japanese & Indonesia etc.',
   },
   ar: {
     'languages.settings.title': 'اللغة والعرض',
