@@ -173,19 +173,15 @@ function generateDynamicFallback(title: string, tmdbRating = 7.5, genres: string
   } satisfies MoctaleData
 }
 
-async function fetchMoctaleSummary(slugs: string[]): Promise<MoctaleData | null> {
-  for (const slug of slugs) {
-    if (!slug) continue
-    try {
-      const res = await fetch(`/api/reviews/moctale?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' })
-      if (!res.ok) continue
-      const json = await res.json()
-      if (json?.data) return json.data as MoctaleData
-    } catch {
-      /* try next slug */
-    }
+async function fetchMoctaleSummary(slug: string): Promise<MoctaleData | null> {
+  try {
+    const res = await fetch(`/api/reviews/moctale?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' })
+    if (!res.ok) return null
+    const json = await res.json()
+    return json?.data ?? null
+  } catch {
+    return null
   }
-  return null
 }
 
 export default function ReviewsSection({
@@ -209,13 +205,7 @@ export default function ReviewsSection({
   const [data, setData] = useState<MoctaleData | null>(null)
   const [expandedReviews, setExpandedReviews] = useState<Record<string, boolean>>({})
 
-  // Try title+year first (meow), then title only — Moctale slug pages vary by title.
-  const slugs = useMemo(() => {
-    const withYear = getMoctaleSlug(title, date)
-    const noYear = getMoctaleSlug(title)
-    return Array.from(new Set([withYear, noYear].filter(Boolean)))
-  }, [title, date])
-  const slug = slugs[0] || ''
+  const slug = useMemo(() => getMoctaleSlug(title, date), [title, date])
   const dynamicFallback = useMemo(
     () => generateDynamicFallback(title, tmdbRating ?? 7.5, genres),
     [title, tmdbRating, genres],
@@ -225,13 +215,13 @@ export default function ReviewsSection({
     let alive = true
     ;(async () => {
       setLoading(true)
-      const remote = await fetchMoctaleSummary(slugs)
+      const remote = slug ? await fetchMoctaleSummary(slug) : null
       if (!alive) return
       setData(remote)
       setLoading(false)
     })()
     return () => { alive = false }
-  }, [slugs.join('|')])
+  }, [slug])
 
   const apiReviews = data?.top_10_reviews || data?.reviews
   const hasMeterData = !!(data && (
