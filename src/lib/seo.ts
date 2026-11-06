@@ -7,10 +7,10 @@ import type { Translate } from '@/src/lib/i18n/translate'
 
 type OpenGraph = NonNullable<Metadata['openGraph']>
 
-export const SITE_HOST = 'tunisiaflicks.vercel.app'
+export const SITE_HOST = 'neoflix5543329532.netlify.app'
 export const SITE_URL = `https://${SITE_HOST}`
 export const SITE_NAME = 'XeonFlix'
-export const SITE_DESCRIPTION = "Movies, TV shows and Tunisian series in one place: what's trending today, trailers, a daily Top 10, Ramadan series and release alerts, in English, French and Arabic."
+export const SITE_DESCRIPTION = "Movies, TV shows, Anime, Manga, Manhwa & Live Tv. All in one place. Trending titles, Top 10 release, trailers, dramas and release alerts — in English, Korean Chinese Japanese & Indonesia etc."
 
 /** What people search for, in the three languages the site speaks (the root layout's keywords). */
 export const SITE_KEYWORDS = [
