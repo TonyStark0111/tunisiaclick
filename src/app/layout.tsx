@@ -54,7 +54,7 @@ const display = Bricolage_Grotesque({ subsets: ['latin'], axes: ['opsz', 'wdth']
 const displayArabic = Alexandria({ subsets: ['arabic'], variable: '--font-display-ar', display: 'swap', preload: false });
 
 const baseMetadata: Metadata = {
-  title: 'XeonFlix: movies and TV shows',
+  title: 'XeonFlix: Movies, TV shows, Anime, Manga, Manhwa & Live Tv. All in one place. Trending titles, Top 10 release, trailers, dramas and release alerts — in English, Korean Chinese Japanese & Indonesia etc',
   description: SITE_DESCRIPTION,
   keywords: ['Movies', 'TV shows', 'Trailers', 'Top 10', 'TunisiaFlicks'],
   authors: [{ name: 'TunisiaFlicks Team' }],
@@ -71,7 +71,7 @@ const baseMetadata: Metadata = {
   // The defaults below are for pages that set nothing; no twitter title or description, or X
   // would show the site's on every page that only sets Open Graph ones.
   openGraph: {
-    title: 'XeonFlix: movies, TV shows and Animes',
+    title: 'XeonFlix: Movies, TV shows, Anime, Manga, Manhwa & Live Tv. All in one place. Trending titles, Top 10 release, trailers, dramas and release alerts — in English, Korean Chinese Japanese & Indonesia etc',
     description: SITE_DESCRIPTION,
     siteName: 'XeonFlix',
     images: [{ url: '/og/home', width: 1200, height: 630, alt: 'XeonFlix' }],
