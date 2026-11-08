@@ -571,7 +571,6 @@ export const ACCENT_COLORS: Record<UniverseAccent, string> = {
   mi: '14 165 233',          // #0ea5e9
   predator: '22 163 74',     // #16a34a
   maddock: '168 85 247',     // #a855f7
-,
   godfather: '120 53 15',    // dark brown
   avatar: '6 182 212',       // cyan
   pixar: '249 115 22',       // orange
