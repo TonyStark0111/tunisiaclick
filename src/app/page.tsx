@@ -40,10 +40,10 @@ export const maxDuration = 30
 export const metadata: Metadata = { alternates: { canonical: '/' } }
 
 /**
- * The home page, top to bottom in 20 slots (see docs/features-plan, "homeOrder"). New blocks render
- * nothing when they have nothing to show, never a placeholder, and stream in on their own.
- * Kids skip slots 5, 7 and 12; TV mode skips 5, 7 and 9.
- * Our Fav sits last, after Upcoming Releases.
+ * The home page order: Continue Watching, Top 10, Trending Movies, Trending Series, Because you
+ * watched, Popular, Top Rated, Our Fav, Anniversaries, Now Playing, Cinematic Universes,
+ * Beyond Hollywood, Pick of the day, Upcoming Releases. Blocks render nothing when they have
+ * nothing to show, and stream in on their own.
  */
 export default async function MainPage() {
   const kids = await getKidsMode()
@@ -73,43 +73,46 @@ export default async function MainPage() {
           <ChipRail />
           {/* 3. Seasonal: at most one banner, only in season (Ramadan, the Eids...). */}
           <Suspense fallback={null}><SeasonalBanner kids={kids} /></Suspense>
-          {/* 4. Signed-in users only; renders nothing for guests. */}
+          {/* 4. Continue Watching: signed-in users only; renders nothing for guests. */}
           <ContinueWatching />
-          {/* 5. A grown-up's movie night in the next 7 days. */}
+          {/* A grown-up's movie night in the next 7 days. */}
           {!kids && !tv && <Suspense fallback={null}><UpcomingNightCard /></Suspense>}
-          {/* 6 */}
+          {/* 5. Top 10 this week */}
           <Top10Row top10={top10} />
-          {/* 7. What friends are watching (grown-ups whose friends share it). */}
+          {/* What friends are watching (grown-ups whose friends share it). */}
           {!kids && !tv && <Suspense fallback={null}><FriendsRow /></Suspense>}
-          {/* 8. Whatever the calendar says is on (Halloween, Eid, summer...): streamed in. */}
+          {/* Whatever the calendar says is on (Halloween, Eid, summer...): streamed in. */}
           <Suspense fallback={null}><SeasonRows kids={kids} /></Suspense>
-          {/* 9. Installed app only: invite to get the pick as a notification. */}
+          {/* Installed app only: invite to get the pick as a notification. */}
           {!tv && <PushPrompt />}
-          {/* 10 */}
+          {/* 6. Trending Movies */}
           <PosterSlider title={t('home.trendingMovies')} href="/discover" items={data.TrendingMovies?.results} />
-          {/* 10b — Trending Series, See all opens /tv */}
+          {/* 7. Trending Series, See all opens /tv */}
           <PosterSlider title={t('home.trendingSeries')} href="/tv" kind="tv" items={tvData.trendingTVShows?.results} />
-          {/* 11 */}
-          <PickOfTheDay pick={pick} />
-          {/* 12. Beyond Hollywood: one door per hub. */}
-          {!kids && <Suspense fallback={null}><HubShelf kids={kids} /></Suspense>}
-          {/* 12b. Cinematic Universes (MCU, DC, Star Wars, YRF Spy, Cop Universe…) */}
-          {!kids && <Suspense fallback={null}><CinematicUniversesRail kids={kids} /></Suspense>}
-          {/* 13 */}
-          <Suspense fallback={null}><SequelRow kids={kids} /></Suspense>
-          {/* 14 */}
+          {/* 8. Because you watched */}
           <BecauseYouWatched />
-          {/* 15. What people on the site watched this week, unless it already made the Top 10. */}
+          {/* What people on the site watched this week, unless it already made the Top 10. */}
           {top10.source !== 'site' && <PosterSlider title={t('home.communityTrending')} items={community} kind="mixed" />}
-          {/* 16 to 20 */}
-          <HeroSlider title={t('home.nowPlaying')} items={data.nowPlayingMovies?.results} />
+          {/* 9. Popular Movies */}
           <PosterSlider title={t('home.popularMovies')} items={data.popularMovies?.results} />
+          {/* 10. Top Rated Movies */}
           <PosterSlider title={t('home.topRatedMovies')} href="/top-rated" items={data.topRatedMovies?.results} />
-          <Suspense fallback={null}><AnniversaryRow kids={kids} /></Suspense>
-          {/* UPCOMING RELEASES — MovieZone-style grid (exact card size, theme & info) */}
-          <UpcomingReleases items={upcomingReleases} limit={1} showSeeAll />
-          {/* Our Fav — last place after Upcoming Releases (manual download titles only) */}
+          {/* 11. Our Fav (manual download titles only) */}
           <Suspense fallback={null}><OurFavRow /></Suspense>
+          {/* 12. Anniversaries this week */}
+          <Suspense fallback={null}><AnniversaryRow kids={kids} /></Suspense>
+          {/* 13. Now Playing */}
+          <HeroSlider title={t('home.nowPlaying')} items={data.nowPlayingMovies?.results} />
+          {/* 14. Cinematic Universes (MCU, DC, Star Wars, YRF Spy, Cop Universe…) */}
+          {!kids && <Suspense fallback={null}><CinematicUniversesRail kids={kids} /></Suspense>}
+          {/* Sequels row */}
+          <Suspense fallback={null}><SequelRow kids={kids} /></Suspense>
+          {/* 15. Beyond Hollywood: one door per hub. */}
+          {!kids && <Suspense fallback={null}><HubShelf kids={kids} /></Suspense>}
+          {/* 16. Pick of the day */}
+          <PickOfTheDay pick={pick} />
+          {/* 17. Upcoming Releases — MovieZone-style grid */}
+          <UpcomingReleases items={upcomingReleases} limit={1} showSeeAll />
         </div>
       </div>
     </ClientMessages>
