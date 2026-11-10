@@ -4,27 +4,45 @@ import { cardProps } from '@/src/lib/card-props'
 import { getT } from '@/src/lib/i18n/server'
 import type { Top10 } from '@/src/lib/top10'
 
-/** Ten posters, each standing on its rank in huge outlined numerals. */
+/**
+ * Premium Top 10 rail — Moviezonne-style size, gold metallic ranks, and
+ * poster overlap. Data still comes from TunisiaClick's getTop10 (site
+ * community when available, otherwise TMDB weekly trending).
+ */
 export default function Top10Row({ top10 }: { top10: Top10 }) {
   const t = getT()
   if (top10.items.length < 5) return null
   const title = top10.source === 'site' ? t('home.top10Site') : t('home.top10World')
   return (
-    <section aria-label={title}>
-      <SectionHeader title={title} subtitle={top10.source === 'site' ? t('home.top10SiteNote') : t('home.top10WorldNote')} />
-      <Row label={title} gap="gap-1 sm:gap-2" itemClassName="w-[50vw] max-w-[220px] sm:w-[236px] sm:max-w-none lg:w-[256px] 2xl:w-[290px]">
+    <section className="top10-section" aria-label={title}>
+      <SectionHeader
+        title={title}
+        subtitle={top10.source === 'site' ? t('home.top10SiteNote') : t('home.top10WorldNote')}
+      />
+      <Row
+        label={title}
+        gap="gap-[clamp(0.55rem,1.1vw,1.1rem)]"
+        itemClassName="top10-card-item"
+      >
         {top10.items.map((item, index) => {
+          const rank = index + 1
           const kind: 'movie' | 'tv' = item.media_type === 'tv' ? 'tv' : 'movie'
+          const isOutline = rank >= 4
           return (
-            <div key={`${kind}-${item.id}`} className="group/rank flex items-end">
+            <div
+              key={`${kind}-${item.id}`}
+              className="top10-card group/rank"
+              data-rank={rank}
+              style={{ animationDelay: `${Math.min(index, 8) * 0.055}s` }}
+            >
               <span
-                aria-label={t('home.rank', { rank: index + 1 })}
-                className="numeral-outline relative -me-[3%] w-[48%] shrink-0 select-none text-end font-display text-[clamp(150px,15.5vw,236px)] font-extrabold leading-[0.72] tracking-[-0.09em] transition-[-webkit-text-stroke-color] duration-300 group-hover/rank:[-webkit-text-stroke-color:rgb(255_36_20/0.85)]"
+                aria-label={t('home.rank', { rank })}
+                className={`top10-rank${isOutline ? ' top10-rank--outline' : ''}`}
               >
-                {index + 1}
+                {rank}
               </span>
-              <div className="relative w-[55%] shrink-0">
-                <PosterCard {...cardProps(item, kind)} bare />
+              <div className="top10-poster-wrap">
+                <PosterCard {...cardProps(item, kind)} bare className="top10-poster-card" />
               </div>
             </div>
           )
