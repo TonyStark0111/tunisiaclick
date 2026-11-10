@@ -103,22 +103,31 @@ export async function HubTop10({ hub }: { hub: HubId }) {
   if (items.length < rowMinimum('trending')) return null
   const title = t(`dramas.row.top10.${hub}` as TKey)
   return (
-    <section aria-label={title}>
+    <section className="top10-section" aria-label={title}>
       <SectionHeader title={title} subtitle={t('dramas.row.top10Note')} />
-      <Row label={title} gap="gap-1 sm:gap-2" itemClassName="w-[50vw] max-w-[220px] sm:w-[236px] sm:max-w-none lg:w-[256px] 2xl:w-[290px]">
-        {items.map((item, index) => (
-          <div key={item.id} className="group/rank flex items-end">
-            <span
-              aria-label={t('home.rank', { rank: index + 1 })}
-              className="numeral-outline relative -me-[3%] w-[48%] shrink-0 select-none text-end font-display text-[clamp(150px,15.5vw,236px)] font-extrabold leading-[0.72] tracking-[-0.09em] transition-[-webkit-text-stroke-color] duration-300 group-hover/rank:[-webkit-text-stroke-color:rgb(255_36_20/0.85)]"
+      <Row label={title} gap="gap-[clamp(0.55rem,1.1vw,1.1rem)]" itemClassName="top10-card-item">
+        {items.map((item, index) => {
+          const rank = index + 1
+          const isOutline = rank >= 4
+          return (
+            <div
+              key={item.id}
+              className="top10-card group/rank"
+              data-rank={rank}
+              style={{ animationDelay: `${Math.min(index, 8) * 0.055}s` }}
             >
-              {index + 1}
-            </span>
-            <div className="relative w-[55%] shrink-0">
-              <PosterCard {...cardProps(item, 'tv')} bare />
+              <span
+                aria-label={t('home.rank', { rank })}
+                className={`top10-rank${isOutline ? ' top10-rank--outline' : ''}`}
+              >
+                {rank}
+              </span>
+              <div className="top10-poster-wrap">
+                <PosterCard {...cardProps(item, 'tv')} bare className="top10-poster-card" />
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </Row>
     </section>
   )
