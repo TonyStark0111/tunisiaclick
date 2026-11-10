@@ -448,3 +448,177 @@ html.tf-launch .tf-launch-wordmark { animation: tf-wipe 550ms cubic-bezier(0.23,
   .aspect-\[10\/8\]::before { padding-top: 80%; }
   .aspect-\[9\/16\]::before { padding-top: 177.78%; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   TOP 10 — Moviezonne-style premium numbered rail
+   Larger posters, gold metallic ranks, deep poster overlap.
+   Data still comes from TunisiaClick getTop10 / TMDB metadata.
+   ═══════════════════════════════════════════════════════════════ */
+.top10-section {
+  --t10-poster-w: clamp(132px, min(15.5vw, 40vh), 250px);
+  --t10-rank-scale: 1.2;
+  --t10-overhang: calc(var(--t10-poster-w) * 0.33);
+  --t10-gold: linear-gradient(
+    177deg,
+    #fffbe8 0%,
+    #ffeeae 10%,
+    #ffd85e 26%,
+    #ffc61f 40%,
+    #f5c518 48%,
+    #e0ac14 56%,
+    #c08d0d 72%,
+    #9c7008 88%,
+    #7d5a04 100%
+  );
+  --t10-bevel:
+    drop-shadow(0 2px 0 rgba(0, 0, 0, 0.55))
+    drop-shadow(2px 0 0 rgba(0, 0, 0, 0.3))
+    drop-shadow(0 -1px 0 rgba(255, 255, 255, 0.16));
+}
+
+@media (min-width: 1280px) {
+  .top10-section {
+    --t10-poster-w: clamp(230px, min(13vw, 38vh), 310px);
+  }
+}
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .top10-section {
+    --t10-poster-w: clamp(150px, min(17vw, 40vh), 215px);
+  }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .top10-section {
+    --t10-poster-w: clamp(140px, min(23vw, 38vh), 200px);
+  }
+}
+@media (max-width: 767px) {
+  .top10-section {
+    --t10-poster-w: clamp(112px, min(43vw, 34vh), 230px);
+    --t10-rank-scale: 0.88;
+  }
+  .top10-section .top10-card[data-rank="10"] {
+    --t10-rank-scale: 0.56;
+  }
+}
+@media (max-width: 420px) {
+  .top10-section {
+    --t10-poster-w: min(46vw, 30vh);
+    --t10-rank-scale: 0.72;
+  }
+}
+
+/* Row item width driven by poster + numeral overhang */
+.top10-section .top10-card-item {
+  width: calc(var(--t10-poster-w) + var(--t10-overhang));
+  max-width: none;
+  flex: 0 0 auto;
+}
+
+.top10-card {
+  position: relative;
+  width: 100%;
+  padding-left: var(--t10-overhang);
+  animation: top10Rise 0.5s cubic-bezier(0.22, 0.9, 0.24, 1) both;
+}
+
+.top10-card[data-rank="10"] {
+  --t10-rank-scale: 0.74;
+  --t10-overhang: calc(var(--t10-poster-w) * 0.46);
+}
+
+@keyframes top10Rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Gold metallic rank numeral */
+.top10-rank {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 1;
+  font-family: var(--font-display), 'Bricolage Grotesque', system-ui, sans-serif;
+  font-size: calc(var(--t10-poster-w) * var(--t10-rank-scale));
+  line-height: 1;
+  padding: 0.06em 0.09em 0 0;
+  letter-spacing: -0.04em;
+  font-weight: 800;
+  font-stretch: 80%;
+  background: var(--t10-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #f5c518;
+  filter: var(--t10-bevel);
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  pointer-events: none;
+  user-select: none;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.top10-card:hover .top10-rank,
+.top10-card:focus-within .top10-rank {
+  transform: translateY(-4px);
+}
+
+/* Ranks 4–10: outline only, fill on hover */
+.top10-rank--outline {
+  background: none;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: clamp(1.4px, calc(var(--t10-poster-w) * 0.0115), 3.2px)
+    rgba(245, 197, 24, 0.6);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    -webkit-text-stroke-color 0.3s ease,
+    filter 0.3s ease;
+}
+
+.top10-card:hover .top10-rank--outline,
+.top10-card:focus-within .top10-rank--outline {
+  background: var(--t10-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke-color: transparent;
+  filter: var(--t10-bevel);
+}
+
+@media (hover: none) {
+  .top10-rank--outline {
+    -webkit-text-stroke-color: rgba(245, 197, 24, 0.72);
+  }
+}
+
+/* Poster sits on top of the numeral */
+.top10-poster-wrap {
+  position: relative;
+  z-index: 2;
+  width: var(--t10-poster-w);
+  border-radius: 18px;
+  overflow: hidden;
+  transition:
+    transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.42s ease;
+  box-shadow:
+    0 22px 55px rgba(0, 0, 0, 0.55),
+    0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+.top10-card:hover .top10-poster-wrap,
+.top10-card:focus-within .top10-poster-wrap {
+  transform: translateY(-9px);
+  box-shadow:
+    0 32px 70px rgba(0, 0, 0, 0.62),
+    0 0 32px rgba(245, 197, 24, 0.18);
+}
+
+/* Let PosterCard fill the sized wrap; kill its default under-title spacing */
+.top10-poster-card {
+  width: 100% !important;
+  display: block;
+}
+.top10-poster-card .aspect-\[2\/3\],
+.top10-poster-wrap .aspect-\[2\/3\] {
+  border-radius: 18px;
+}
