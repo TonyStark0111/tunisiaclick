@@ -53,7 +53,7 @@ const TABS: {
     label: 'Download 3 · Torrents',
     short: 'Download 3',
     icon: Magnet,
-    description: 'Magnet links from public indexes (YTS, EZTV, Torrentio…)',
+    description: 'Quality buttons · .torrent files (YTS) or magnets (EZTV, Torrentio…)',
   },
 ]
 
@@ -178,7 +178,7 @@ export default function DownloadHub({
           {tab === 'torrent' && (
             <div>
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-white/50">
-                Torrent magnets
+                Torrent downloads
               </h2>
               <TorrentDownloadPanel query={torrentQuery} title={title} />
             </div>
