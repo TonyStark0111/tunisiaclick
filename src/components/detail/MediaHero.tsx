@@ -1,6 +1,7 @@
 "use client"
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { AudioLines, Check, Clapperboard, Heart, MessageSquare, Pause, Play, Plus, Share2, Star, Volume2, VolumeX } from 'lucide-react'
+import { AudioLines, Check, Clapperboard, Heart, MessageSquare, Pause, Play, Plus, Share2, Volume2, VolumeX } from 'lucide-react'
+import { CircularRating } from '@/src/components/ui/CircularRating'
 import { Button } from '@/src/components/ui/button'
 import FollowButton from '@/src/components/FollowButton'
 import ReleaseCountdown from '@/src/components/detail/ReleaseCountdown'
@@ -221,7 +222,7 @@ export default function MediaHero({ kind, data, playLabel, onPlay, trailers, kid
                     )}
 
                     {/* Caption — 3 lines (movie & series)
-                        Line 1: IMDb · year · duration / episodes
+                        Line 1: circle rating · year · duration / episodes
                         Line 2: X-RAY HDR 4K Ultra HD cert · symbols
                         Line 3: genres
                     */}
@@ -229,9 +230,9 @@ export default function MediaHero({ kind, data, playLabel, onPlay, trailers, kid
                         {/* Line 1 */}
                         <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
                             {data.vote_average > 0 && (
-                                <span className="inline-flex items-center gap-1.5 font-medium text-white" aria-label={t('detail.ratingOutOf', { rating: data.vote_average.toFixed(1) })}>
-                                    <span className="text-white/70">IMDb</span>
-                                    <span className="font-semibold">{data.vote_average.toFixed(1)}</span>
+                                <span className="inline-flex items-center gap-2" aria-label={t('detail.ratingOutOf', { rating: data.vote_average.toFixed(1) })}>
+                                    <CircularRating rating={data.vote_average} size="sm" />
+                                    <span className="text-white/70 text-[13px]">IMDb</span>
                                 </span>
                             )}
                             {years && <span className="text-white/80">{years}</span>}
