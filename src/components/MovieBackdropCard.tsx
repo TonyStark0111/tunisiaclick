@@ -1,12 +1,12 @@
 "use client"
 import React from 'react'
 import Link from 'next/link'
-import { Star } from 'lucide-react'
 import { Skeleton } from './ui/skeleton'
 import { MediaContextMenu } from './MediaActions'
 import TmdbImage from './TmdbImage'
 import { usePeekTrigger } from '@/src/hooks/use-peek-trigger'
 import { useMediaQuery } from '@/src/hooks/use-media-query'
+import { CircularRating } from './ui/CircularRating'
 
 type BackdropCardProps = {
     backdropImg?: string | null
@@ -52,14 +52,16 @@ export default function MovieBackdropCard({ backdropImg, title, voteAverage, rel
                     className="object-cover transition-[transform,filter] duration-500 ease-out group-hover/card:scale-[1.04] group-hover/card:brightness-110"
                 />
                 <div aria-hidden className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                {Number.isFinite(rating) && rating > 0 && (
+                    <div className="absolute end-2 top-2 z-[1]">
+                        <CircularRating rating={rating} size="sm" />
+                    </div>
+                )}
                 <div className="absolute inset-x-0 bottom-0 p-3.5">
                     <p className="line-clamp-2 font-display text-[19px] font-bold leading-tight text-white drop-shadow-[0_2px_10px_rgb(0_0_0/0.7)]"><bdi>{title}</bdi></p>
-                    <p className="mt-1 flex items-center gap-2 text-[12px] text-white/65">
-                        {releaseDate && <span>{releaseDate.substring(0, 4)}</span>}
-                        {Number.isFinite(rating) && rating > 0 && (
-                            <span className="inline-flex items-center gap-1"><Star aria-hidden className="h-3 w-3 fill-star text-star" />{rating.toFixed(1)}</span>
-                        )}
-                    </p>
+                    {releaseDate && (
+                        <p className="mt-1 text-[12px] text-white/65">{releaseDate.substring(0, 4)}</p>
+                    )}
                 </div>
             </div>
         </Link>

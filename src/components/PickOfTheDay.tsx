@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { Info, Play, Sparkles, Star } from 'lucide-react'
+import { Info, Play, Sparkles } from 'lucide-react'
 import TmdbImage from '@/src/components/TmdbImage'
 import { Button } from '@/src/components/ui/button'
+import { CircularRating } from '@/src/components/ui/CircularRating'
 import { getLocale, getT } from '@/src/lib/i18n/server'
 import { formatDate, quote } from '@/src/lib/i18n/format'
 import type { PickOfTheDay as Pick } from '@/src/lib/pick-of-the-day'
@@ -74,7 +75,10 @@ export default function PickOfTheDay({ pick }: { pick: Pick | null }) {
           )}
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/75">
             {data.vote_average > 0 && (
-              <span className="inline-flex items-center gap-1 font-semibold text-white"><Star aria-hidden className="h-3.5 w-3.5 fill-star text-star" />{data.vote_average.toFixed(1)}</span>
+              <span className="inline-flex items-center gap-2">
+                <CircularRating rating={data.vote_average} size="sm" />
+                <span className="text-white/70">IMDb</span>
+              </span>
             )}
             {year && <span>{year}</span>}
             {length && <span>{length}</span>}

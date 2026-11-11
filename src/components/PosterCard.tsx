@@ -1,7 +1,6 @@
 "use client"
 import React from 'react'
 import Link from 'next/link'
-import { Star } from 'lucide-react'
 import { cn } from '@/src/lib/utils'
 import { Skeleton } from './ui/skeleton'
 import { MediaContextMenu } from './MediaActions'
@@ -10,6 +9,7 @@ import TmdbImage from './TmdbImage'
 import FollowButton from './FollowButton'
 import { usePeekTrigger } from '@/src/hooks/use-peek-trigger'
 import { useMediaQuery } from '@/src/hooks/use-media-query'
+import { CircularRating } from './ui/CircularRating'
 
 export type PosterCardProps = {
     posterImg?: string | null
@@ -108,20 +108,19 @@ export default function PosterCard({
                         {t(mediaType === 'tv' ? 'common.tvShow' : 'common.movie')}
                     </span>
                 )}
+                {Number.isFinite(rating) && rating > 0 && (
+                    <div className="absolute end-2 top-2 z-[1]">
+                        <CircularRating rating={rating} size="sm" />
+                    </div>
+                )}
                 {overlay}
             </div>
             {!bare && (
                 <div className="mt-2.5 px-0.5">
                     <p dir="auto" className="truncate text-start text-[13.5px] font-medium text-white/90 transition-colors group-hover/card:text-white">{title}</p>
-                    <p className="mt-0.5 flex items-center gap-2 text-[12px] text-white/45">
-                        {year && <span>{year}</span>}
-                        {Number.isFinite(rating) && rating > 0 && (
-                            <span className="inline-flex items-center gap-1">
-                                <Star aria-hidden className="h-3 w-3 fill-star text-star" />
-                                {rating.toFixed(1)}
-                            </span>
-                        )}
-                    </p>
+                    {year && (
+                        <p className="mt-0.5 text-[12px] text-white/45">{year}</p>
+                    )}
                 </div>
             )}
         </Wrapper>
