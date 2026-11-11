@@ -1,8 +1,9 @@
 "use client"
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { Check, Info, Pause, Play, Plus, Star, Volume2, VolumeX } from 'lucide-react'
+import { Check, Info, Pause, Play, Plus, Volume2, VolumeX } from 'lucide-react'
 import { cn } from '@/src/lib/utils'
+import { CircularRating } from '@/src/components/ui/CircularRating'
 import TmdbImage from '@/src/components/TmdbImage'
 import YouTubeBackdrop from '@/src/components/media/YouTubeBackdrop'
 import { Button } from '@/src/components/ui/button'
@@ -43,9 +44,9 @@ function Facts({ item, t, className }: { item: BillboardItem, t: Translate, clas
     return (
         <p className={cn('flex flex-wrap items-center gap-x-3 gap-y-1', className)}>
             {item.rating > 0 && (
-                <span className="inline-flex items-center gap-1 font-semibold text-white">
-                    <Star aria-hidden className="h-3.5 w-3.5 fill-star text-star" />
-                    {item.rating.toFixed(1)}
+                <span className="inline-flex items-center gap-2">
+                    <CircularRating rating={item.rating} size="sm" />
+                    <span className="text-white/70 text-[13px]">IMDb</span>
                 </span>
             )}
             {item.year && <span>{item.year}</span>}
