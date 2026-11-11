@@ -14,6 +14,8 @@ export type DownloadOption = {
   size?: string
   seeds?: number
   magnet: string
+  /** Direct .torrent file URL when the index provides one (YTS). Prefer this over magnet. */
+  url?: string
   /** The index the copy came from: 'YTS', 'EZTV', or an indexer Torrentio names ('The Pirate Bay', '1337x'…). */
   source: string
 }
@@ -112,20 +114,33 @@ function merge(options: DownloadOption[]): DownloadOption[] {
     .sort((a, b) => qualityRank(a.quality) - qualityRank(b.quality) || (b.seeds ?? 0) - (a.seeds ?? 0))
 }
 
-/** YTS copies for an IMDB id (its first mirror that answers). */
+/** YTS-style button label: "1080p.WEB", "720p.BLU", with " x265" when applicable (Chillax style). */
+function ytsLabel(torrent: { quality?: string; type?: string; video_codec?: string }): string {
+  const type = (torrent.type || '').trim().toLowerCase()
+  const typeLabel = type === 'bluray' ? 'BLU' : type === 'web' ? 'WEB' : type ? type.toUpperCase() : ''
+  const base = typeLabel ? `${torrent.quality || ''}.${typeLabel}` : (torrent.quality || 'Unknown')
+  return /x265|hevc/i.test(torrent.video_codec || '') ? `${base} x265` : base
+}
+
+/** YTS copies for an IMDB id (its first mirror that answers). Includes .torrent file URL when present. */
 async function ytsMovies(id: string): Promise<DownloadOption[]> {
   for (const mirror of YTS_MIRRORS) {
     const json = await fetchJson(`${mirror}/api/v2/list_movies.json?query_term=tt${id}&limit=1`)
     const movie = json?.data?.movies?.[0]
     if (!movie?.torrents) continue
-    return movie.torrents.map((torrent: any): DownloadOption => ({
-      label: `${torrent.quality}${torrent.type ? ` ${torrent.type}` : ''}`,
-      quality: torrent.quality,
-      size: torrent.size,
-      seeds: torrent.seeds,
-      magnet: buildMagnet(torrent.hash, movie.title_long || movie.title),
-      source: 'YTS',
-    }))
+    return movie.torrents.map((torrent: any): DownloadOption => {
+      const rawUrl = typeof torrent.url === 'string' ? torrent.url.trim() : ''
+      const fileUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl.replace(/^http:\/\//i, 'https://') : undefined
+      return {
+        label: ytsLabel(torrent),
+        quality: torrent.quality,
+        size: torrent.size,
+        seeds: torrent.seeds,
+        magnet: buildMagnet(torrent.hash, movie.title_long || movie.title),
+        url: fileUrl,
+        source: 'YTS',
+      }
+    })
   }
   return []
 }
