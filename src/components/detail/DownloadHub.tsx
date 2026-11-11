@@ -53,7 +53,7 @@ const TABS: {
     label: 'Download 3 · Torrents',
     short: 'Download 3',
     icon: Magnet,
-    description: 'Quality buttons · .torrent files (YTS) or magnets (EZTV, Torrentio…)',
+    description: 'Chillax YTS · quality buttons download .torrent files',
   },
 ]
 
