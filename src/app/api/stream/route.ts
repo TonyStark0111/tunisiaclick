@@ -1,7 +1,9 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import * as http from "node:http";
+import * as https from "node:https";
 import { NextRequest } from "next/server";
 import { getStreamByUrl } from "@/src/lib/iptv";
-import { pickProxies, proxyUrl, type ProxyEntry } from "@/src/lib/proxy-pool";
+import { pickProxies, type ProxyEntry } from "@/src/lib/proxy-pool";
 
 /**
  * Same-origin stream proxy — the playback fix.
@@ -16,6 +18,7 @@ import { pickProxies, proxyUrl, type ProxyEntry } from "@/src/lib/proxy-pool";
  * Upstream fetch now goes through a rotating free-proxy pool
  * (https://sunny9577.github.io/proxy-scraper/proxies.json) so the list
  * updates automatically — no manual proxy changes needed.
+ * Uses only Node built-ins (no undici / extra packages).
  *
  * Abuse control (this must never become an open proxy):
  *  - Entry URLs are only served if they exist in the channel catalogue.
@@ -61,7 +64,6 @@ function isPrivateHost(hostname: string): boolean {
     return false;
   }
   if (host.includes(":")) {
-    // IPv6 literals: loopback, unique-local, link-local.
     if (host === "::1" || host === "::") return true;
     if (/^f[cd]/.test(host) || /^fe[89ab]/.test(host)) return true;
   }
@@ -89,7 +91,7 @@ function proxiedUri(uri: string, base: string, hints: PlaybackHints): string {
   try {
     abs = new URL(uri, base).toString();
   } catch {
-    return uri; // unparseable — leave it; playback of this entry will fail over
+    return uri;
   }
   const ua = hints.ua ?? "";
   const ref = hints.ref ?? "";
@@ -100,9 +102,7 @@ function proxiedUri(uri: string, base: string, hints: PlaybackHints): string {
 }
 
 /**
- * Rewrite every URI in an HLS playlist back through this proxy: plain URI
- * lines (segments, variant playlists) and URI="…" attributes (keys, init
- * maps, subtitles, I-frame playlists). Everything else is preserved.
+ * Rewrite every URI in an HLS playlist back through this proxy.
  */
 function rewritePlaylist(text: string, base: string, hints: PlaybackHints): string {
   return text
@@ -124,35 +124,158 @@ function isPlaylistRequest(target: URL, contentType: string): boolean {
 }
 
 /**
- * Fetch a URL, optionally through an HTTP proxy.
- * Uses undici ProxyAgent when a proxy is given (Node 18+ / Next.js).
- * Falls back to plain fetch when no proxy or when the agent is unavailable.
+ * Fetch via a free HTTP proxy using only Node built-ins (no undici).
+ * - HTTP targets: absolute-form request through the proxy
+ * - HTTPS targets: CONNECT tunnel then normal TLS request
  */
-async function fetchUpstream(
+function fetchViaHttpProxy(
+  targetUrl: string,
+  headers: Record<string, string>,
+  proxy: ProxyEntry,
+  timeoutMs: number
+): Promise<Response> {
+  return new Promise((resolve, reject) => {
+    const target = new URL(targetUrl);
+    const proxyHost = proxy.ip;
+    const proxyPort = Number(proxy.port) || 80;
+    const isHttps = target.protocol === "https:";
+
+    const timer = setTimeout(() => {
+      reject(new Error("proxy timeout"));
+    }, timeoutMs);
+
+    const finish = (err: Error | null, res?: Response) => {
+      clearTimeout(timer);
+      if (err) reject(err);
+      else if (res) resolve(res);
+      else reject(new Error("empty response"));
+    };
+
+    if (!isHttps) {
+      // HTTP: send absolute URL to the proxy
+      const req = http.request(
+        {
+          host: proxyHost,
+          port: proxyPort,
+          method: "GET",
+          path: targetUrl,
+          headers: {
+            ...headers,
+            Host: target.host,
+            Connection: "close",
+          },
+          timeout: timeoutMs,
+        },
+        (proxyRes) => {
+          const chunks: Buffer[] = [];
+          proxyRes.on("data", (c) => chunks.push(c));
+          proxyRes.on("end", () => {
+            const body = Buffer.concat(chunks);
+            const outHeaders = new Headers();
+            for (const [k, v] of Object.entries(proxyRes.headers)) {
+              if (v == null) continue;
+              outHeaders.set(k, Array.isArray(v) ? v.join(", ") : String(v));
+            }
+            finish(
+              null,
+              new Response(body, {
+                status: proxyRes.statusCode || 502,
+                headers: outHeaders,
+              })
+            );
+          });
+          proxyRes.on("error", (e) => finish(e));
+        }
+      );
+      req.on("error", (e) => finish(e));
+      req.on("timeout", () => {
+        req.destroy();
+        finish(new Error("proxy timeout"));
+      });
+      req.end();
+      return;
+    }
+
+    // HTTPS: CONNECT tunnel then request over the tunnel
+    const connectReq = http.request({
+      host: proxyHost,
+      port: proxyPort,
+      method: "CONNECT",
+      path: `${target.hostname}:${target.port || 443}`,
+      headers: {
+        Host: `${target.hostname}:${target.port || 443}`,
+        Connection: "close",
+      },
+      timeout: timeoutMs,
+    });
+
+    connectReq.on("connect", (proxyRes, socket) => {
+      if ((proxyRes.statusCode || 0) >= 300) {
+        socket.destroy();
+        finish(new Error(`CONNECT failed: ${proxyRes.statusCode}`));
+        return;
+      }
+
+      const tlsReq = https.request(
+        {
+          host: target.hostname,
+          port: target.port || 443,
+          path: target.pathname + target.search,
+          method: "GET",
+          headers: {
+            ...headers,
+            Host: target.host,
+            Connection: "close",
+          },
+          socket,
+          servername: target.hostname,
+          timeout: timeoutMs,
+        },
+        (tlsRes) => {
+          const chunks: Buffer[] = [];
+          tlsRes.on("data", (c) => chunks.push(c));
+          tlsRes.on("end", () => {
+            const body = Buffer.concat(chunks);
+            const outHeaders = new Headers();
+            for (const [k, v] of Object.entries(tlsRes.headers)) {
+              if (v == null) continue;
+              outHeaders.set(k, Array.isArray(v) ? v.join(", ") : String(v));
+            }
+            finish(
+              null,
+              new Response(body, {
+                status: tlsRes.statusCode || 502,
+                headers: outHeaders,
+              })
+            );
+          });
+          tlsRes.on("error", (e) => finish(e));
+        }
+      );
+      tlsReq.on("error", (e) => finish(e));
+      tlsReq.on("timeout", () => {
+        tlsReq.destroy();
+        finish(new Error("tls timeout"));
+      });
+      tlsReq.end();
+    });
+
+    connectReq.on("error", (e) => finish(e));
+    connectReq.on("timeout", () => {
+      connectReq.destroy();
+      finish(new Error("connect timeout"));
+    });
+    connectReq.end();
+  });
+}
+
+/** Direct fetch (no external proxy) — used as final fallback */
+async function fetchDirect(
   target: string,
   headers: Record<string, string>,
-  signal: AbortSignal,
-  proxy?: ProxyEntry
+  signal: AbortSignal
 ): Promise<Response> {
-  if (!proxy) {
-    return fetch(target, { headers, redirect: "follow", signal });
-  }
-
-  try {
-    // Dynamic import so the file still type-checks if undici types are missing
-    const undici = await import("undici");
-    const dispatcher = new undici.ProxyAgent(proxyUrl(proxy));
-    // undici.fetch is compatible with the Response we need
-    return (await undici.fetch(target, {
-      headers,
-      redirect: "follow",
-      signal,
-      dispatcher,
-    })) as unknown as Response;
-  } catch (err) {
-    // If undici / ProxyAgent is not available or the proxy is dead, let caller retry
-    throw err;
-  }
+  return fetch(target, { headers, redirect: "follow", signal });
 }
 
 /**
@@ -166,9 +289,9 @@ async function fetchWithProxyPool(
   const proxies = await pickProxies(3);
 
   for (const p of proxies) {
+    if (signal.aborted) break;
     try {
-      const res = await fetchUpstream(target, headers, signal, p);
-      // Accept any response that is not a hard network failure
+      const res = await fetchViaHttpProxy(target, headers, p, UPSTREAM_TIMEOUT_MS);
       if (res) return res;
     } catch {
       // try next proxy
@@ -176,7 +299,7 @@ async function fetchWithProxyPool(
   }
 
   // Last resort: direct (no external proxy)
-  return fetchUpstream(target, headers, signal);
+  return fetchDirect(target, headers, signal);
 }
 
 export async function GET(req: NextRequest) {
@@ -235,7 +358,6 @@ export async function GET(req: NextRequest) {
   const playlist = isPlaylistRequest(target, contentType) && upstream.ok;
 
   if (!playlist) {
-    // Media (or an upstream error page): stream the body straight through.
     clearTimeout(timer);
     const out = new Headers();
     out.set("content-type", contentType || "application/octet-stream");
@@ -247,10 +369,11 @@ export async function GET(req: NextRequest) {
     } else {
       out.set("cache-control", "no-store");
     }
+    // Body may already be fully buffered (proxy path) or a stream (direct path)
     return new Response(upstream.body, { status: upstream.status, headers: out });
   }
 
-  /* ---- playlist: buffer (small), rewrite, serve ---- */
+  /* ---- playlist: buffer, rewrite, serve ---- */
   let text: string;
   try {
     text = await upstream.text();
@@ -260,7 +383,7 @@ export async function GET(req: NextRequest) {
   }
   clearTimeout(timer);
 
-  const base = upstream.url || target.toString(); // resolve against the post-redirect URL
+  const base = upstream.url || target.toString();
   return new Response(rewritePlaylist(text, base, hints), {
     status: 200,
     headers: {
