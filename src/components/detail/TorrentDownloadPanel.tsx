@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { Download, Info } from 'lucide-react'
+import { Download, Info, Play } from 'lucide-react'
 import { getDownloads, type DownloadQuery } from '@/src/app/actions/downloads'
 import type { DownloadOption } from '@/src/lib/downloads'
 import { BrandLoader } from '@/src/components/brand/BrandMark'
@@ -11,6 +11,7 @@ import { useT } from '@/src/components/I18nProvider'
 type Props = {
   query: DownloadQuery | null
   title: string
+  onPlayInBrowser?: (magnet: string) => void
 }
 
 /**
@@ -18,7 +19,7 @@ type Props = {
  * Quality buttons (1080p.WEB, 720p.BLU, …). Click downloads the .torrent file
  * when YTS provides a URL; otherwise opens magnet in the torrent client.
  */
-export default function TorrentDownloadPanel({ query, title }: Props) {
+export default function TorrentDownloadPanel({ query, title, onPlayInBrowser }: Props) {
   const t = useT()
   const [loading, setLoading] = useState(false)
   const [options, setOptions] = useState<DownloadOption[] | null>(null)
@@ -133,30 +134,42 @@ export default function TorrentDownloadPanel({ query, title }: Props) {
 
           if (hasFile) {
             return (
+              <div key={key} className="inline-flex gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => startTorrentFile(option)}
+                  title={`Download ${option.label} .torrent${details ? ` (${details})` : ''}`}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/[0.12] bg-white/[0.06] px-3.5 py-2.5 text-sm font-semibold text-white transition-colors hover:border-red-500/60 hover:bg-red-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                >
+                  <Download className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  {option.label}
+                </button>
+                {onPlayInBrowser && (
+                  <button type="button" onClick={() => onPlayInBrowser(option.magnet)} title={`Open ${option.label} in Xeonflix browser P2P player`} className="inline-flex items-center gap-1 rounded-xl border border-emerald-400/25 bg-emerald-500/10 px-3 py-2.5 text-xs font-semibold text-emerald-200 hover:bg-emerald-500/20">
+                    <Play className="h-3.5 w-3.5" /> Play
+                  </button>
+                )}
+              </div>
+            )
+          }
+
+          return (
+            <div key={key} className="inline-flex gap-1.5">
               <button
-                key={key}
                 type="button"
-                onClick={() => startTorrentFile(option)}
-                title={`Download ${option.label} .torrent${details ? ` (${details})` : ''}`}
+                onClick={() => openMagnet(option)}
+                title={`Open ${option.label} in your torrent client${details ? ` (${details})` : ''}`}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-white/[0.12] bg-white/[0.06] px-3.5 py-2.5 text-sm font-semibold text-white transition-colors hover:border-red-500/60 hover:bg-red-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
               >
                 <Download className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 {option.label}
               </button>
-            )
-          }
-
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => openMagnet(option)}
-              title={`Open ${option.label} in your torrent client${details ? ` (${details})` : ''}`}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-white/[0.12] bg-white/[0.06] px-3.5 py-2.5 text-sm font-semibold text-white transition-colors hover:border-red-500/60 hover:bg-red-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-            >
-              <Download className="h-3.5 w-3.5 shrink-0" aria-hidden />
-              {option.label}
-            </button>
+              {onPlayInBrowser && (
+                <button type="button" onClick={() => onPlayInBrowser(option.magnet)} title={`Open ${option.label} in Xeonflix browser P2P player`} className="inline-flex items-center gap-1 rounded-xl border border-emerald-400/25 bg-emerald-500/10 px-3 py-2.5 text-xs font-semibold text-emerald-200 hover:bg-emerald-500/20">
+                  <Play className="h-3.5 w-3.5" /> Play
+                </button>
+              )}
+            </div>
           )
         })}
       </div>
