@@ -1,6 +1,7 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { NextRequest } from "next/server";
 import { getStreamByUrl } from "@/src/lib/iptv";
+import { pickProxies, proxyUrl, type ProxyEntry } from "@/src/lib/proxy-pool";
 
 /**
  * Same-origin stream proxy — the playback fix.
@@ -11,6 +12,10 @@ import { getStreamByUrl } from "@/src/lib/iptv";
  * playback through this endpoint removes all three problems at once: the
  * browser only ever talks to our own origin, and the server fetches
  * upstream with the headers the stream demands.
+ *
+ * Upstream fetch now goes through a rotating free-proxy pool
+ * (https://sunny9577.github.io/proxy-scraper/proxies.json) so the list
+ * updates automatically — no manual proxy changes needed.
  *
  * Abuse control (this must never become an open proxy):
  *  - Entry URLs are only served if they exist in the channel catalogue.
@@ -118,6 +123,62 @@ function isPlaylistRequest(target: URL, contentType: string): boolean {
   return /\.m3u8?$/i.test(target.pathname);
 }
 
+/**
+ * Fetch a URL, optionally through an HTTP proxy.
+ * Uses undici ProxyAgent when a proxy is given (Node 18+ / Next.js).
+ * Falls back to plain fetch when no proxy or when the agent is unavailable.
+ */
+async function fetchUpstream(
+  target: string,
+  headers: Record<string, string>,
+  signal: AbortSignal,
+  proxy?: ProxyEntry
+): Promise<Response> {
+  if (!proxy) {
+    return fetch(target, { headers, redirect: "follow", signal });
+  }
+
+  try {
+    // Dynamic import so the file still type-checks if undici types are missing
+    const undici = await import("undici");
+    const dispatcher = new undici.ProxyAgent(proxyUrl(proxy));
+    // undici.fetch is compatible with the Response we need
+    return (await undici.fetch(target, {
+      headers,
+      redirect: "follow",
+      signal,
+      dispatcher,
+    })) as unknown as Response;
+  } catch (err) {
+    // If undici / ProxyAgent is not available or the proxy is dead, let caller retry
+    throw err;
+  }
+}
+
+/**
+ * Try several free proxies, then fall back to a direct connection.
+ */
+async function fetchWithProxyPool(
+  target: string,
+  headers: Record<string, string>,
+  signal: AbortSignal
+): Promise<Response> {
+  const proxies = await pickProxies(3);
+
+  for (const p of proxies) {
+    try {
+      const res = await fetchUpstream(target, headers, signal, p);
+      // Accept any response that is not a hard network failure
+      if (res) return res;
+    } catch {
+      // try next proxy
+    }
+  }
+
+  // Last resort: direct (no external proxy)
+  return fetchUpstream(target, headers, signal);
+}
+
 export async function GET(req: NextRequest) {
   const params = req.nextUrl.searchParams;
   const raw = params.get("u");
@@ -151,7 +212,7 @@ export async function GET(req: NextRequest) {
     hints = { ua: ua || undefined, ref: ref || undefined };
   }
 
-  /* ---- upstream fetch ---- */
+  /* ---- upstream fetch (through rotating free proxies) ---- */
   const headers: Record<string, string> = {
     "user-agent": hints.ua ?? DEFAULT_UA,
     accept: "*/*",
@@ -164,7 +225,7 @@ export async function GET(req: NextRequest) {
   const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
   let upstream: Response;
   try {
-    upstream = await fetch(target, { headers, redirect: "follow", signal: controller.signal });
+    upstream = await fetchWithProxyPool(target.toString(), headers, controller.signal);
   } catch {
     clearTimeout(timer);
     return errorResponse(502, "The stream host did not respond.");
