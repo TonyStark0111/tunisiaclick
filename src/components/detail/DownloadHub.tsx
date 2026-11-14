@@ -2,18 +2,17 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Download, HardDrive, Magnet, CloudDownload, Network } from 'lucide-react'
+import { ArrowLeft, Download, HardDrive, Magnet, CloudDownload } from 'lucide-react'
 import { cn } from '@/src/lib/utils'
 import MoviezoneDownloadLinks from '@/src/components/detail/MoviezoneDownloadLinks'
 import ManualMoviesDownloadLinks from '@/src/components/detail/ManualMoviesDownloadLinks'
 import ManualSeriesDownloadLinks from '@/src/components/detail/ManualSeriesDownloadLinks'
 import TorrentDownloadPanel from '@/src/components/detail/TorrentDownloadPanel'
-import BrowserP2PPanel from '@/src/components/detail/BrowserP2PPanel'
 import type { DownloadQuery } from '@/src/app/actions/downloads'
 import type { ManualDownloadEntry as MovieEntry } from '@/src/data/manual-movies-downloads'
 import type { ManualDownloadEntry as SeriesEntry } from '@/src/data/manual-series-downloads'
 
-type TabId = 'moviezone' | 'manual' | 'torrent' | 'p2p'
+type TabId = 'moviezone' | 'manual' | 'torrent'
 
 type Props = {
   tmdbId: string
@@ -54,14 +53,7 @@ const TABS: {
     label: 'Download 3 · Torrents',
     short: 'Download 3',
     icon: Magnet,
-    description: 'Torrent links from existing indexers',
-  },
-  {
-    id: 'p2p',
-    label: 'P2P Player',
-    short: 'P2P Player',
-    icon: Network,
-    description: 'Browser torrent + HLS/DASH P2P playback',
+    description: 'Chillax YTS · quality buttons download .torrent files',
   },
 ]
 
@@ -78,7 +70,6 @@ export default function DownloadHub({
   seriesManual,
 }: Props) {
   const [tab, setTab] = useState<TabId>('moviezone')
-  const [browserMagnet, setBrowserMagnet] = useState('')
 
   const manualEntry = kind === 'movie' ? movieManual : seriesManual
   const hasManual = !!manualEntry
@@ -117,11 +108,11 @@ export default function DownloadHub({
             </div>
           </div>
           <p className="text-sm text-white/45">
-            Choose a download source or open the browser-based P2P player.
+            Choose how you want to download. Each option uses a different source.
           </p>
         </header>
 
-        <div className="mb-6 grid grid-cols-2 gap-2 lg:grid-cols-4">
+        <div className="mb-6 grid gap-2 sm:grid-cols-3">
           {TABS.map((t) => {
             const Icon = t.icon
             const active = tab === t.id
@@ -189,16 +180,7 @@ export default function DownloadHub({
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-white/50">
                 Torrent downloads
               </h2>
-              <TorrentDownloadPanel query={torrentQuery} title={title} onPlayInBrowser={(magnet) => { setBrowserMagnet(magnet); setTab('p2p') }} />
-            </div>
-          )}
-
-          {tab === 'p2p' && (
-            <div>
-              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-white/50">
-                Browser P2P player
-              </h2>
-              <BrowserP2PPanel initialMagnet={browserMagnet} />
+              <TorrentDownloadPanel query={torrentQuery} title={title} />
             </div>
           )}
         </div>
