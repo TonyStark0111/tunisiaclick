@@ -1,0 +1,26 @@
+name: tunisiaflicks
+description: TunisiaFlicks for Android - a Flutter shell around the site, with native features added in phases.
+publish_to: 'none'
+
+# Real release versions come from the tag (see ci/flutter-android.yml): --build-name / --build-number.
+version: 1.0.0+10000
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+  flutter: '>=3.24.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_inappwebview: ^6.1.5
+  connectivity_plus: ^6.0.5
+  package_info_plus: ^8.0.0
+  url_launcher: ^6.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
