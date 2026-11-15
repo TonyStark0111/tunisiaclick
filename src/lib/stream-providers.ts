@@ -21,11 +21,19 @@
 // The order also fixes itself: sources viewers report as broken move to the end of the player's
 // list (lib/stream-health).
 import 'server-only'
+import type { MoviConfig } from '@/src/lib/movi'
 
 export type MediaType = 'movie' | 'tv'
 
 /** A filled-in source the player can open. `logo` is optional (provider icon from website URL). */
-export type StreamProvider = { name: string; url: string; logo?: string }
+export type StreamProvider = {
+  name: string
+  url: string
+  logo?: string
+  /** 'iframe' (default): `url` is an embed page. 'movi': `url` is the stream itself and `movi` describes it. */
+  engine?: 'iframe' | 'movi'
+  movi?: MoviConfig
+}
 
 /**
  * A provider as URL templates: `{id}` (and for TV `{season}`, `{episode}`) get filled in.
