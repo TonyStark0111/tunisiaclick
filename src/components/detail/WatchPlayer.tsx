@@ -210,6 +210,7 @@ export default function WatchPlayer(props: WatchPlayerProps) {
       <div className="space-y-16 pt-6">
         <StreamSection
           services={services}
+          title={title}
           media={media}
           enabled
           backdrop={backdrop_path}
