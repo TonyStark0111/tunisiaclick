@@ -30,6 +30,8 @@ const nextConfig = {
     ],
     // domains: ['image.tmdb.org', 'flagsapi.com'],
   },
+  // movi-player ships ES modules + TSX wrappers.
+  transpilePackages: ['movi-player'],
   experimental: {
     // Next 14: enables src/instrumentation.ts (server-side error monitoring setup).
     instrumentationHook: true,
@@ -41,6 +43,11 @@ const nextConfig = {
     const noReferrer = [{ key: 'Referrer-Policy', value: 'no-referrer' }]
     return [
       { source: '/:path*', headers: [{ key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' }] },
+      // Movi Player's engine: immutable, served as wasm so the browser compiles it while streaming.
+      { source: '/movi/:path*', headers: [
+        { key: 'Content-Type', value: 'application/wasm' },
+        { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+      ] },
       { source: '/unsubscribe', headers: noReferrer },
       { source: '/unsubscribe/:path*', headers: noReferrer },
       { source: '/api/unsubscribe', headers: noReferrer },
