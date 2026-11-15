@@ -1,5 +1,5 @@
 "use client"
-import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { m } from 'framer-motion'
 import { Check, Layers, Lightbulb, LightbulbOff, LogOut, Play, SkipForward, TriangleAlert } from 'lucide-react'
 import { toast } from '@/src/hooks/use-toast'
@@ -15,6 +15,8 @@ import KeyGlyph from '@/src/components/tv/KeyGlyph'
 import TmdbImage from '@/src/components/TmdbImage'
 import { Button } from '@/src/components/ui/button'
 import { BrandLoader } from '@/src/components/brand/BrandMark'
+import MoviPlayerFrame from '@/src/components/player/MoviPlayerFrame'
+import type { MoviConfig } from '@/src/lib/movi'
 
 /** Provider logo from website URL (favicon or explicit logo field). Hides on load error. */
 function ProviderLogo({ src, name, active }: { src?: string; name: string; active?: boolean }) {
@@ -60,8 +62,12 @@ const SLOW_MS = 12_000
  * to the player. Back while playing opens the player menu (back to the video, next episode,
  * sources, the next source, leave); a second Back leaves the player.
  */
-export default function StreamSection({ services: providerServices, media, downloadSlot, enabled = true, placeholder, backdrop, onNext, nextLabel, className }: {
+export default function StreamSection({ services: embedServices, directSources, title, media, downloadSlot, enabled = true, placeholder, backdrop, onNext, nextLabel, className }: {
     services: StreamProvider[]
+    /** Direct streams played by Movi Player (file or HLS/DASH url); listed before the embeds. */
+    /** Shown in the player's title bar. */
+    title?: string
+    directSources?: { name: string; config: MoviConfig }[]
     /** The title (and episode) playing: lets the desktop app's local player join the sources. */
     media?: LocalMedia
     /** Rendered at the end of the controls (the Download control). */
@@ -81,9 +87,18 @@ export default function StreamSection({ services: providerServices, media, downl
     const [isLoading, setIsLoading] = useState(true)
     const [lightsOff, setLightsOff] = useState(false)
     const sectionRef = useRef<HTMLElement>(null)
+    const providerServices = useMemo<StreamProvider[]>(
+        () => [
+            ...(directSources ?? []).map((d): StreamProvider => ({ name: d.name, url: d.config.src ?? d.config.qualities?.[0]?.src ?? '', engine: 'movi', movi: d.config })),
+            ...embedServices,
+        ],
+        [directSources, embedServices],
+    )
     const services = useWithLocalPlayer(providerServices, media)
     const source = useStreamSource(services, { playing: enabled && !isLoading })
     const url = source.ready ? source.current?.url : undefined
+    const moviConfig = source.ready && source.current?.engine === 'movi' ? source.current.movi : undefined
+    const resumeKey = media ? (media.type === 'tv' ? `tv:${media.id}:${media.season}:${media.episode}` : `movie:${media.id}`) : (url ?? '')
 
     // --- TV mode: the briefing, the start, the Back menu ---
     const [started, setStarted] = useState(false)
@@ -131,7 +146,7 @@ export default function StreamSection({ services: providerServices, media, downl
     }, [tv, enabled])
 
     const focusPlayer = useCallback(() => {
-        window.setTimeout(() => iframeRef.current?.focus(), 50)
+        window.setTimeout(() => (iframeRef.current ?? frameRef.current?.querySelector<HTMLElement>('movi-player'))?.focus(), 50)
     }, [])
 
     const releaseScreen = () => {
@@ -348,7 +363,19 @@ export default function StreamSection({ services: providerServices, media, downl
                                     <BrandLoader tone="brand" className="h-11 w-11" />
                                 </div>
                             )}
-                            {url && (
+                            {moviConfig && (
+                                <MoviPlayerFrame
+                                    key={url}
+                                    config={moviConfig}
+                                    title={title}
+                                    resumeKey={resumeKey}
+                                    onLoaded={() => setIsLoading(false)}
+                                    onNext={onNext}
+                                    nextLabel={nextLabel}
+                                    onEnded={onNext}
+                                />
+                            )}
+                            {url && !moviConfig && (
                                 <iframe
                                     ref={iframeRef}
                                     key={url}
