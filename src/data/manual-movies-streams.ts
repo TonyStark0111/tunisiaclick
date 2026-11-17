@@ -40,7 +40,7 @@ const RAW: Record<string, CStream[]> = {
   // Example: replace the placeholder URLs with real stream links
   '656908': [
     ['1080p Direct', 'https://f2l.reaperzclub.dpdns.org/AgADuhxp18myv', '1080p', 'Main'],
-    ['720p HLS', 'https://f2l.reaperzclub.dpdns.org/watch/xp18myv?hash=AgADuh', '720p'],
+    ['720p HLS', 'https://f2l1.reaperzclub.dpdns.org/xp1ek3h?hash=AgADDg&dl=1', '720p'],
   ],
 
   // Add more MOVIES below (TMDB ID as string key):
