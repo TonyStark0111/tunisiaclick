@@ -38,9 +38,9 @@ type CStream = [label: string, url: string, quality?: string, note?: string]
 const RAW: Record<string, CStream[]> = {
   // ── TMDB 1291595 ─────────────────────────────────────────────
   // Example: replace the placeholder URLs with real stream links
-  '1291595': [
-    ['1080p Direct', 'https://example.com/streams/1291595-1080p.mkv', '1080p', 'Main'],
-    ['720p HLS', 'https://example.com/streams/1291595-720p.m3u8', '720p'],
+  '656908': [
+    ['1080p Direct', 'https://f2l.reaperzclub.dpdns.org/AgADuhxp18myv', '1080p', 'Main'],
+    ['720p HLS', 'https://f2l.reaperzclub.dpdns.org/watch/xp18myv?hash=AgADuh', '720p'],
   ],
 
   // Add more MOVIES below (TMDB ID as string key):
