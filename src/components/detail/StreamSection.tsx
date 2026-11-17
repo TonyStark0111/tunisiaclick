@@ -15,6 +15,7 @@ import KeyGlyph from '@/src/components/tv/KeyGlyph'
 import TmdbImage from '@/src/components/TmdbImage'
 import { Button } from '@/src/components/ui/button'
 import { BrandLoader } from '@/src/components/brand/BrandMark'
+import MoviStreamPlayer from '@/src/components/detail/MoviStreamPlayer'
 
 /** Provider logo from website URL (favicon or explicit logo field). Hides on load error. */
 function ProviderLogo({ src, name, active }: { src?: string; name: string; active?: boolean }) {
@@ -348,7 +349,17 @@ export default function StreamSection({ services: providerServices, media, downl
                                     <BrandLoader tone="brand" className="h-11 w-11" />
                                 </div>
                             )}
-                            {url && (
+                            {url && source.current?.player === 'movi' ? (
+                                <MoviStreamPlayer
+                                    key={url}
+                                    src={url}
+                                    title={sourceName}
+                                    poster={backdrop}
+                                    autoplay={playerOn}
+                                    onReady={() => setIsLoading(false)}
+                                    onError={() => setIsLoading(false)}
+                                />
+                            ) : url ? (
                                 <iframe
                                     ref={iframeRef}
                                     key={url}
@@ -361,7 +372,7 @@ export default function StreamSection({ services: providerServices, media, downl
                                     allow={tv || sourceName === LOCAL_PLAYER_SOURCE ? 'autoplay; fullscreen; encrypted-media; picture-in-picture' : undefined}
                                     onLoad={() => setIsLoading(false)}
                                 />
-                            )}
+                            ) : null}
                             {playerOn && slow && isLoading && !menu && (
                                 <div role="status" className="glass-strong absolute inset-x-[4%] top-[5%] z-20 mx-auto flex max-w-[40rem] flex-wrap items-center gap-x-5 gap-y-3 rounded-[20px] p-[1.1em]">
                                     <div className="min-w-0 flex-1">
