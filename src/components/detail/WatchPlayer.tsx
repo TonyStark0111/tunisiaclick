@@ -16,7 +16,8 @@ import { useSoundtrack, type SoundtrackInitial } from '@/src/hooks/use-soundtrac
 import { toast } from '@/src/hooks/use-toast'
 import { getSeasonDetails } from '@/src/app/tv/[id]/actions'
 import { fillProviders } from '@/src/lib/media-assets'
-import type { ProviderTemplate } from '@/src/lib/stream-providers'
+import type { ProviderTemplate, StreamProvider } from '@/src/lib/stream-providers'
+import { getManualMovieStreams } from '@/src/data/manual-movies-streams'
 import type { ExtrasGroup } from '@/src/lib/extras'
 import { useT } from '@/src/components/I18nProvider'
 import { Button } from '@/src/components/ui/button'
@@ -87,10 +88,20 @@ export default function WatchPlayer(props: WatchPlayerProps) {
   const [seasonLoading, setSeasonLoading] = useState(false)
   const requestRef = useRef(0)
 
-  const services = useMemo(
-    () => fillProviders(providers, props.kind, id, season, episode),
-    [providers, props.kind, id, season, episode],
-  )
+  const services = useMemo(() => {
+    const base = fillProviders(providers, props.kind, id, season, episode)
+    // Movies only: prepend manual direct streams (Movi Player)
+    if (props.kind !== 'movie') return base
+    const manual = getManualMovieStreams(id)
+    if (!manual.length) return base
+    const moviSources: StreamProvider[] = manual.map((s) => ({
+      name: s.quality ? `Movi · ${s.label} (${s.quality})` : `Movi · ${s.label}`,
+      url: s.url,
+      player: 'movi' as const,
+      logo: undefined,
+    }))
+    return [...moviSources, ...base]
+  }, [providers, props.kind, id, season, episode])
 
   const soundtrack = useSoundtrack({ type: props.kind, id, kids, initial: initialSoundtrack })
   const markWatched = useMarkWatched({
