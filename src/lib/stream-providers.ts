@@ -24,8 +24,19 @@ import 'server-only'
 
 export type MediaType = 'movie' | 'tv'
 
-/** A filled-in source the player can open. `logo` is optional (provider icon from website URL). */
-export type StreamProvider = { name: string; url: string; logo?: string }
+/**
+ * A filled-in source the player can open.
+ * - `logo` is optional (provider icon).
+ * - `player: 'movi'` means play with the in-browser Movi Player (direct media URL).
+ *   Default / omitted = classic iframe embed.
+ */
+export type StreamProvider = {
+  name: string
+  url: string
+  logo?: string
+  /** When 'movi', StreamSection renders <movi-player> instead of an iframe. */
+  player?: 'iframe' | 'movi'
+}
 
 /**
  * A provider as URL templates: `{id}` (and for TV `{season}`, `{episode}`) get filled in.
