@@ -98,6 +98,14 @@ const RAW: Record<string, CStream[]> = {
     // 'https://d237157.fpvcdn.com/key=…/1854609_2160.mkv',
   ],
 
+  // ── TMDB 1368337 ────────────────────────────────────────────
+  '1368337': fromPaste(`
+    https://tgfiletolinkx-a03b5b5a660f.herokuapp.com/dl/AgADyA119945
+    https://tgfiletolinkx-a03b5b5a660f.herokuapp.com/dl/AgADtg119947
+    https://tgfiletolinkx-a03b5b5a660f.herokuapp.com/dl/AgADoS119949
+    https://tgfiletolinkx-a03b5b5a660f.herokuapp.com/dl/AgADrS119951
+  `),
+
   // ── Example of pure multi-line paste style ──────────────────
   // '550': fromPaste(`
   //   https://cdn.example/fight-club_2160.mkv
