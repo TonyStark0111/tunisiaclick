@@ -94,12 +94,19 @@ export default function WatchPlayer(props: WatchPlayerProps) {
     if (props.kind !== 'movie') return base
     const manual = getManualMovieStreams(id)
     if (!manual.length) return base
-    const moviSources: StreamProvider[] = manual.map((s) => ({
-      name: s.quality ? `Movi · ${s.label} (${s.quality})` : `Movi · ${s.label}`,
-      url: s.url,
-      player: 'movi' as const,
-      logo: undefined,
-    }))
+    const moviSources: StreamProvider[] = manual.map((s) => {
+      // Prefer a clean quality-centric name when we have a detected/override quality
+      const q = (s.quality || '').trim()
+      const name = q && q !== 'unknown'
+        ? (s.note ? `Movi · ${q} · ${s.note}` : `Movi · ${q}`)
+        : `Movi · ${s.label}`
+      return {
+        name,
+        url: s.url,
+        player: 'movi' as const,
+        logo: undefined,
+      }
+    })
     return [...moviSources, ...base]
   }, [providers, props.kind, id, season, episode])
 
