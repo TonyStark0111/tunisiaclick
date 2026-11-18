@@ -107,7 +107,7 @@ const RAW: Record<string, CStream[]> = {
     https://stream.mortalflix.xyz/download?path=XekwlO62
     https://stream.mortalflix.xyz/download?path=XekwlO62&dl=0
     https://stream.mortalflix.xyz/download?path=XekwlO62&dl=1
-    https://avtshare01.rz.tu-ilmenau.de/avt-vqdb-uhd-1/test_1/segments/bigbuck_bunny_8bit_2000kbps_720p_60.0fps_vp9.mkv
+    https://avtshare01.rz.tu-ilmenau.de/avt-vqdb-uhd-1/test_1/segments/bigbuck_bunny_8bit_15000kbps_1080p_60.0fps_h264.mp4
   `),
 
   // ── Example of pure multi-line paste style ──────────────────
