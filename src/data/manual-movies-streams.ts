@@ -104,6 +104,9 @@ const RAW: Record<string, CStream[]> = {
     https://f2l1.reaperzclub.dpdns.org/xp1ep9f?hash=AgADtg&dl=1
     https://f2l2.reaperzclub.dpdns.org/xp1dcit?hash=AgADoS&dl=1
     https://f2l3.reaperzclub.dpdns.org/AgADrSxp1cxiu
+    https://stream.mortalflix.xyz/download?path=XekwlO62
+    https://stream.mortalflix.xyz/download?path=XekwlO62&dl=0
+    https://stream.mortalflix.xyz/download?path=XekwlO62&dl=1
   `),
 
   // ── Example of pure multi-line paste style ──────────────────
