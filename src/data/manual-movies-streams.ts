@@ -100,10 +100,10 @@ const RAW: Record<string, CStream[]> = {
 
   // ── TMDB 1368337 ────────────────────────────────────────────
   '1368337': fromPaste(`
-    https://tgfiletolinkx-a03b5b5a660f.herokuapp.com/dl/AgADyA119945
-    https://tgfiletolinkx-a03b5b5a660f.herokuapp.com/dl/AgADtg119947
-    https://tgfiletolinkx-a03b5b5a660f.herokuapp.com/dl/AgADoS119949
-    https://tgfiletolinkx-a03b5b5a660f.herokuapp.com/dl/AgADrS119951
+    https://f2l1.reaperzclub.dpdns.org/xp1ep9j?hash=AgADyA&dl=1
+    https://f2l1.reaperzclub.dpdns.org/xp1ep9f?hash=AgADtg&dl=1
+    https://f2l2.reaperzclub.dpdns.org/xp1dcit?hash=AgADoS&dl=1
+    https://f2l3.reaperzclub.dpdns.org/AgADrSxp1cxiu
   `),
 
   // ── Example of pure multi-line paste style ──────────────────
